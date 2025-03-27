@@ -100,6 +100,10 @@ class Order extends BaseController
             ]
         ]);
 
+        if (!$validation->withRequest($this->request)->run()) {
+            return $this->fail($validation->getErrors());
+        }
+
     }
 
 
