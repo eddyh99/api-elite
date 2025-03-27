@@ -8,10 +8,10 @@ node_modules/
 .env
 
 # Cache dan log
-/writable/cache/*
-/writable/logs/*
-/writable/session/*
-/writable/debugbar/*
+# /writable/cache/*
+# /writable/logs/*
+# /writable/session/*
+# /writable/debugbar/*
 !writable/index.html
 
 # Spark CLI bawaan CodeIgniter 4
