@@ -1,0 +1,30 @@
+# Node.js (jika menggunakan Node/NPM dalam proyek)
+node_modules/
+
+# Composer dependencies
+/vendor/
+
+# Environment file
+.env
+
+# Cache dan log
+/writable/cache/*
+/writable/logs/*
+/writable/session/*
+/writable/debugbar/*
+!writable/index.html
+
+# Spark CLI bawaan CodeIgniter 4
+# spark
+
+# Editor/IDE files
+.vscode/
+.idea/
+
+# Sistem operasi
+.DS_Store
+Thumbs.db
+
+# Sistem kontrol versi lainnya
+.svn/
+.hg/
