@@ -58,6 +58,17 @@ class Order extends BaseController
         }
 
         $data    = $this->request->getJSON();
+
+        $pending_order = $this->signal->getBuy_pending();
+
+        if ($pending_order->code != 200) {
+            return $this->respond(error_msg(400, "order", '01', 'Failed check previous order, try again'), 400);
+        }
+
+        if (!empty($pending_order->message)) {
+            return $this->respond(error_msg(400, "binance", '02', 'Previous buy still pending'), 400);
+        }
+
         $deposit  = $this->deposit->get_amount();
 
         if (@$deposit->code != 200) {

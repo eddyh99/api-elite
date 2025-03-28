@@ -116,29 +116,25 @@ class Mdl_signal extends Model
         ];
     }
 
-    public function get_buy_order_pending()
+    public function getBuy_pending()
     {
         try {
             $sql = "SELECT
                         sinyal.type,
-                        ms.member_id,
-                        ms.order_id
+                        sinyal.order_id
                     FROM
                         sinyal
-                        INNER JOIN member_sinyal ms ON ms.sinyal_id = sinyal.id
-                        INNER JOIN member m ON m.id = ms.member_id
                     WHERE
                         sinyal.status = 'pending'
                         AND is_deleted = 'no'
                         AND sinyal.type LIKE 'BUY%'";
-            $query = $this->db->query($sql)->getResult();
+            $query = $this->db->query($sql)->getRow();
+            
+            return (object) [
+                'code' => 200,
+                'message' => $query
+            ];
 
-            if (!$query) {
-                return (object) [
-                    'code' => 400,
-                    'message' => 'No pending buy orders found!'
-                ];
-            }
         } catch (\Exception $e) {
             return (object) [
                 'code' => 500,
@@ -146,10 +142,6 @@ class Mdl_signal extends Model
             ];
         }
 
-        return (object) [
-            'code' => 200,
-            'message' => $query
-        ];
     }
 
     public function get_sell_order_pending()
@@ -190,78 +182,38 @@ class Mdl_signal extends Model
         ];
     }
 
-    public function update_status_order($mdata)
+    public function fill_byOrder($order_id)
     {
-
         try {
-            // Start Transaction
-            $this->db->transBegin();
     
             // Table initialization
-            $member_signal = $this->db->table("member_sinyal");
+            $signal = $this->db->table("sinyal");
     
-            // Jika lebih dari 1 data, gunakan updateBatch()
-            if(!empty($mdata['orders'])) {
-                if (count($mdata['orders']) > 1) {
-                    if (!$member_signal->updateBatch($mdata['orders'], 'order_id')) {
-                        $this->db->transRollback();
-                        return (object) [
-                            "code"    => 400,
-                            "message" => "Failed to update orders"
-                        ];
-                    }
-                } else {
-                    // Jika hanya 1 data, gunakan update()
-                    $order = $mdata['orders'][0];
-                    if (!$member_signal->where('order_id', $order['order_id'])->update($order)) {
-                        $this->db->transRollback();
-                        return (object) [
-                            "code"    => 400,
-                            "message" => "Failed to update order"
-                        ];
-                    }
-                }
-            }
+            // Update status menjadi 'filled'
+            $signal->where('order_id', $order_id)->update(['status' => 'filled']);
     
-            // Pastikan order_ids tidak kosong sebelum diproses
-            $order_ids = array_map('intval', $mdata['order_ids']);
-            if (empty($order_ids)) {
-                $this->db->transRollback();
+            // Periksa apakah ada baris yang terpengaruh
+            if ($this->db->affectedRows() > 0) {
                 return (object) [
-                    "code"    => 400,
-                    "message" => "No order IDs provided"
+                    "code"    => 200,
+                    "message" => "Order successfully updated to filled"
+                ];
+            } else {
+                return (object) [
+                    "code"    => 404,
+                    "message" => "Order ID not found or already updated"
                 ];
             }
-    
-            // Update status di tabel sinyal menggunakan Query Builder
-            $this->db->table('sinyal')
-                ->whereIn('id', function ($builder) use ($order_ids) {
-                    $builder->select('sinyal_id')
-                            ->from('member_sinyal')
-                            ->whereIn('order_id', $order_ids);
-                })
-                ->update(['status' => 'FILLED']);
-    
-            // Commit transaksi
-            $this->db->transCommit();
-    
-            return (object) [
-                "code"    => 201,
-                "message" => "Success"
-            ];
         } catch (\Exception $e) {
-            // Rollback jika ada error
-            $this->db->transRollback();
-    
-            // Log error untuk debugging
-            log_message('error', $e->getMessage());
     
             return (object) [
                 "code"    => 500,
-                "message" => "An internal server error occurred"
+                "message" => "An internal server error occurred",
+                "error"   => $e 
             ];
         }
     }
+    
 
     public function get_all()
     {
