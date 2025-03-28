@@ -79,16 +79,6 @@ class Member extends BaseController
     }
 
     // +++++++++++++++++
-    public function getMembership_history() {
-        $member_id = filter_var($this->request->getVar('member_id'), FILTER_SANITIZE_NUMBER_INT);
-        $result = $this->subscribe->getMembership_history($member_id);
-
-        if (@$result->code != 200) {
-			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
-		}
-
-        return $this->respond(error_msg(200, "member", null, $result->message), 200);
-    }
 
     public function getHistory_payment() {
         $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);

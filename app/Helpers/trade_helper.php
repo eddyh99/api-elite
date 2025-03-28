@@ -33,5 +33,6 @@ function binanceAPI($url, $params = [], $method = "GET")
     
     // Tampilkan hasil
     $result = json_decode($response);
+    log_message('info', 'BINANCE RESPONSE: ' .json_encode($response));
     return $result;
 }
