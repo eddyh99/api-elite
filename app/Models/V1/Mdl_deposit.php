@@ -44,5 +44,51 @@ class Mdl_deposit extends Model
             ];
         }
     }
+
+    public function get_amount()
+    {
+        try {
+            $sql = "SELECT
+                        COALESCE(SUM(amount), 0) / 4 AS amount
+                    FROM
+                        member_deposit
+                    WHERE
+                        status = 'complete';
+                    ";
+            $query = $this->db->query($sql)->getRow();
+
+            return (object) [
+                'code' => 200,
+                'message' => $query->amount
+            ];
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.' .$e
+            ];
+        }
+    }
+
+    public function get_amount_member() {
+        try {
+            $sql = "SELECT member_id, SUM(amount) AS amount
+                    FROM member_deposit
+                    WHERE status = 'complete'
+                    GROUP BY member_id";
+            $query = $this->db->query($sql)->getResult();
+
+            return (object) [
+                'code' => 200,
+                'message' => $query
+            ];
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.' .$e
+            ];
+        }
+    }
     
 }

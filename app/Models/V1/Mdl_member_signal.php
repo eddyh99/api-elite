@@ -19,7 +19,7 @@ class Mdl_member_signal extends Model
     protected $table      = 'member_sinyal';
     protected $primaryKey = 'id';
 
-    protected $allowedFields = ['amount_btc', 'order_id', 'member_id', 'sinyal_id'];
+    protected $allowedFields = ['amount_btc', 'member_id', 'sinyal_id'];
 
     protected $returnType = 'array';
     protected $useTimestamps = true;

@@ -11,7 +11,7 @@ class Order extends BaseController
 
     public function __construct()
     {
-        $this->subscribe  = model('App\Models\V1\Mdl_subscribe');
+        $this->deposit  = model('App\Models\V1\Mdl_deposit');
         $this->signal  = model('App\Models\V1\Mdl_signal');
         $this->member_signal  = model('App\Models\V1\Mdl_member_signal');
         $this->proxy  = model('App\Models\V1\Mdl_proxies');
@@ -56,24 +56,58 @@ class Order extends BaseController
         if (!$validation->withRequest($this->request)->run()) {
             return $this->fail($validation->getErrors());
         }
-        $data    = $this->request->getJSON();
 
-        $order = $this->limit_order('BUY', 300, $data->limit);
+        $data    = $this->request->getJSON();
+        $deposit  = $this->deposit->get_amount();
+
+        if (@$deposit->code != 200) {
+            return $this->respond(error_msg(400, "signal", '01', $deposit->message), 400);
+        }
+
+        $order = $this->limit_order('BUY', $deposit->message, $data->limit);
+
+        if (!isset($order->orderId) || !isset($order->origQty)) {
+            return $this->respond(error_msg(400, "order", '01', 'Order Failed'), 400);
+        }        
 
         $mdata = [
             'admin_id' => $data->admin_id,
             'ip_addr'  => $data->ip_address,
             'type'     => $data->type,
-            'order_id' => $order->orderId ?? null,
+            'order_id' => $order->orderId,
             'entry_price' => $data->limit
         ];
-
         $signal = $this->signal->add($mdata);
         if (@$signal->code != 201) {
             return $this->respond(error_msg(400, "signal", '01', $signal->message), 400);
         }
+        
+        $member = $this->getBTC_member($order->origQty, $signal->id);
+        $member_signal = $this->member_signal->add($member);
+        if (@$member_signal->code != 201) {
+            return $this->respond(error_msg(400, "signal", '01', $member_signal->message), 400);
+        }
+
         return $this->respond(error_msg(201, "order", null, $signal->message), 201);
 
+    }
+
+    private function getBtc_member($amount, $signal_id)
+    {
+        $member = $this->deposit->get_amount_member();
+        if ($member->code != 200) {
+            return false;
+        }
+
+        $mdata = [];
+        foreach ($member->message as $m) {
+            $mdata[] = [
+                'member_id' => $m->member_id,
+                'amount_btc' => (($m->amount / 4) / 100) * $amount,
+                'sinyal_id' => $signal_id
+            ];
+        }
+        return $mdata;
     }
 
     public function postLimit_sell()
