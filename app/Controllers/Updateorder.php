@@ -41,11 +41,16 @@ class Updateorder extends BaseController
 
         $data_buy = $buy->message;
         $data_sell = $sell->message;
+        $status = [];
 
         if (!empty($data_buy)) {
-            $status = $this->updateBuy($data_buy->order_id);
+            $status[] = $this->updateOrder($data_buy->order_id);
         } else if (!empty($data_sell)) {
-            $status = $this->updateSell($data_sell);
+
+            foreach ($data_sell as $sell) {
+                $status[] = $this->updateOrder($sell->order_id);
+            }
+
         } else {
             return $this->respond(error_msg(200, "buy/sell", null, 'No pending orders found!'), 200);
         }
@@ -58,7 +63,7 @@ class Updateorder extends BaseController
         return $this->respond(error_msg(201, "buys", null, 'Order has been filled'), 201);
     }
 
-    private function updateBuy($order_id)
+    private function updateOrder($order_id)
     {
         $url = BINANCEAPI . "/order";
         $params = [
@@ -74,14 +79,6 @@ class Updateorder extends BaseController
         return (object) [
             'status' => $is_filled ? 'filled' : 'pending',
             'order_id' => $order_id
-        ];
-    }
-
-    private function updateSell($signal)
-    {
-        $is_filled = false;
-        return (object) [
-            'filled' => $is_filled,
         ];
     }
 }

@@ -149,7 +149,7 @@ class Mdl_signal extends Model
         try {
             $sql = "SELECT
                         sinyal.id,
-                        sinyal.type
+                        sinyal.order_id
                     FROM
                         sinyal
                     WHERE
@@ -165,7 +165,7 @@ class Mdl_signal extends Model
                 'code' => 200,
                 'message' => $query
             ];
-            
+
         } catch (\Exception $e) {
             return (object) [
                 'code' => 500,
