@@ -268,6 +268,7 @@ class Mdl_signal extends Model
         try {
             $sql = "SELECT
                         s.id,
+                        s.order_id,
                         s.status,
                         s.type,
                         s.entry_price,

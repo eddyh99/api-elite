@@ -162,7 +162,7 @@ class Order extends BaseController
     // fixx
     public function limit_order($side, $amount, $limit)
     {
-        $mdata = [];
+
         $stepSize = 0.00001000;
 
         if ($side == 'BUY') {  // =========buy

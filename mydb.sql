@@ -42,7 +42,7 @@ CREATE TABLE `member` (
   UNIQUE KEY `refcode` (`refcode`),
   KEY `id_referral` (`id_referral`),
   CONSTRAINT `member_ibfk_1` FOREIGN KEY (`id_referral`) REFERENCES `member` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=144 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=145 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -52,8 +52,75 @@ CREATE TABLE `member` (
 LOCK TABLES `member` WRITE;
 /*!40000 ALTER TABLE `member` DISABLE KEYS */;
 INSERT INTO `member` VALUES
-(143,'member@gmail.com','d033e22ae348aeb5660fc2140aec35850c4da997','2025-03-27 15:37:11','2025-03-27 08:37:32','xrwh4zyj',NULL,'active','Asia/Jakarta',NULL,'member','127.0.0.1',0);
+(143,'member@gmail.com','d033e22ae348aeb5660fc2140aec35850c4da997','2025-03-27 15:37:11','2025-03-27 08:37:32','xrwh4zyj',NULL,'active','Asia/Jakarta',NULL,'member','127.0.0.1',0),
+(144,'member2@gmail.com','d033e22ae348aeb5660fc2140aec35850c4da997','2025-03-28 06:46:16','2025-03-28 06:48:26','4jvhy095',143,'active','Asia/Jakarta',NULL,'member','127.0.0.1',0);
 /*!40000 ALTER TABLE `member` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `member_commission`
+--
+
+DROP TABLE IF EXISTS `member_commission`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `member_commission` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `member_id` int(11) NOT NULL,
+  `downline_id` int(11) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `member_id` (`member_id`),
+  KEY `downline_id` (`downline_id`),
+  CONSTRAINT `member_commission_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `member_commission_ibfk_2` FOREIGN KEY (`downline_id`) REFERENCES `member` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `member_commission`
+--
+
+LOCK TABLES `member_commission` WRITE;
+/*!40000 ALTER TABLE `member_commission` DISABLE KEYS */;
+INSERT INTO `member_commission` VALUES
+(5,143,144,20.00,'2025-03-28 08:11:46'),
+(6,143,144,5.00,'2025-03-28 08:12:14');
+/*!40000 ALTER TABLE `member_commission` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `member_deposit`
+--
+
+DROP TABLE IF EXISTS `member_deposit`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `member_deposit` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `invoice` varchar(255) NOT NULL,
+  `member_id` int(11) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `status` enum('pending','complete','failed') NOT NULL DEFAULT 'pending',
+  PRIMARY KEY (`id`),
+  KEY `member_id` (`member_id`),
+  CONSTRAINT `member_deposit_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `member_deposit`
+--
+
+LOCK TABLES `member_deposit` WRITE;
+/*!40000 ALTER TABLE `member_deposit` DISABLE KEYS */;
+INSERT INTO `member_deposit` VALUES
+(19,'INV-081C4111',144,200.00,'2025-03-28 08:11:46','complete'),
+(20,'INV-0DDC89A7',144,50.00,'2025-03-28 08:12:14','complete'),
+(21,'INV-B292276C',143,100.00,'2025-03-28 08:12:20','complete');
+/*!40000 ALTER TABLE `member_deposit` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -93,7 +160,6 @@ DROP TABLE IF EXISTS `member_sinyal`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `member_sinyal` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `order_id` bigint(20) DEFAULT NULL,
   `amount_btc` decimal(16,6) NOT NULL,
   `member_id` int(11) DEFAULT NULL,
   `sinyal_id` int(11) DEFAULT NULL,
@@ -104,7 +170,7 @@ CREATE TABLE `member_sinyal` (
   KEY `fk_member_sinyal_sinyal` (`sinyal_id`),
   CONSTRAINT `fk_member_sinyal_member` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_member_sinyal_sinyal` FOREIGN KEY (`sinyal_id`) REFERENCES `sinyal` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -113,6 +179,9 @@ CREATE TABLE `member_sinyal` (
 
 LOCK TABLES `member_sinyal` WRITE;
 /*!40000 ALTER TABLE `member_sinyal` DISABLE KEYS */;
+INSERT INTO `member_sinyal` VALUES
+(26,0.000290,143,50,'2025-03-28 09:16:08','2025-03-28 09:16:08'),
+(27,0.000725,144,50,'2025-03-28 09:16:08','2025-03-28 09:16:08');
 /*!40000 ALTER TABLE `member_sinyal` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -217,6 +286,7 @@ DROP TABLE IF EXISTS `sinyal`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sinyal` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `order_id` bigint(20) DEFAULT NULL,
   `type` enum('Buy A','Buy B','Buy C','Buy D','Sell A','Sell B','Sell C','Sell D') NOT NULL DEFAULT 'Buy A',
   `entry_price` decimal(10,2) NOT NULL,
   `pair_id` int(11) DEFAULT NULL,
@@ -229,7 +299,7 @@ CREATE TABLE `sinyal` (
   PRIMARY KEY (`id`),
   KEY `fk_admin` (`admin_id`),
   CONSTRAINT `fk_admin` FOREIGN KEY (`admin_id`) REFERENCES `member` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -238,41 +308,9 @@ CREATE TABLE `sinyal` (
 
 LOCK TABLES `sinyal` WRITE;
 /*!40000 ALTER TABLE `sinyal` DISABLE KEYS */;
+INSERT INTO `sinyal` VALUES
+(50,11016135,'Buy A',75000.00,NULL,143,'127.0.0.1','no','pending','2025-03-28 16:16:08','2025-03-28 16:16:08');
 /*!40000 ALTER TABLE `sinyal` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `subscription`
---
-
-DROP TABLE IF EXISTS `subscription`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `subscription` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `member_id` int(11) NOT NULL,
-  `start_date` datetime NOT NULL,
-  `end_date` datetime NOT NULL,
-  `status` enum('active','expired','free','pending') NOT NULL,
-  `is_admin_granted` tinyint(1) NOT NULL DEFAULT 0,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `amount_paid` decimal(10,2) DEFAULT NULL,
-  `initial_capital` int(11) NOT NULL,
-  `commission` decimal(10,2) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `subscription_ibfk_1` (`member_id`),
-  CONSTRAINT `subscription_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=193 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `subscription`
---
-
-LOCK TABLES `subscription` WRITE;
-/*!40000 ALTER TABLE `subscription` DISABLE KEYS */;
-/*!40000 ALTER TABLE `subscription` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -317,4 +355,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2025-03-27 22:38:18
+-- Dump completed on 2025-03-28 16:29:20
