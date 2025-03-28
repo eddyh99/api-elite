@@ -144,31 +144,28 @@ class Mdl_signal extends Model
 
     }
 
-    public function get_sell_order_pending()
+    public function getSell_pending()
     {
         try {
             $sql = "SELECT
-                        sinyal.id, 
-                        sinyal.type,
-                        ms.member_id,
-                        ms.order_id
-                    FROM sinyal
-                    INNER JOIN member_sinyal ms ON ms.sinyal_id = sinyal.id
-                    INNER JOIN member m ON m.id = ms.member_id
-                    WHERE 
+                        sinyal.id,
+                        sinyal.type
+                    FROM
+                        sinyal
+                    WHERE
                         sinyal.status = 'pending'
                         AND sinyal.is_deleted = 'no'
                         AND sinyal.type IN ('Sell A', 'Sell B', 'Sell C', 'Sell D')
-                    GROUP BY sinyal.type
+                    GROUP BY
+                        sinyal.type
                     ";
             $query = $this->db->query($sql)->getResult();
 
-            if (!$query) {
-                return (object) [
-                    'code' => 400,
-                    'message' => 'No pending sell orders found!'
-                ];
-            }
+            return (object) [
+                'code' => 200,
+                'message' => $query
+            ];
+            
         } catch (\Exception $e) {
             return (object) [
                 'code' => 500,
@@ -176,34 +173,24 @@ class Mdl_signal extends Model
             ];
         }
 
-        return (object) [
-            'code' => 200,
-            'message' => $query
-        ];
+
     }
 
-    public function fill_byOrder($order_id)
+    public function updateStatus_byOrder($mdata)
     {
         try {
-    
+
             // Table initialization
             $signal = $this->db->table("sinyal");
-    
-            // Update status menjadi 'filled'
-            $signal->where('order_id', $order_id)->update(['status' => 'filled']);
-    
-            // Periksa apakah ada baris yang terpengaruh
-            if ($this->db->affectedRows() > 0) {
-                return (object) [
-                    "code"    => 200,
-                    "message" => "Order successfully updated to filled"
-                ];
-            } else {
-                return (object) [
-                    "code"    => 404,
-                    "message" => "Order ID not found or already updated"
-                ];
-            }
+
+            // Update batch berdasarkan order_id
+            $signal->updateBatch($mdata, 'order_id');
+
+            return (object) [
+                "code"    => 200,
+                "message" => "Orders updated successfully"
+            ];
+
         } catch (\Exception $e) {
     
             return (object) [

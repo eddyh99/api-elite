@@ -30,22 +30,27 @@ class Updateorder extends BaseController
             }
         }
 
+        $sell = $this->signal->getSell_pending();
+
+        if (@$buy->code != 200) {
+            log_message('info', 'SELL ORDER: ' . json_encode($buy));
+            if ($buy->code == 500) {
+                return $this->respond(error_msg(500, "signal", '01', $buy->message), 500);
+            }
+        }
+
         $data_buy = $buy->message;
-        $sell = null;
+        $data_sell = $sell->message;
 
         if (!empty($data_buy)) {
             $status = $this->updateBuy($data_buy->order_id);
-        } else if (!empty($sell->message)) {
-            $status = $this->updateSell($sell->message);
+        } else if (!empty($data_sell)) {
+            $status = $this->updateSell($data_sell);
         } else {
-            return $this->respond(error_msg(200, "buys", null, 'No pending orders found!'), 200);
+            return $this->respond(error_msg(200, "buy/sell", null, 'No pending orders found!'), 200);
         }
 
-        if(!$status->filled) {
-            return $this->respond(error_msg(200, "buy", null, 'order may be is pending!'), 200);
-        }
-
-        $result = $this->signal->fill_byOrder($status->order_id);
+        $result = $this->signal->updateStatus_byOrder($status);
         if (@$result->code != 201) {
             return $this->respond(error_msg($result->code, "buy", "01", $result->message), $result->code);
         }
@@ -67,7 +72,7 @@ class Updateorder extends BaseController
         $is_filled = isset($response->status) && $response->status === 'FILLED';
     
         return (object) [
-            'filled' => $is_filled,
+            'status' => $is_filled ? 'filled' : 'pending',
             'order_id' => $order_id
         ];
     }
