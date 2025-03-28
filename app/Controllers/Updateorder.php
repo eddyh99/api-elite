@@ -39,28 +39,28 @@ class Updateorder extends BaseController
             }
         }
 
-        $data_buy = $buy->message;
-        $data_sell = $sell->message;
-        $status = [];
+        // Ambil data order
+        $orders = array_merge(
+            !empty($buy->message) ? [$buy->message] : [],
+            !empty($sell->message) ? $sell->message : []
+        );
 
-        if (!empty($data_buy)) {
-            $status[] = $this->updateOrder($data_buy->order_id);
-        } else if (!empty($data_sell)) {
-
-            foreach ($data_sell as $sell) {
-                $status[] = $this->updateOrder($sell->order_id);
-            }
-
-        } else {
+        // Jika tidak ada order yang ditemukan
+        if (empty($orders)) {
             return $this->respond(error_msg(200, "buy/sell", null, 'No pending orders found!'), 200);
         }
+
+        $status = [];
+        foreach($orders as $order) {
+            $status[] = $this->updateOrder($order->order_id);
+        } 
 
         $result = $this->signal->updateStatus_byOrder($status);
         if (@$result->code != 201) {
             return $this->respond(error_msg($result->code, "buy", "01", $result->message), $result->code);
         }
 
-        return $this->respond(error_msg(201, "buys", null, 'Order has been filled'), 201);
+        return $this->respond(error_msg(201, "buys", null, $result->message), 201);
     }
 
     private function updateOrder($order_id)

@@ -187,7 +187,7 @@ class Mdl_signal extends Model
             $signal->updateBatch($mdata, 'order_id');
 
             return (object) [
-                "code"    => 200,
+                "code"    => 201,
                 "message" => "Orders updated successfully"
             ];
 
