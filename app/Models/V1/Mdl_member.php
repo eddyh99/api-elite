@@ -232,6 +232,23 @@ class Mdl_member extends Model
     ];
 }
 
+public function check_upline($id_member)
+{
+    $query = $this->select('id_referral')->where('id', $id_member)->first();
+
+    if (!$query) {
+        return (object) [
+            'code' => 400,
+            'message' => false
+        ];
+    }
+
+    return (object) [
+        'code' => 200,
+        'message' => $query['id_referral'],
+    ];
+}
+
     public function update_otp($mdata) {
         try {
             // Cek apakah email ada di database

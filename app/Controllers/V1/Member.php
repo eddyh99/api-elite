@@ -13,6 +13,7 @@ class Member extends BaseController
     {
         $this->member  = model('App\Models\V1\Mdl_member');
         $this->deposit  = model('App\Models\V1\Mdl_deposit');
+        $this->commission  = model('App\Models\V1\Mdl_commission');
         $this->withdraw  = model('App\Models\V1\Mdl_withdraw');
     }
 
@@ -53,12 +54,26 @@ class Member extends BaseController
 			"member_id" => trim($data->id_member),
 			"amount"    => trim($data->amount)
 		);
-
+        
         $result = $this->deposit->add_balance($mdata);
 
         if (@$result->code != 201) {
-			return $this->respond(error_msg($result->code, "member", "01", $result->error), $result->code);
+			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
 		}
+
+        $upline = $this->member->check_upline($mdata['member_id']);
+        if (!empty($upline->message)) {
+            $commission_upline = [
+                'member_id'   => $upline->message,
+                'downline_id' => trim($data->id_member),
+                'amount'      => trim($data->amount) * 0.1
+            ];
+
+            $commission = $this->commission->add_balance($commission_upline);
+            if (@$commission->code != 201) {
+                return $this->respond(error_msg($commission->code, "commission", "01", $commission->error), $commission->code);
+            }
+        }
 
         return $this->respond(error_msg(201, "member", null, $result->message), 201);
     }
