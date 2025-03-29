@@ -15,6 +15,7 @@ class Updateorder extends BaseController
     {
 
         $this->signal  = model('App\Models\V1\Mdl_signal');
+        $this->deposit  = model('App\Models\V1\Mdl_deposit');
         $this->order = new Order();
     }
 
@@ -92,5 +93,30 @@ class Updateorder extends BaseController
         
         log_message('info', 'STATUS ORDER: ' . json_encode($result));
         return $result;
+    }
+
+    private function take_profit($amount, $signal_id)
+    {
+        $member = $this->deposit->get_amount_member();
+        if ($member->code != 200) {
+            return false;
+        }
+
+        $mdata = [];
+        foreach ($member->message as $m) {
+
+            $profit = (($m->amount / 4) / 100) * $amount;
+            $commission =  $profit * 0.1;
+            $netProfit = $profit - $commission;
+
+            $mdata[] = [
+                'member_id'         => $m->member_id,
+                'wallet_client'     => $netProfit /2,
+                'wallet_master'     => $netProfit /2,
+                'upline_commission' => $commission,
+                'sinyal_id'         => $signal_id
+            ];
+        }
+        return $mdata;
     }
 }
