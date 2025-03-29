@@ -55,6 +55,10 @@ class Updateorder extends BaseController
         foreach($orders as $order) {
             $status = $this->updateOrder($order->order_id);
             $mdata[] = $status->order;
+
+            if($status->side == 'SELL') {
+                $this->take_profit($status->cummulativeQuoteQty, $status->order['order_id']);
+            }
         } 
 
         $result = $this->signal->updateStatus_byOrder($mdata);
@@ -95,7 +99,7 @@ class Updateorder extends BaseController
         return $result;
     }
 
-    private function take_profit($amount, $signal_id)
+    private function take_profit($amount, $order_id)
     {
         $member = $this->deposit->get_amount_member();
         if ($member->code != 200) {
@@ -111,12 +115,14 @@ class Updateorder extends BaseController
 
             $mdata[] = [
                 'member_id'         => $m->member_id,
-                'wallet_client'     => $netProfit /2,
-                'wallet_master'     => $netProfit /2,
-                'upline_commission' => $commission,
-                'sinyal_id'         => $signal_id
+                'wallet_client'     => round($netProfit / 2, 2),
+                'wallet_master'     => round($netProfit / 2, 2),
+                'upline_commission' => round($commission, 2),
+                'order_id'          => $order_id
             ];
         }
+
+        log_message('info', 'MEMBER PROFIT: ' . json_encode($mdata));
         return $mdata;
     }
 }
