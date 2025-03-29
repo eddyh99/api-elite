@@ -167,21 +167,41 @@ class Order extends BaseController
             return $this->fail($validation->getErrors());
         }
 
+        $data    = $this->request->getJSON();
+        $signal  = $this->signal->getBtc_bySignal($data->id_signal);
+
+        if (@$signal->code != 200) {
+            return $this->respond(error_msg(400, "signal", '01', $signal->message), 400);
+        }
+
+        $order = $this->limit_order('SELL', $signal->btc, $data->limit);
+
+        if (!isset($order->orderId) || !isset($order->origQty)) {
+            return $this->respond(error_msg(400, "order", '01', 'Order Failed'), 400);
+        }
+        
+        $mdata = [
+            'admin_id' => $data->admin_id,
+            'ip_addr'  => $data->ip_address,
+            'type'     => $data->type,
+            'order_id' => $order->orderId,
+            'entry_price' => $data->limit,
+            'pair_id'   => $data->id_signal
+        ];
+        $signal = $this->signal->add($mdata);
+        if (@$signal->code != 201) {
+            return $this->respond(error_msg(400, "signal", '01', $signal->message), 400);
+        }
+
+        return $this->respond(error_msg(201, "sell", null, $signal->message), 201);
     }
 
-
-    // fixx
     public function limit_order($side, $amount, $limit)
     {
 
         $stepSize = 0.00001000;
-
-        if ($side == 'BUY') {  // =========buy
-            $btc = $amount / $limit;
-            $quantityBTC = floor($btc / $stepSize) * $stepSize;
-        } else {              // =========sell    
-            $quantityBTC = $amount;
-        }
+        $btc = $amount / $limit;
+        $quantityBTC = floor(($side == 'BUY' ? $btc : $amount) / $stepSize) * $stepSize;
 
         $params =  [
             "symbol"      => "BTCUSDT",

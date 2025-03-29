@@ -201,6 +201,33 @@ class Mdl_signal extends Model
         }
     }
     
+    public function getBtc_bySignal($id_signal)
+    {
+        try {
+            $sql = "SELECT
+                        COALESCE( sum(ms.amount_btc), 0) as btc
+                    FROM
+                        sinyal
+                        INNER JOIN member_sinyal ms ON ms.sinyal_id = sinyal.id
+                    where
+                        sinyal.id = ?";
+            $query = $this->db->query($sql, $id_signal)->getRow();
+
+            return (object) [
+                'code' => 200,
+                'message' => 'success',
+                'btc'   => $query->btc
+            ];
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred'
+            ];
+        }
+
+
+    }
 
     public function get_all()
     {
