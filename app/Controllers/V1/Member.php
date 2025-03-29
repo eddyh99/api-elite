@@ -12,7 +12,8 @@ class Member extends BaseController
     public function __construct()
     {
         $this->member  = model('App\Models\V1\Mdl_member');
-        $this->subscribe  = model('App\Models\V1\Mdl_subscribe');
+        $this->deposit  = model('App\Models\V1\Mdl_deposit');
+        $this->commission  = model('App\Models\V1\Mdl_commission');
         $this->withdraw  = model('App\Models\V1\Mdl_withdraw');
     }
 
@@ -28,16 +29,56 @@ class Member extends BaseController
         return $this->respond(error_msg($result->code, "member", null, $result->message), $result->code);
     }
 
-    public function getMembership_history() {
-        $member_id = filter_var($this->request->getVar('member_id'), FILTER_SANITIZE_NUMBER_INT);
-        $result = $this->subscribe->getMembership_history($member_id);
 
-        if (@$result->code != 200) {
+    public function postDeposit() {
+        
+		$validation = $this->validation;
+		$validation->setRules([
+			'id_member' => [
+				'rules'  => 'required'
+			],
+            'amount' => [
+				'rules'  => 'required|numeric|greater_than[0]|less_than_equal_to[60000]',
+			],
+
+		]);
+
+		if (!$validation->withRequest($this->request)->run()) {
+			return $this->fail($validation->getErrors());
+		}
+
+		$data           = $this->request->getJSON();
+
+        $mdata = array(
+            "invoice"   => 'INV-' . strtoupper(bin2hex(random_bytes(4))),
+			"member_id" => trim($data->id_member),
+			"amount"    => trim($data->amount)
+		);
+        
+        $result = $this->deposit->add_balance($mdata);
+
+        if (@$result->code != 201) {
 			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
 		}
 
-        return $this->respond(error_msg(200, "member", null, $result->message), 200);
+        $upline = $this->member->check_upline($mdata['member_id']);
+        if (!empty($upline->message)) {
+            $commission_upline = [
+                'member_id'   => $upline->message,
+                'downline_id' => trim($data->id_member),
+                'amount'      => trim($data->amount) * 0.1
+            ];
+
+            $commission = $this->commission->add_balance($commission_upline);
+            if (@$commission->code != 201) {
+                return $this->respond(error_msg($commission->code, "commission", "01", $commission->error), $commission->code);
+            }
+        }
+
+        return $this->respond(error_msg(201, "member", null, $result->message), 201);
     }
+
+    // +++++++++++++++++
 
     public function getHistory_payment() {
         $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
@@ -68,39 +109,6 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "member", null, $mdata), 200);
     }
 
-    public function postAdd_freemember()
-    {
-        $data = $this->request->getJSON();
-        $refmember = $this->member->getby_refcode($data->referral);
-        if (!$refmember->exist) {
-            return $this->respond(error_msg(400, "member", '01', $refmember->message), 400);
-        }
-
-        $mdata = [
-            'member' => [
-                'email'       => trim($data->email),
-                'id_referral' => $refmember->id,
-            ],
-            'subscription' => [
-                'initial_capital' => trim($data->amount),
-                'status'     => 'free',
-                'start_date' => date("Y-m-d H:i:s"),
-                'end_date'   => trim($data->expired)
-            ]
-        ];
-        $result = $this->member->freemember_add($mdata);
-
-        if (@$result->code != 201) {
-			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
-		}
-
-        return $this->respond(error_msg(201, "member", null, $result->message), 201);
-    }
-
-    public function getFree_member() {
-        $result = $this->member->get_freemember();
-        return $this->respond(error_msg($result->code, "member", null, $result->message), $result->code);
-    }
 
     public function postDestroy()
     {

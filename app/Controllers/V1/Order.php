@@ -11,7 +11,7 @@ class Order extends BaseController
 
     public function __construct()
     {
-        $this->subscribe  = model('App\Models\V1\Mdl_subscribe');
+        $this->deposit  = model('App\Models\V1\Mdl_deposit');
         $this->signal  = model('App\Models\V1\Mdl_signal');
         $this->member_signal  = model('App\Models\V1\Mdl_member_signal');
         $this->proxy  = model('App\Models\V1\Mdl_proxies');
@@ -56,6 +56,69 @@ class Order extends BaseController
         if (!$validation->withRequest($this->request)->run()) {
             return $this->fail($validation->getErrors());
         }
+
+        $data    = $this->request->getJSON();
+
+        $pending_order = $this->signal->getBuy_pending();
+
+        if ($pending_order->code != 200) {
+            return $this->respond(error_msg(400, "order", '01', 'Failed check previous order, try again'), 400);
+        }
+
+        if (!empty($pending_order->message)) {
+            return $this->respond(error_msg(400, "binance", '02', 'Previous buy still pending'), 400);
+        }
+
+        $deposit  = $this->deposit->get_amount();
+
+        if (@$deposit->code != 200) {
+            return $this->respond(error_msg(400, "signal", '01', $deposit->message), 400);
+        }
+
+        $order = $this->limit_order('BUY', $deposit->message, $data->limit);
+
+        if (!isset($order->orderId) || !isset($order->origQty)) {
+            return $this->respond(error_msg(400, "order", '01', 'Order Failed'), 400);
+        }        
+
+        $mdata = [
+            'admin_id' => $data->admin_id,
+            'ip_addr'  => $data->ip_address,
+            'type'     => $data->type,
+            'order_id' => $order->orderId,
+            'entry_price' => $data->limit
+        ];
+        $signal = $this->signal->add($mdata);
+        if (@$signal->code != 201) {
+            return $this->respond(error_msg(400, "signal", '01', $signal->message), 400);
+        }
+        
+        $member = $this->getBTC_member($order->origQty, $signal->id);
+        $member_signal = $this->member_signal->add($member);
+        if (@$member_signal->code != 201) {
+            return $this->respond(error_msg(400, "signal", '01', $member_signal->message), 400);
+        }
+
+        return $this->respond(error_msg(201, "order", null, $signal->message), 201);
+
+    }
+
+    private function getBtc_member($amount, $signal_id)
+    {
+        $member = $this->deposit->get_amount_member();
+        if ($member->code != 200) {
+            return false;
+        }
+
+        $mdata = [];
+        foreach ($member->message as $m) {
+            $mdata[] = [
+                'member_id' => $m->member_id,
+                'amount_btc' => (($m->amount / 4) / 100) * $amount,
+                'sinyal_id' => $signal_id
+            ];
+        }
+        return $mdata;
     }
 
     public function postLimit_sell()
@@ -100,51 +163,58 @@ class Order extends BaseController
             ]
         ]);
 
-    }
-
-
-    // fixx
-    public function limit_order($side, $members, $limit, $proxies)
-    {
-        $mdata = [];
-        $stepSize = 0.00001000;
-
-        foreach ($members as $member) {
-            $proxy_key = array_rand($proxies);
-            $proxy = (array) $proxies[$proxy_key];
-
-            if ($side == 'BUY') {        //buy
-                $amount = $member->initial_capital / 4;
-                $btc = $amount / $limit;
-                $quantityBTC = floor($btc / $stepSize) * $stepSize;
-            } else {      //sell    
-                $quantityBTC = $member->amount_btc;
-            }
-
-            $mdata[] = [
-                'member' => [
-                    'id_member'  => $member->id,
-                    ...$proxy
-                ],
-                'order' => [
-                    "symbol"      => "BTCUSDT",
-                    "side"        => $side,
-                    "type"        => "LIMIT",
-                    "timeInForce" => "GTC",
-                    "quantity"    => $quantityBTC,
-                    "price"       => $limit,
-                    "newClientOrderId" => 'order_' . bin2hex(random_bytes(10))
-                ]
-            ];
-
-            if ($side == 'SELL' && isset($member->id_sinyal)) {
-                $lastIndex = array_key_last($mdata);
-                $mdata[$lastIndex]['member']['id_sinyal'] = $member->id_sinyal;
-            }
+        if (!$validation->withRequest($this->request)->run()) {
+            return $this->fail($validation->getErrors());
         }
 
-        $url = BINANCEAPI . '/orders';
-        $result = binanceAPI($url, $mdata, 'POST');
+        $data    = $this->request->getJSON();
+        $signal  = $this->signal->getBtc_bySignal($data->id_signal);
+
+        if (@$signal->code != 200) {
+            return $this->respond(error_msg(400, "signal", '01', $signal->message), 400);
+        }
+
+        $order = $this->limit_order('SELL', $signal->btc, $data->limit);
+
+        if (!isset($order->orderId) || !isset($order->origQty)) {
+            return $this->respond(error_msg(400, "order", '01', 'Order Failed'), 400);
+        }
+        
+        $mdata = [
+            'admin_id' => $data->admin_id,
+            'ip_addr'  => $data->ip_address,
+            'type'     => $data->type,
+            'order_id' => $order->orderId,
+            'entry_price' => $data->limit,
+            'pair_id'   => $data->id_signal
+        ];
+        $signal = $this->signal->add($mdata);
+        if (@$signal->code != 201) {
+            return $this->respond(error_msg(400, "signal", '01', $signal->message), 400);
+        }
+
+        return $this->respond(error_msg(201, "sell", null, $signal->message), 201);
+    }
+
+    public function limit_order($side, $amount, $limit)
+    {
+
+        $stepSize = 0.00001000;
+        $btc = $amount / $limit;
+        $quantityBTC = floor(($side == 'BUY' ? $btc : $amount) / $stepSize) * $stepSize;
+
+        $params =  [
+            "symbol"      => "BTCUSDT",
+            "side"        => $side,
+            "type"        => "LIMIT",
+            "timeInForce" => "GTC",
+            "quantity"    => $quantityBTC,
+            "price"       => $limit,
+            "newClientOrderId" => 'order_' . bin2hex(random_bytes(10))
+        ];
+
+        $url = BINANCEAPI . '/order';
+        $result = binanceAPI($url, $params, 'POST');
         return $result;
     }
 

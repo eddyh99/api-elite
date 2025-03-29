@@ -141,44 +141,6 @@ class Mdl_member extends Model
         ];
     }
 
-    public function get_freemember() {
-        try {
-
-            $sql = "SELECT
-                        member.email,
-                        member.refcode,
-                        s.start_date,
-                        s.end_date
-                    FROM
-                        member
-                        INNER JOIN subscription s ON s.member_id = member.id
-                    WHERE
-                        is_delete = FALSE
-                        AND member.status != 'disabled'
-                        AND s.status = 'free'";
-            $query = $this->db->query($sql)->getResult();
-    
-            if (!$query) {
-                return (object) [
-                    'code'    => 404,
-                    'message' => []
-                ];
-            }
-    
-        } catch (\Exception $e) {
-            return (object) [
-                'code'    => 500,
-                'message' => 'An error occurred'
-            ];
-        }
-
-        return (object) [
-            "code"    => 200,
-            "message"    => $query
-        ];
-    }
-    
-
     public function getby_email($email) {
         $sql = "SELECT
                     m.*,
@@ -251,65 +213,6 @@ class Mdl_member extends Model
         $hashids = new Hashids('', 8, 'abcdefghijklmnopqrstuvwxyz1234567890');
         return $hashids->encode((int)$id, time(), rand()); 
     }
-    
-    public function freemember_add($mdata)
-    {
-        try {
-            // Start Transaction
-            $this->db->transBegin();
-
-            // Table initialization
-            $member = $this->db->table("member");
-            $subscription = $this->db->table("subscription");
-
-            // Insert into 'member'
-            if (!$member->insert($mdata['member'])) {
-                // Rollback if 'member' insertion fails
-                $this->db->transRollback();
-                return (object) [
-                    "code"    => 400,
-                    "message" => 'Failed to add new member' //"Gagal menyimpan data pembelian"
-                ];
-            }
-            
-            $id=$this->db->insertID();
-            $mdata['refcode'] = array(
-                "refcode"   => substr($this->generate_token($id),0,8),
-            );
-            $member->where("id", $id);
-            $member->update($mdata['refcode']);
-
-            // Add member_id to mdata
-            $mdata['subscription']['member_id'] = $id;
-
-            // Insert into 'subscription'
-            if (!$subscription->insert($mdata['subscription'])) {
-                // Rollback if 'subscription' insertion fails
-                $this->db->transRollback();
-                return (object) [
-                    "code"    => 400,
-                    "message" => "Failed to create a subscription for the member"
-                ];
-            }
-
-            // Commit the transaction
-            $this->db->transCommit();
-
-            return (object) [
-                "code"    => 201,
-                "message" => "User has been successfully registered"
-            ];
-        } catch (\Exception $e) {
-            // Rollback the transaction in case of an exception
-            $this->db->transRollback();
-
-            // Handle exception
-            return (object) [
-                "code"    => 500,
-                "message" => "An internal server error occurred"
-            ];
-        }
-    }
 
     public function getby_refcode($refcode)
 {
@@ -326,6 +229,23 @@ class Mdl_member extends Model
         'exist' => true,
         'message' => 'Referral found',
         'id'    => $query['id']
+    ];
+}
+
+public function check_upline($id_member)
+{
+    $query = $this->select('id_referral')->where('id', $id_member)->first();
+
+    if (!$query) {
+        return (object) [
+            'code' => 400,
+            'message' => false
+        ];
+    }
+
+    return (object) [
+        'code' => 200,
+        'message' => $query['id_referral'],
     ];
 }
 
