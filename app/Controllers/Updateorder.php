@@ -50,12 +50,13 @@ class Updateorder extends BaseController
             return $this->respond(error_msg(200, "buy/sell", null, 'No pending orders found!'), 200);
         }
 
-        $status = [];
+        $mdata = [];
         foreach($orders as $order) {
-            $status[] = $this->updateOrder($order->order_id);
+            $status = $this->updateOrder($order->order_id);
+            $mdata[] = $status->order;
         } 
 
-        $result = $this->signal->updateStatus_byOrder($status);
+        $result = $this->signal->updateStatus_byOrder($mdata);
         if (@$result->code != 201) {
             return $this->respond(error_msg($result->code, "buy", "01", $result->message), $result->code);
         }
@@ -74,11 +75,19 @@ class Updateorder extends BaseController
         $response = binanceAPI($url, $params);
     
         // Cek apakah respons valid dan statusnya 'filled'
-        $is_filled = isset($response->status) && $response->status === 'FILLED';
+        if(isset($response->orderId)) {
+            $is_filled = $response->status === 'FILLED' ? 'filled' : 'pending';
+            $side = $response->side;
+            $cummulativeQuoteQty = $response->cummulativeQuoteQty;
+        }
     
         return (object) [
-            'status' => $is_filled ? 'filled' : 'pending',
-            'order_id' => $order_id
-        ];
+            'order' => [
+                'status' => $is_filled ?? 'pending',
+                'order_id' => $order_id,
+            ],
+            'side'  => $side ?? null,
+            'cummulativeQuoteQty' => $cummulativeQuoteQty ?? 0
+        ];        
     }
 }
