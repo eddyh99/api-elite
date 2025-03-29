@@ -81,13 +81,16 @@ class Updateorder extends BaseController
             $cummulativeQuoteQty = $response->cummulativeQuoteQty;
         }
     
-        return (object) [
+        $result =  (object) [
             'order' => [
                 'status' => $is_filled ?? 'pending',
                 'order_id' => $order_id,
             ],
             'side'  => $side ?? null,
             'cummulativeQuoteQty' => $cummulativeQuoteQty ?? 0
-        ];        
+        ]; 
+        
+        log_message('info', 'STATUS ORDER: ' . json_encode($result));
+        return $result;
     }
 }
