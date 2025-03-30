@@ -16,6 +16,8 @@ class Updateorder extends BaseController
 
         $this->signal  = model('App\Models\V1\Mdl_signal');
         $this->deposit  = model('App\Models\V1\Mdl_deposit');
+        $this->commission  = model('App\Models\V1\Mdl_commission');
+        $this->wallet  = model('App\Models\V1\Mdl_wallet');
         $this->order = new Order();
     }
 
@@ -106,23 +108,33 @@ class Updateorder extends BaseController
             return false;
         }
 
-        $mdata = [];
+        $profit = [];
+        $commission = [];
         foreach ($member->message as $m) {
 
-            $profit = (($m->amount / 4) / 100) * $amount;
-            $commission =  $profit * 0.1;
-            $netProfit = $profit - $commission;
+            $m_profit = (($m->amount / 4) / 100) * $amount;
+            $m_commission =  $m_profit * 0.1;
+            $netProfit = $m_profit - $m_commission;
 
-            $mdata[] = [
+            $profit[] = [
                 'member_id'         => $m->member_id,
-                'wallet_client'     => round($netProfit / 2, 2),
-                'wallet_master'     => round($netProfit / 2, 2),
-                'upline_commission' => round($commission, 2),
+                'master_wallet'     => round($netProfit / 2, 2),
+                'client_wallet'     => round($netProfit / 2, 2),
                 'order_id'          => $order_id
             ];
+
+            if (!is_null($m->upline)) {
+                $commission[] = [
+                    'member_id'      => $m->upline,
+                    'downline_id'    => $m->member_id,
+                    'amount'         => round($m_commission, 2),
+                ];
+            }
         }
 
-        log_message('info', 'MEMBER PROFIT: ' . json_encode($mdata));
-        return $mdata;
+        $update_profit = $this->wallet->add_profits($profit);
+        $update_commission = $this->commission->add_balances($commission);
+        log_message('info', 'MEMBER PROFIT: ' . json_encode($update_profit));
+        log_message('info', 'MEMBER COMMISSION: ' . json_encode($update_commission));
     }
 }

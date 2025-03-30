@@ -72,10 +72,17 @@ class Mdl_deposit extends Model
 
     public function get_amount_member() {
         try {
-            $sql = "SELECT member_id, SUM(amount) AS amount
-                    FROM member_deposit
-                    WHERE status = 'complete'
-                    GROUP BY member_id";
+            $sql = "SELECT
+                        member_id,
+                        m.id_referral as upline,
+                        SUM(amount) AS amount
+                    FROM
+                        member_deposit ms
+                        INNER JOIN member m ON m.id = ms.member_id
+                    WHERE
+                        ms.status = 'complete'
+                    GROUP BY
+                        member_id";
             $query = $this->db->query($sql)->getResult();
 
             return (object) [
