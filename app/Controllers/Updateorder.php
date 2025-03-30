@@ -35,7 +35,7 @@ class Updateorder extends BaseController
 
         $sell = $this->signal->getSell_pending();
 
-        if (@$buy->code != 200) {
+        if (@$sell->code != 200) {
             log_message('info', 'SELL ORDER: ' . json_encode($buy));
             if ($buy->code == 500) {
                 return $this->respond(error_msg(500, "signal", '01', $buy->message), 500);
@@ -133,8 +133,11 @@ class Updateorder extends BaseController
         }
 
         $update_profit = $this->wallet->add_profits($profit);
-        $update_commission = $this->commission->add_balances($commission);
         log_message('info', 'MEMBER PROFIT: ' . json_encode($update_profit));
-        log_message('info', 'MEMBER COMMISSION: ' . json_encode($update_commission));
+
+        if (!empty($commission)) {
+            $update_commission = $this->commission->add_balances($commission);
+            log_message('info', 'MEMBER COMMISSION: ' . json_encode($update_commission));
+        }
     }
 }
