@@ -105,7 +105,7 @@ class Order extends BaseController
 
     private function getBtc_member($amount, $signal_id)
     {
-        $member = $this->deposit->get_amount_member();
+        $member = $this->deposit->getAmount_member();
         if ($member->code != 200) {
             return false;
         }

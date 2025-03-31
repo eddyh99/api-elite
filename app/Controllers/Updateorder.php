@@ -118,7 +118,7 @@ class Updateorder extends BaseController
 
     private function take_profits($amount, $order_id)
     {
-        $member = $this->deposit->get_amount_member();
+        $member = $this->deposit->getAmount_member();
         if ($member->code !== 200) {
             return ['profits' => [], 'commissions' => []];
         }

@@ -62,5 +62,28 @@ class Mdl_commission extends Model
             ];
         }
     }
+
+    public function getBalance_byId($id_member) {
+        try {
+            $sql = "SELECT
+                        COALESCE(SUM(amount), 0) AS balance
+                    FROM
+                        member_commission
+                    WHERE
+                        member_id = ?";
+            $query = $this->db->query($sql, $id_member)->getRow();
+
+            return (object) [
+                'code' => 200,
+                'message' => $query
+            ];
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.' .$e
+            ];
+        }
+    }
     
 }
