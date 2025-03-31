@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Controllers\V1\Order;
 use CodeIgniter\API\ResponseTrait;
 
 class Updateorder extends BaseController
@@ -15,7 +14,9 @@ class Updateorder extends BaseController
     {
 
         $this->signal  = model('App\Models\V1\Mdl_signal');
-        $this->order = new Order();
+        $this->deposit  = model('App\Models\V1\Mdl_deposit');
+        $this->commission  = model('App\Models\V1\Mdl_commission');
+        $this->wallet  = model('App\Models\V1\Mdl_wallet');
     }
 
     public function getIndex()
@@ -32,7 +33,7 @@ class Updateorder extends BaseController
 
         $sell = $this->signal->getSell_pending();
 
-        if (@$buy->code != 200) {
+        if (@$sell->code != 200) {
             log_message('info', 'SELL ORDER: ' . json_encode($buy));
             if ($buy->code == 500) {
                 return $this->respond(error_msg(500, "signal", '01', $buy->message), 500);
@@ -51,10 +52,31 @@ class Updateorder extends BaseController
         }
 
         $mdata = [];
+        $profits = [];
+        $commissions = [];
+
         foreach($orders as $order) {
             $status = $this->updateOrder($order->order_id);
             $mdata[] = $status->order;
+
+            if ($status->side === 'SELL') {
+                $takeProfitData = $this->take_profits($status->cummulativeQuoteQty, $order->order_id);
+                $profits = array_merge($profits, $takeProfitData['profits']);
+                $commissions = array_merge($commissions, $takeProfitData['commissions']);
+            }
         } 
+
+        // Update Profits
+        if (!empty($profits)) {
+            $this->wallet->add_profits($profits);
+            log_message('info', 'MEMBER PROFIT: ' . json_encode($profits));
+        }
+    
+        // Update Commission
+        if (!empty($commissions)) {
+            $this->commission->add_balances($commissions);
+            log_message('info', 'MEMBER COMMISSION: ' . json_encode($commissions));
+        }
 
         $result = $this->signal->updateStatus_byOrder($mdata);
         if (@$result->code != 201) {
@@ -93,4 +115,38 @@ class Updateorder extends BaseController
         log_message('info', 'STATUS ORDER: ' . json_encode($result));
         return $result;
     }
+
+    private function take_profits($amount, $order_id)
+    {
+        $member = $this->deposit->get_amount_member();
+        if ($member->code !== 200) {
+            return ['profits' => [], 'commissions' => []];
+        }
+    
+        $profits = [];
+        $commissions = [];
+        foreach ($member->message as $m) {
+            $m_profit = (($m->amount / 4) / 100) * $amount;
+            $m_commission = $m_profit * 0.1;
+            $netProfit = $m_profit - $m_commission;
+    
+            $profits[] = [
+                'member_id' => $m->member_id,
+                'master_wallet' => round($netProfit / 2, 2),
+                'client_wallet' => round($netProfit / 2, 2),
+                'order_id' => $order_id
+            ];
+    
+            if (!is_null($m->upline)) {
+                $commissions[] = [
+                    'member_id' => $m->upline,
+                    'downline_id' => $m->member_id,
+                    'amount' => round($m_commission, 2),
+                ];
+            }
+        }
+    
+        return ['profits' => $profits, 'commissions' => $commissions];
+    }
+    
 }

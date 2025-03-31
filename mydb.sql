@@ -75,7 +75,7 @@ CREATE TABLE `member_commission` (
   KEY `downline_id` (`downline_id`),
   CONSTRAINT `member_commission_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE CASCADE,
   CONSTRAINT `member_commission_ibfk_2` FOREIGN KEY (`downline_id`) REFERENCES `member` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -86,7 +86,8 @@ LOCK TABLES `member_commission` WRITE;
 /*!40000 ALTER TABLE `member_commission` DISABLE KEYS */;
 INSERT INTO `member_commission` VALUES
 (5,143,144,20.00,'2025-03-28 08:11:46'),
-(6,143,144,5.00,'2025-03-28 08:12:14');
+(6,143,144,5.00,'2025-03-28 08:12:14'),
+(10,143,144,4.40,'2025-03-30 09:02:50');
 /*!40000 ALTER TABLE `member_commission` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -170,7 +171,7 @@ CREATE TABLE `member_sinyal` (
   KEY `fk_member_sinyal_sinyal` (`sinyal_id`),
   CONSTRAINT `fk_member_sinyal_member` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_member_sinyal_sinyal` FOREIGN KEY (`sinyal_id`) REFERENCES `sinyal` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -181,7 +182,11 @@ LOCK TABLES `member_sinyal` WRITE;
 /*!40000 ALTER TABLE `member_sinyal` DISABLE KEYS */;
 INSERT INTO `member_sinyal` VALUES
 (26,0.000290,143,50,'2025-03-28 09:16:08','2025-03-28 09:16:08'),
-(27,0.000725,144,50,'2025-03-28 09:16:08','2025-03-28 09:16:08');
+(27,0.000725,144,50,'2025-03-28 09:16:08','2025-03-28 09:16:08'),
+(28,0.000243,143,52,'2025-03-28 15:05:53','2025-03-28 15:05:53'),
+(29,0.000606,144,52,'2025-03-28 15:05:53','2025-03-28 15:05:53'),
+(30,0.000243,143,53,'2025-03-28 15:12:09','2025-03-28 15:12:09'),
+(31,0.000606,144,53,'2025-03-28 15:12:09','2025-03-28 15:12:09');
 /*!40000 ALTER TABLE `member_sinyal` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -297,9 +302,10 @@ CREATE TABLE `sinyal` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
+  UNIQUE KEY `order_id` (`order_id`),
   KEY `fk_admin` (`admin_id`),
   CONSTRAINT `fk_admin` FOREIGN KEY (`admin_id`) REFERENCES `member` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -309,8 +315,44 @@ CREATE TABLE `sinyal` (
 LOCK TABLES `sinyal` WRITE;
 /*!40000 ALTER TABLE `sinyal` DISABLE KEYS */;
 INSERT INTO `sinyal` VALUES
-(50,11016135,'Buy A',75000.00,NULL,143,'127.0.0.1','no','pending','2025-03-28 16:16:08','2025-03-28 16:16:08');
+(50,11016135,'Buy A',75000.00,NULL,143,'127.0.0.1','yes','pending','2025-03-28 16:16:08','2025-03-28 22:05:34'),
+(52,11125241,'Buy A',90000.00,NULL,143,'127.0.0.1','no','filled','2025-03-28 22:05:53','2025-03-28 22:56:28'),
+(53,11127872,'Buy B',90000.00,NULL,143,'127.0.0.1','no','filled','2025-03-28 22:12:09','2025-03-30 15:59:11'),
+(57,11418901,'Sell A',80000.00,52,143,'127.0.0.1','no','filled','2025-03-29 13:39:06','2025-03-30 16:02:50');
 /*!40000 ALTER TABLE `sinyal` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `wallet`
+--
+
+DROP TABLE IF EXISTS `wallet`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `wallet` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `master_wallet` decimal(20,2) NOT NULL DEFAULT 0.00,
+  `client_wallet` decimal(20,2) NOT NULL DEFAULT 0.00,
+  `member_id` int(11) NOT NULL,
+  `order_id` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `member_id` (`member_id`),
+  KEY `order_id` (`order_id`),
+  CONSTRAINT `wallet_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`),
+  CONSTRAINT `wallet_ibfk_2` FOREIGN KEY (`order_id`) REFERENCES `sinyal` (`order_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `wallet`
+--
+
+LOCK TABLES `wallet` WRITE;
+/*!40000 ALTER TABLE `wallet` DISABLE KEYS */;
+INSERT INTO `wallet` VALUES
+(1,7.92,7.92,143,11418901),
+(2,19.79,19.79,144,11418901);
+/*!40000 ALTER TABLE `wallet` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -355,4 +397,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2025-03-28 16:29:20
+-- Dump completed on 2025-03-30 16:03:40

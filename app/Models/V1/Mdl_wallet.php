@@ -7,7 +7,7 @@ use Exception;
 use Hashids\Hashids;
 
 /*----------------------------------------------------------
-    Modul Name  : Database member_commission
+    Modul Name  : Database member wallet
     Desc        : Menyimpan data member, proses member
     Sub fungsi  : 
         - getby_id          : Mendapatkan data user dari username
@@ -15,44 +15,26 @@ use Hashids\Hashids;
 ------------------------------------------------------------*/
 
 
-class Mdl_commission extends Model
+class Mdl_wallet extends Model
 {
     protected $server_tz = "Asia/Singapore";
-    protected $table      = 'member_commssion';
+    protected $table      = 'wallet';
     protected $primaryKey = 'id';
 
-    protected $allowedFields = ['member_id', 'downline_id', 'amount'];
+    protected $allowedFields = ['master_wallet', 'client_wallet', 'member_id', 'order_id'];
 
     protected $returnType = 'array';
     protected $useTimestamps = true;
 
-    
-    public function add_balance($mdata) {
-        try {
-            $deposit = $this->db->table("member_commission");
-            $deposit->insert($mdata);
-    
-            return (object) [
-                'code'    => 201,
-                'message' => 'Success: Commsission has been added.'
-            ];
-        } catch (\Exception $e) {
-            return (object) [
-                'code'    => 500,
-                'message' => 'An error occurred while processing.',
-                'error'   => $e->getMessage()
-            ];
-        }
-    }
 
-    public function add_balances($mdata) {
+    public function add_profits($mdata) {
         try {
-            $deposit = $this->db->table("member_commission");
+            $deposit = $this->db->table("wallet");
             $deposit->insertBatch($mdata);
     
             return (object) [
                 'code'    => 201,
-                'message' => 'Success: Commsission has been added.'
+                'message' => 'Success: profit has been added.'
             ];
         } catch (\Exception $e) {
             return (object) [
