@@ -50,5 +50,32 @@ class Mdl_member_signal extends Model
             ];
         }
     }
+
+    public function getBalance_btc($id_member) {
+        try {
+            $sql = "SELECT
+                        COALESCE(SUM(amount_btc), 0) as balance
+                    FROM
+                        member_sinyal ms
+                        INNER JOIN sinyal ON sinyal.id = ms.sinyal_id
+                    WHERE
+                        sinyal.status = 'filled'  -- Hanya order yang sudah dieksekusi
+                        AND sinyal.is_deleted = 'no'  -- Mengabaikan order yang dibatalkan
+                        AND sinyal.pair_id IS NULL  -- Mengabaikan transaksi sell
+                        AND ms.member_id = ?";
+            $query = $this->db->query($sql, $id_member)->getRow();
+
+            return (object) [
+                'code' => 200,
+                'message' => $query->balance
+            ];
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.'
+            ];
+        }
+    }
     
 }

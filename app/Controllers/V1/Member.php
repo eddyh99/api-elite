@@ -16,6 +16,7 @@ class Member extends BaseController
         $this->deposit      = model('App\Models\V1\Mdl_deposit');
         $this->commission   = model('App\Models\V1\Mdl_commission');
         $this->withdraw     = model('App\Models\V1\Mdl_withdraw');
+        $this->member_signal  = model('App\Models\V1\Mdl_member_signal');
     }
 
     public function getGet_all()

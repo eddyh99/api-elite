@@ -70,20 +70,58 @@ class Mdl_deposit extends Model
         }
     }
 
-    public function get_amount_member() {
+    // balance trade
+    public function getAmount_member() {
         try {
             $sql = "SELECT
-                        member_id,
-                        m.id_referral as upline,
-                        SUM(amount) AS amount
+                        ms.member_id,
+                        m.id_referral AS upline,
+                        SUM(ms.amount) + COALESCE(
+                            (SELECT SUM(client_wallet) FROM wallet w WHERE w.member_id = ms.member_id), 
+                            0
+                        ) AS total_amount
                     FROM
                         member_deposit ms
                         INNER JOIN member m ON m.id = ms.member_id
                     WHERE
                         ms.status = 'complete'
                     GROUP BY
-                        member_id";
+                        ms.member_id";
             $query = $this->db->query($sql)->getResult();
+
+            return (object) [
+                'code' => 200,
+                'message' => $query
+            ];
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.' .$e
+            ];
+        }
+    }
+
+    public function getBalance_byIdMember($id_member) {
+        try {
+            $sql = "SELECT
+                        SUM(ms.amount) + COALESCE(
+                            (
+                                SELECT
+                                    SUM(client_wallet)
+                                FROM
+                                    wallet w
+                                WHERE
+                                    w.member_id = ms.member_id
+                            ),
+                            0
+                        ) AS balance
+                    FROM
+                        member_deposit ms
+                    WHERE
+                        ms.status = 'complete'
+                        AND ms.member_id = ?";
+            $query = $this->db->query($sql, $id_member)->getRow();
 
             return (object) [
                 'code' => 200,
