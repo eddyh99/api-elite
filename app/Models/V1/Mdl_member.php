@@ -142,21 +142,9 @@ class Mdl_member extends Model
     }
 
     public function getby_email($email) {
-        $sql = "SELECT
-                    m.*,
-                    mr.access,
-                    s.initial_capital,
-                    s.status AS subscription_status,
-                    s.start_date,
-                    s.end_date
-                FROM
-                    member m
-                    LEFT JOIN subscription s ON m.id = s.member_id
-                    LEFT JOIN member_role mr ON mr.member_id = m.id
+        $sql = "SELECT * FROM member
                 WHERE
-                    m.email = ?
-                ORDER BY
-                    s.id DESC
+                    email = ?
                 LIMIT
                     1"; 
 
@@ -505,29 +493,12 @@ public function check_upline($id_member)
     public function get_downline_byId($id_member)
     {
         try {
-            $sql = "SELECT
-                        m.email,
-                        m.status,
-                        COALESCE(s.commission, 0) as commission,
-                        CASE
-                            when s.status != 'expired' THEN 'active'
-                            ELSE 'expired'
-                        END AS 'subscription',
-                        s.created_at
-                    from
-                        member m
-                        LEFT JOIN subscription s ON s.member_id = m.id
-                        AND s.start_date = (
-                            SELECT
-                                MAX(s2.start_date)
-                            FROM
-                                subscription s2
-                            WHERE
-                                s2.member_id = m.id
-                        )
-                    WHERE
-                        m.id_referral = ?
-                        and m.status = 'active'";
+            $sql = "SELECT * 
+                        FROM member 
+                        
+                    WHERE id_referral = ? 
+                        AND is_delete = 0 
+                        AND status = 'active'";
             $query = $this->db->query($sql, [$id_member])->getResult();
 
             if (!$query) {
@@ -549,59 +520,5 @@ public function check_upline($id_member)
             'message' => 'Downline members retrieved successfully..',
             'data'    => $query
         ];
-    }
-
-    public function admin_add($mdata)
-    {
-        try {
-            // Start Transaction
-            $this->db->transBegin();
-
-            // Table initialization
-            $member = $this->db->table("member");
-            $access = $this->db->table("member_role");
-
-            // Insert into 'member'
-            if (!$member->insert($mdata['member'])) {
-                // Rollback if 'admin' insertion fails
-                $this->db->transRollback();
-                return (object) [
-                    "code"    => 400,
-                    "message" => 'Failed to add admin. Something went wrong' //"Gagal menyimpan data admin"
-                ];
-            }
-            
-            $id=$this->db->insertID();
-
-            // Add member_id to mdata
-            $mdata['member_role']['member_id'] = $id;
-
-            // Insert into 'member_role'
-            if (!$access->insert($mdata['member_role'])) {
-                // Rollback if 'member_role' insertion fails
-                $this->db->transRollback();
-                return (object) [
-                    "code"    => 400,
-                    "message" => "Failed to assign menu access"
-                ];
-            }
-
-            // Commit the transaction
-            $this->db->transCommit();
-
-            return (object) [
-                "code"    => 201,
-                "message" => "Admin has been successfully added"
-            ];
-        } catch (\Exception $e) {
-            // Rollback the transaction in case of an exception
-            $this->db->transRollback();
-
-            // Handle exception
-            return (object) [
-                "code"    => 500,
-                "message" => "An internal server error occurred"
-            ];
-        }
     }
 }

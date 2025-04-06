@@ -120,10 +120,10 @@ class Mdl_withdraw extends Model
         try {
 
             $sql = "SELECT
-                        COALESCE(SUM(s.commission), 0) - COALESCE(w.amount, 0) AS balance
+                        COALESCE(SUM(md.commission), 0) - COALESCE(w.amount, 0) AS balance
                     FROM
                         member
-                        INNER JOIN subscription s ON s.member_id = member.id
+                        INNER JOIN member_deposit md ON md.member_id = member.id
                         LEFT JOIN (
                             SELECT
                                 member_id,
@@ -162,13 +162,12 @@ class Mdl_withdraw extends Model
     {
         try {
             $sql = "SELECT
-                    COALESCE(COUNT(r.id), 0) AS downline
-                FROM
-                    member m
-                    LEFT JOIN member r ON r.id_referral = m.id
-                    AND r.status = 'active'
-                WHERE
-                    m.id = ?";
+                        COALESCE(COUNT(1), 0) AS downline
+                    FROM
+                        member
+                    WHERE id_referral = 1
+                    AND status = 'active'
+                    AND is_delete = 0";
 
             $query = $this->db->query($sql, [$member_id])->getRow();
 
@@ -196,13 +195,21 @@ class Mdl_withdraw extends Model
     {
         try {
             $sql = "SELECT 
-                        requested_at,
-                        amount,
-                        status
-                    from
-                        withdraw
-                    where
-                        member_id = ?";
+                        w.requested_at as date,
+                        w.amount,
+                        CASE 
+                            WHEN w.jenis = 'trade' THEN 'Transfer to trade balance'
+                            WHEN w.jenis = 'balance' THEN 'Transfer to withdraw balance'
+                            ELSE CONCAT(w.jenis,' ',withdraw_type)
+                        END AS description,
+                        w.status
+                    FROM 
+                        withdraw w
+                    WHERE 
+                        w.member_id = 1
+                        AND w.status <> 'rejected'
+                    GROUP BY 
+                        w.jenis, w.status;";
 
             $query = $this->db->query($sql, [$member_id])->getResult();
 

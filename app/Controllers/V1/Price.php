@@ -16,16 +16,10 @@ class Price extends BaseController
 
     public function getIndex()
     {
-        $price = $this->setting->get('price');
-        $commission = $this->setting->get('commission');
-
-        if ($price->code != 200 || $commission->code != 200) {
-            return $this->respond(error_msg($price->code, "auth", "01", $price->message), $price->code);
-        }
-
         $mdata = [
-            'price' => $price->message,
-            'commission' => $commission->message
+            'price' => $this->setting->get('price')->message,
+            'cost'  => $this->setting->get('cost')->message,
+            'referral_fee' => $this->setting->get('referral_fee')->message
         ];
         return $this->respond(error_msg(200, "auth", null, $mdata), 200);
     }

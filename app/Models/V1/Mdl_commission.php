@@ -62,5 +62,62 @@ class Mdl_commission extends Model
             ];
         }
     }
-    
+
+    public function get_commission_byId($id_member)
+    {
+        try {
+            $sql = "SELECT 
+                        md.created_at as date,
+                        md.commission AS commission,
+                        CONCAT('referral commission from ', m.email) AS description,
+                        NULL AS status
+                    FROM 
+                        member_deposit md
+                    JOIN 
+                        member m ON md.member_id = m.id
+                    WHERE 
+                        m.id_referral = ?
+                        AND md.status = 'complete'
+                    
+                    UNION ALL
+                    
+                    SELECT 
+                        w.requested_at as date,
+                        w.amount AS commission,
+                        CASE 
+                            WHEN w.jenis = 'trade' THEN 'Transfer to trade balance'
+                            WHEN w.jenis = 'balance' THEN 'Transfer to withdraw balance'
+                            ELSE CONCAT(w.jenis,' ',withdraw_type)
+                        END AS description,
+                        w.status
+                    FROM 
+                        withdraw w
+                    WHERE 
+                        w.member_id = ?
+                        AND w.status <> 'rejected'
+                        AND w.withdraw_type='usdt'
+                    GROUP BY 
+                        w.jenis, w.status;";
+            $query = $this->db->query($sql, [$id_member,$id_member])->getResult();
+
+            if (!$query) {
+                return (object) [
+                    'code' => 200,
+                    'message' => 'No active downline members found.',
+                    'data'  => []
+                ];
+            }
+        } catch (\Throwable $th) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An unexpected error occurred. Please try again later.'
+            ];
+        }
+
+        return (object) [
+            'code' => 200,
+            'message' => 'Downline members retrieved successfully..',
+            'data'    => $query
+        ];
+    }    
 }

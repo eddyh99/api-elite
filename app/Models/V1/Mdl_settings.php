@@ -19,8 +19,6 @@ class Mdl_settings extends Model
     protected $table      = 'settings';
     protected $primaryKey = 'id';
 
-    protected $allowedFields = ['key', 'value'];
-
     protected $returnType = 'object';
     protected $useTimestamps = false;
 
