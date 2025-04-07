@@ -25,7 +25,6 @@ class Mdl_commission extends Model
 
     protected $returnType = 'array';
     protected $useTimestamps = true;
-
     
     public function add_balance($mdata) {
         try {
@@ -63,53 +62,30 @@ class Mdl_commission extends Model
         }
     }
 
+    public function getBalance_byId($id_member)
+    {
+        try {
+            $sql = "SELECT COALESCE(SUM(commission), 0) as balance FROM ({$this->getSql_commission()}) as all_commission";
+            $query = $this->db->query($sql, [$id_member, $id_member, $id_member])->getRow();
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An unexpected error occurred. Please try again later.' . $e
+            ];
+        }
+
+        return (object) [
+            'code' => 200,
+            'message' => $query,
+        ];
+    }
+
     public function get_commission_byId($id_member)
     {
         try {
-            $sql = "SELECT 
-                        md.created_at as date,
-                        md.commission AS commission,
-                        CONCAT('referral commission from ', m.email) AS description,
-                        NULL AS status
-                    FROM 
-                        member_deposit md
-                    JOIN 
-                        member m ON md.member_id = m.id
-                    WHERE 
-                        m.id_referral = ?
-                        AND md.status = 'complete'
-                    
-                    UNION ALL
-                    
-                    SELECT 
-                        w.requested_at as date,
-                        w.amount AS commission,
-                        CASE 
-                            WHEN w.jenis = 'trade' THEN 'Transfer to trade balance'
-                            WHEN w.jenis = 'balance' THEN 'Transfer to withdraw balance'
-                            ELSE CONCAT(w.jenis,' ',withdraw_type)
-                        END AS description,
-                        w.status
-                    FROM 
-                        withdraw w
-                    WHERE 
-                        w.member_id = ?
-                        AND w.status <> 'rejected'
-                        AND w.withdraw_type='usdt'
-                    GROUP BY 
-                        w.jenis, w.status
-                        
-                    UNION ALL
 
-                    SELECT
-                        ms.created_at as date,
-                        ms.amount as commission,
-                        CONCAT('trade commission from ', m.email) AS description,
-                        NULL as status
-                    FROM
-                        member_commission ms
-                        INNER JOIN member m ON m.id = ms.member_id
-                    WHERE ms.upline_id = ?";
+            $sql = $this->getSql_commission();
             $query = $this->db->query($sql, [$id_member,$id_member, $id_member])->getResult();
 
             if (!$query) {
@@ -131,5 +107,56 @@ class Mdl_commission extends Model
             'message' => 'Downline members retrieved successfully..',
             'data'    => $query
         ];
-    }    
+    } 
+    
+    protected function getSql_commission(): string
+{
+    return "SELECT 
+            md.created_at as date,
+            md.commission AS commission,
+            CONCAT('referral commission from ', m.email) AS description,
+            NULL AS status
+        FROM 
+            member_deposit md
+        JOIN 
+            member m ON md.member_id = m.id
+        WHERE 
+            m.id_referral = ?
+
+        UNION ALL
+
+        SELECT 
+            w.requested_at as date,
+            w.amount AS commission,
+            CASE 
+                WHEN w.jenis = 'trade' THEN 'Transfer to trade balance'
+                WHEN w.jenis = 'balance' THEN 'Transfer to withdraw balance'
+                ELSE CONCAT(w.jenis,' ',withdraw_type)
+            END AS description,
+            w.status
+        FROM 
+            withdraw w
+        WHERE 
+            w.member_id = ?
+            AND w.status <> 'rejected'
+            AND w.withdraw_type = 'usdt'
+        GROUP BY 
+            w.jenis, w.status
+
+        UNION ALL
+
+        SELECT
+            ms.created_at as date,
+            ms.amount as commission,
+            CONCAT('trade commission from ', m.email) AS description,
+            NULL as status
+        FROM
+            member_commission ms
+        INNER JOIN 
+            member m ON m.id = ms.member_id
+        WHERE 
+            ms.upline_id = ?
+    ";
+}
+
 }
