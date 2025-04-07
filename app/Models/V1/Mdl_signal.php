@@ -238,13 +238,13 @@ class Mdl_signal extends Model
                         s.status,
                         s.type,
                         s.entry_price,
-                        COALESCE(mr.alias, 'unknown') AS admin,
                         DATE(s.created_at) AS date,
                         TIME(s.created_at) AS time
                     FROM
                         sinyal s
-                        LEFT JOIN member_role mr ON mr.member_id = s.admin_id
-                    ORDER BY date DESC, time DESC";
+                    ORDER BY
+                        date DESC,
+                        time Desc";
             $query = $this->db->query($sql)->getResult();
 
             if (!$query) {
