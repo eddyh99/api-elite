@@ -44,5 +44,36 @@ class Mdl_wallet extends Model
             ];
         }
     }
+
+    public function getBalance_byIdMember($id_member) {
+        try {
+            $sql = "SELECT
+                        COALESCE((
+                            SELECT SUM(client_wallet)
+                            FROM wallet
+                            WHERE member_id = ?
+                        ), 0) -- wallet
+
+                        + COALESCE((
+                            SELECT SUM(amount)
+                            FROM withdraw
+                            WHERE member_id = ?
+                            AND jenis = 'trade'
+                        ), 0) -- trade
+                            AS balance"; 
+            $query = $this->db->query($sql, [$id_member, $id_member])->getRow();
+
+            return (object) [
+                'code' => 200,
+                'message' => $query
+            ];
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.'
+            ];
+        }
+    }
     
 }

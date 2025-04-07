@@ -19,7 +19,7 @@ class Mdl_withdraw extends Model
     protected $table      = 'withdraw';
     protected $primaryKey = 'id';
 
-    protected $allowedFields = ['member_id', 'withdraw_type', 'amount', 'payment_details', 'wallet_address', 'status', 'admin_notes'];
+    protected $allowedFields = ['member_id', 'withdraw_type', 'amount', 'jenis', 'payment_details', 'wallet_address', 'status', 'admin_notes'];
 
     protected $returnType = 'object';
     protected $useTimestamps = false;
@@ -206,10 +206,10 @@ class Mdl_withdraw extends Model
                     FROM 
                         withdraw w
                     WHERE 
-                        w.member_id = 1
+                        w.member_id = ?
                         AND w.status <> 'rejected'
                     GROUP BY 
-                        w.jenis, w.status;";
+                        w.jenis, w.status";
 
             $query = $this->db->query($sql, [$member_id])->getResult();
 

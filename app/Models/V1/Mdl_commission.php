@@ -25,7 +25,6 @@ class Mdl_commission extends Model
 
     protected $returnType = 'array';
     protected $useTimestamps = true;
-
     
     public function add_balance($mdata) {
         try {
@@ -63,42 +62,69 @@ class Mdl_commission extends Model
         }
     }
 
+    public function transfer($mdata) {
+        $id_member = $mdata['id_member'];
+        try {
+
+            $available_commission = $this->db->query($this->getSql_commission(), [$id_member, $id_member, $id_member])->getRow();
+
+            if(!$available_commission) {
+                return (object) [
+                    'code'    => 400,
+                    'message' => 'Failed to get available commission.'
+                ];
+            }
+
+            return (object) [
+                'code'    => 201,
+                'message' => 'Success: Commsission has been added.'
+            ];
+        } catch (\Exception $e) {
+            return (object) [
+                'code'    => 500,
+                'message' => 'An error occurred while processing.',
+                'error'   => $e->getMessage()
+            ];
+        }
+    }
+
+    public function getBalance_byId($id_member)
+    {
+        try {
+            $sql = "SELECT
+                        COALESCE(comm.total_commission, 0)
+                        - COALESCE(wd.transfered, 0) AS balance
+                    FROM (
+                        SELECT SUM(commission) AS total_commission
+                        FROM ({$this->getSql_commission()}) AS all_commission
+                    ) AS comm
+                    LEFT JOIN (
+                        SELECT SUM(amount) AS transfered
+                        FROM withdraw
+                        WHERE member_id = ? AND jenis IN ('balance', 'trade')
+                    ) AS wd ON 1 = 1";
+
+            $query = $this->db->query($sql, [$id_member, $id_member, $id_member, $id_member])->getRow();
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An unexpected error occurred. Please try again later.' . $e
+            ];
+        }
+
+        return (object) [
+            'code' => 200,
+            'message' => $query,
+        ];
+    }
+
     public function get_commission_byId($id_member)
     {
         try {
-            $sql = "SELECT 
-                        md.created_at as date,
-                        md.commission AS commission,
-                        CONCAT('referral commission from ', m.email) AS description,
-                        NULL AS status
-                    FROM 
-                        member_deposit md
-                    JOIN 
-                        member m ON md.member_id = m.id
-                    WHERE 
-                        m.id_referral = ?
-                        AND md.status = 'complete'
-                    
-                    UNION ALL
-                    
-                    SELECT 
-                        w.requested_at as date,
-                        w.amount AS commission,
-                        CASE 
-                            WHEN w.jenis = 'trade' THEN 'Transfer to trade balance'
-                            WHEN w.jenis = 'balance' THEN 'Transfer to withdraw balance'
-                            ELSE CONCAT(w.jenis,' ',withdraw_type)
-                        END AS description,
-                        w.status
-                    FROM 
-                        withdraw w
-                    WHERE 
-                        w.member_id = ?
-                        AND w.status <> 'rejected'
-                        AND w.withdraw_type='usdt'
-                    GROUP BY 
-                        w.jenis, w.status;";
-            $query = $this->db->query($sql, [$id_member,$id_member])->getResult();
+
+            $sql = $this->getSql_commission();
+            $query = $this->db->query($sql, [$id_member,$id_member, $id_member])->getResult();
 
             if (!$query) {
                 return (object) [
@@ -107,7 +133,7 @@ class Mdl_commission extends Model
                     'data'  => []
                 ];
             }
-        } catch (\Throwable $th) {
+        } catch (\Exception $e) {
             return (object) [
                 'code' => 500,
                 'message' => 'An unexpected error occurred. Please try again later.'
@@ -119,5 +145,56 @@ class Mdl_commission extends Model
             'message' => 'Downline members retrieved successfully..',
             'data'    => $query
         ];
-    }    
+    } 
+    
+    protected function getSql_commission(): string
+{
+    return "SELECT 
+            md.created_at as date,
+            md.commission AS commission,
+            CONCAT('referral commission from ', m.email) AS description,
+            NULL AS status
+        FROM 
+            member_deposit md
+        JOIN 
+            member m ON md.member_id = m.id
+        WHERE 
+            m.id_referral = ?
+
+        UNION ALL
+
+        SELECT 
+            w.requested_at as date,
+            w.amount AS commission,
+            CASE 
+                WHEN w.jenis = 'trade' THEN 'Transfer to trade balance'
+                WHEN w.jenis = 'balance' THEN 'Transfer to withdraw balance'
+                ELSE CONCAT(w.jenis,' ',withdraw_type)
+            END AS description,
+            w.status
+        FROM 
+            withdraw w
+        WHERE 
+            w.member_id = ?
+            AND w.status <> 'rejected'
+            AND w.withdraw_type = 'usdt'
+        GROUP BY 
+            w.jenis, w.status
+
+        UNION ALL
+
+        SELECT
+            ms.created_at as date,
+            ms.amount as commission,
+            CONCAT('trade commission from ', m.email) AS description,
+            NULL as status
+        FROM
+            member_commission ms
+        INNER JOIN 
+            member m ON m.id = ms.member_id
+        WHERE 
+            ms.upline_id = ?
+    ";
+}
+
 }

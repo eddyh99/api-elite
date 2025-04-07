@@ -16,6 +16,7 @@ class Member extends BaseController
         $this->deposit      = model('App\Models\V1\Mdl_deposit');
         $this->commission   = model('App\Models\V1\Mdl_commission');
         $this->withdraw     = model('App\Models\V1\Mdl_withdraw');
+        $this->wallet     = model('App\Models\V1\Mdl_wallet');
         $this->member_signal  = model('App\Models\V1\Mdl_member_signal');
     }
 
@@ -29,6 +30,44 @@ class Member extends BaseController
     {
         $result = $this->member->get_admin();
         return $this->respond(error_msg($result->code, "member", null, $result->message), $result->code);
+    }
+
+    public function getBalance()
+    {
+        $validation = $this->validation;
+        $validation->setRules([
+            'id_member' => [
+                'rules'  => 'required'
+            ],
+            'type' => [
+                'rules'  => 'required|in_list[trade,commission,fund]',
+            ]
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return $this->fail($validation->getErrors());
+        }
+
+        $data           = $this->request->getJSON();
+        $id_member      = $data->id_member;
+
+        switch ($data->type) {
+            case 'fund':
+                $result = $this->deposit->getBalance_byIdMember($id_member);
+                break;
+            case 'commission':
+                $result = $this->commission->getBalance_byId($id_member);
+                break;
+            case 'trade':
+                $result = $this->wallet->getBalance_byIdMember($id_member);
+                break;
+        }
+
+        if (empty($result) || $result->code != 200) {
+            return $this->respond(error_msg($result->code ?? 400, "balance", "01", $result->message ?? 'An error occurred'), $result->code ?? 400);
+        }
+
+        return $this->respond(error_msg(200, "balance", null, $result->message), 200);
     }
 
 
@@ -138,5 +177,49 @@ class Member extends BaseController
 
         return $this->respond(error_msg(200, "member", null, $result->data), 200);
     }
+
+    public function postTransfer_commission()
+    {
+        $validation = $this->validation;
+        $validation->setRules([
+            'id_member' => [
+                'rules'  => 'required'
+            ],
+            'destination' => [
+                'rules'  => 'required|in_list[trade,balance]',
+            ]
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return $this->fail($validation->getErrors());
+        }
+
+        $data           = $this->request->getJSON();
+    
+        $idMember = $data->id_member;
+        $destination = $data->destination;
+    
+        // Ambil balance commission
+        $commission = $this->commission->getBalance_byId($idMember);
+        if (!isset($commission->code) || $commission->code != 200) {
+            return $this->respond(error_msg(400, "commission", "01", 'Failed to get available commission'), 400);
+        }
+    
+        // Lanjut transfer
+        $mdata = [
+            'member_id' => $idMember,
+            'withdraw_type' => 'usdt',
+            'amount' => $commission->message->balance,
+            'jenis' => $destination
+        ];
+        $result = $this->withdraw->insert_withdraw($mdata);
+    
+        if (!isset($result->code) || $result->code != 201) {
+            return $this->respond(error_msg($result->code, "transfer", "01", $result->message), $result->code);
+        }
+    
+        return $this->respond(error_msg(201, "member", null, $result->message), 201);
+    }
+    
 
 }

@@ -105,23 +105,24 @@ class Mdl_deposit extends Model
     public function getBalance_byIdMember($id_member) {
         try {
             $sql = "SELECT
-                        SUM(ms.amount) + COALESCE(
-                            (
-                                SELECT
-                                    SUM(client_wallet)
-                                FROM
-                                    wallet w
-                                WHERE
-                                    w.member_id = ms.member_id
-                            ),
-                            0
-                        ) AS balance
-                    FROM
-                        member_deposit ms
-                    WHERE
-                        ms.status = 'complete'
-                        AND ms.member_id = ?";
-            $query = $this->db->query($sql, $id_member)->getRow();
+                    COALESCE((
+                        SELECT SUM(amount)
+                        FROM member_deposit
+                        WHERE status = 'complete' AND member_id = ?
+                    ), 0) -- deposit
+                    +
+                    COALESCE((
+                        SELECT SUM(amount)
+                        FROM withdraw
+                        WHERE member_id = ? AND jenis = 'balance'
+                    ), 0) -- balance
+                    -
+                    COALESCE((
+                        SELECT SUM(amount)
+                        FROM withdraw
+                        WHERE member_id = ? AND jenis = 'withdraw'
+                    ), 0) AS balance -- already withdrawn"; 
+            $query = $this->db->query($sql, [$id_member, $id_member, $id_member])->getRow();
 
             return (object) [
                 'code' => 200,
