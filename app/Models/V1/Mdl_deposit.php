@@ -105,7 +105,7 @@ class Mdl_deposit extends Model
     public function getBalance_byIdMember($id_member) {
         try {
             $sql = "SELECT
-                        SUM(ms.amount) + COALESCE(
+                        COALESCE(SUM(ms.amount), 0) + COALESCE(
                             (
                                 SELECT
                                     SUM(client_wallet)
