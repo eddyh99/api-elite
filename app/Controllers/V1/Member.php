@@ -16,6 +16,7 @@ class Member extends BaseController
         $this->deposit      = model('App\Models\V1\Mdl_deposit');
         $this->commission   = model('App\Models\V1\Mdl_commission');
         $this->withdraw     = model('App\Models\V1\Mdl_withdraw');
+        $this->wallet     = model('App\Models\V1\Mdl_wallet');
         $this->member_signal  = model('App\Models\V1\Mdl_member_signal');
     }
 
@@ -39,7 +40,7 @@ class Member extends BaseController
                 'rules'  => 'required'
             ],
             'type' => [
-                'rules'  => 'required|in_list[trade,referral,btc]',
+                'rules'  => 'required|in_list[trade,commission,fund]',
             ]
         ]);
 
@@ -51,14 +52,14 @@ class Member extends BaseController
         $id_member      = $data->id_member;
 
         switch ($data->type) {
-            case 'trade':
+            case 'fund':
                 $result = $this->deposit->getBalance_byIdMember($id_member);
                 break;
-            case 'referral':
+            case 'commission':
                 $result = $this->commission->getBalance_byId($id_member);
                 break;
-            case 'btc':
-                $result = $this->getAmount_btc($id_member);
+            case 'trade':
+                $result = $this->wallet->getBalance_byIdMember($id_member);
                 break;
         }
 

@@ -65,8 +65,20 @@ class Mdl_commission extends Model
     public function getBalance_byId($id_member)
     {
         try {
-            $sql = "SELECT COALESCE(SUM(commission), 0) as balance FROM ({$this->getSql_commission()}) as all_commission";
-            $query = $this->db->query($sql, [$id_member, $id_member, $id_member])->getRow();
+            $sql = "SELECT
+                        COALESCE(comm.total_commission, 0)
+                        - COALESCE(wd.transfered, 0) AS balance
+                    FROM (
+                        SELECT SUM(commission) AS total_commission
+                        FROM ({$this->getSql_commission()}) AS all_commission
+                    ) AS comm
+                    LEFT JOIN (
+                        SELECT SUM(amount) AS transfered
+                        FROM withdraw
+                        WHERE member_id = ? AND jenis IN ('balance', 'trade')
+                    ) AS wd ON 1 = 1";
+
+            $query = $this->db->query($sql, [$id_member, $id_member, $id_member, $id_member])->getRow();
 
         } catch (\Exception $e) {
             return (object) [
