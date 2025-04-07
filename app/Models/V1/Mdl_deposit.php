@@ -105,17 +105,18 @@ class Mdl_deposit extends Model
     public function getBalance_byIdMember($id_member) {
         try {
             $sql = "SELECT
-                        COALESCE(SUM(ms.amount), 0) + COALESCE(
-                            (
-                                SELECT
-                                    SUM(client_wallet)
-                                FROM
-                                    wallet w
-                                WHERE
-                                    w.member_id = ms.member_id
-                            ),
-                            0
-                        ) AS balance
+                        COALESCE(SUM(ms.amount), 0) +
+                        COALESCE((
+                            SELECT SUM(wl.client_wallet)
+                            FROM wallet wl
+                            WHERE wl.member_id = ms.member_id
+                        ), 0) +
+                        COALESCE((
+                            SELECT SUM(wd.amount)
+                            FROM withdraw wd
+                            WHERE wd.member_id = ms.member_id
+                            AND wd.jenis = 'trade'
+                        ), 0) AS balance
                     FROM
                         member_deposit ms
                     WHERE

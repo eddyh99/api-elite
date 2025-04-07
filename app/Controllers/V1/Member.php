@@ -31,6 +31,44 @@ class Member extends BaseController
         return $this->respond(error_msg($result->code, "member", null, $result->message), $result->code);
     }
 
+    public function getBalance()
+    {
+        $validation = $this->validation;
+        $validation->setRules([
+            'id_member' => [
+                'rules'  => 'required'
+            ],
+            'type' => [
+                'rules'  => 'required|in_list[trade,referral,btc]',
+            ]
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return $this->fail($validation->getErrors());
+        }
+
+        $data           = $this->request->getJSON();
+        $id_member      = $data->id_member;
+
+        switch ($data->type) {
+            case 'trade':
+                $result = $this->deposit->getBalance_byIdMember($id_member);
+                break;
+            case 'referral':
+                $result = $this->commission->getBalance_byId($id_member);
+                break;
+            case 'btc':
+                $result = $this->getAmount_btc($id_member);
+                break;
+        }
+
+        if (empty($result) || $result->code != 200) {
+            return $this->respond(error_msg($result->code ?? 400, "balance", "01", $result->message ?? 'An error occurred'), $result->code ?? 400);
+        }
+
+        return $this->respond(error_msg(200, "balance", null, $result->message), 200);
+    }
+
 
     // +++++++++++++++++
 
