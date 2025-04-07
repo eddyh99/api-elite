@@ -19,7 +19,7 @@ class Mdl_withdraw extends Model
     protected $table      = 'withdraw';
     protected $primaryKey = 'id';
 
-    protected $allowedFields = ['member_id', 'withdraw_type', 'amount', 'payment_details', 'wallet_address', 'status', 'admin_notes'];
+    protected $allowedFields = ['member_id', 'withdraw_type', 'amount', 'jenis', 'payment_details', 'wallet_address', 'status', 'admin_notes'];
 
     protected $returnType = 'object';
     protected $useTimestamps = false;

@@ -62,6 +62,32 @@ class Mdl_commission extends Model
         }
     }
 
+    public function transfer($mdata) {
+        $id_member = $mdata['id_member'];
+        try {
+
+            $available_commission = $this->db->query($this->getSql_commission(), [$id_member, $id_member, $id_member])->getRow();
+
+            if(!$available_commission) {
+                return (object) [
+                    'code'    => 400,
+                    'message' => 'Failed to get available commission.'
+                ];
+            }
+
+            return (object) [
+                'code'    => 201,
+                'message' => 'Success: Commsission has been added.'
+            ];
+        } catch (\Exception $e) {
+            return (object) [
+                'code'    => 500,
+                'message' => 'An error occurred while processing.',
+                'error'   => $e->getMessage()
+            ];
+        }
+    }
+
     public function getBalance_byId($id_member)
     {
         try {

@@ -178,4 +178,48 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "member", null, $result->data), 200);
     }
 
+    public function postTransfer_commission()
+    {
+        $validation = $this->validation;
+        $validation->setRules([
+            'id_member' => [
+                'rules'  => 'required'
+            ],
+            'destination' => [
+                'rules'  => 'required|in_list[trade,balance]',
+            ]
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return $this->fail($validation->getErrors());
+        }
+
+        $data           = $this->request->getJSON();
+    
+        $idMember = $data->id_member;
+        $destination = $data->destination;
+    
+        // Ambil balance commission
+        $commission = $this->commission->getBalance_byId($idMember);
+        if (!isset($commission->code) || $commission->code != 200) {
+            return $this->respond(error_msg(400, "commission", "01", 'Failed to get available commission'), 400);
+        }
+    
+        // Lanjut transfer
+        $mdata = [
+            'member_id' => $idMember,
+            'withdraw_type' => 'usdt',
+            'amount' => $commission->message->balance,
+            'jenis' => $destination
+        ];
+        $result = $this->withdraw->insert_withdraw($mdata);
+    
+        if (!isset($result->code) || $result->code != 201) {
+            return $this->respond(error_msg($result->code, "transfer", "01", $result->message), $result->code);
+        }
+    
+        return $this->respond(error_msg(201, "member", null, $result->message), 201);
+    }
+    
+
 }
