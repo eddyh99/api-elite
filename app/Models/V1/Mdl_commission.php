@@ -97,8 +97,20 @@ class Mdl_commission extends Model
                         AND w.status <> 'rejected'
                         AND w.withdraw_type='usdt'
                     GROUP BY 
-                        w.jenis, w.status;";
-            $query = $this->db->query($sql, [$id_member,$id_member])->getResult();
+                        w.jenis, w.status
+                        
+                    UNION ALL
+
+                    SELECT
+                        ms.created_at as date,
+                        ms.amount as commission,
+                        CONCAT('trade commission from ', m.email) AS description,
+                        NULL as status
+                    FROM
+                        member_commission ms
+                        INNER JOIN member m ON m.id = ms.member_id
+                    WHERE ms.upline_id = ?";
+            $query = $this->db->query($sql, [$id_member,$id_member, $id_member])->getResult();
 
             if (!$query) {
                 return (object) [
@@ -107,7 +119,7 @@ class Mdl_commission extends Model
                     'data'  => []
                 ];
             }
-        } catch (\Throwable $th) {
+        } catch (\Exception $e) {
             return (object) [
                 'code' => 500,
                 'message' => 'An unexpected error occurred. Please try again later.'
