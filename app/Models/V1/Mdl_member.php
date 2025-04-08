@@ -37,7 +37,6 @@ class Mdl_member extends Model
             $sql = "SELECT
                         member.role,
                         member.id,
-                        '-' AS subscription,
                         '0' AS initial_capital,
                         member.email,
                         member.refcode,
@@ -372,7 +371,7 @@ public function check_upline($id_member)
                         WHERE m.status = 'active' AND m.is_delete = FALSE
                     ) AS active_members,
                     
-                    0 AS free_members";
+                    0 AS referrals";
             
             $result = $this->db->query($sql)->getRow();
     
