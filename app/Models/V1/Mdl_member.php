@@ -37,49 +37,29 @@ class Mdl_member extends Model
             $sql = "SELECT
                         member.role,
                         member.id,
+                        '-' AS subscription,
+                        '0' AS initial_capital,
                         member.email,
                         member.refcode,
                         member.created_at,
                         member.status,
-                        s.start_date,
-                        s.end_date,
-                        COALESCE(s.initial_capital, 0) AS initial_capital,
                         COALESCE(COUNT(r.id), 0) AS referral
                     FROM
                         member
-                        LEFT JOIN (
-                            SELECT
-                                member_id,
-                                start_date,
-                                end_date,
-                                initial_capital
-                            FROM
-                                subscription
-                            WHERE
-                                (member_id, start_date) IN (
-                                    SELECT
-                                        member_id,
-                                        MAX(start_date)
-                                    FROM
-                                        subscription
-                                    GROUP BY
-                                        member_id
-                                )
-                        ) s ON s.member_id = member.id
-                        LEFT JOIN member r ON r.id_referral = member.id
+                    LEFT JOIN member r
+                        ON r.id_referral = member.id
                         AND r.status = 'active'
+                        AND r.is_delete = FALSE
                     WHERE
                         member.is_delete = FALSE
-                    AND
-                        member.role = 'member'
+                        AND member.role = 'member'
                     GROUP BY
+                        member.role,
                         member.id,
                         member.email,
                         member.refcode,
                         member.created_at,
-                        member.status,
-                        s.start_date,
-                        s.end_date";
+                        member.status";
 
          $query = $this->db->query($sql)->getResult();
 
@@ -370,28 +350,29 @@ public function check_upline($id_member)
         ];
     }
 
-    public function getMembership()
+    public function getStatistics()
     {
         try {
-            $sql =
-            "SELECT
-                        COUNT(DISTINCT m.id) AS total_members,
-                        SUM(
-                            CASE
-                                WHEN s.status = 'free' THEN 1
-                                ELSE 0
-                            END
-                        ) AS total_free_members,
-                        SUM(
-                            CASE
-                                WHEN s.status = 'active' THEN 1
-                                ELSE 0
-                            END
-                        ) AS total_subscriptions
-                    FROM
-                        member m
-                        LEFT JOIN subscription s ON s.member_id = m.id
-                    WHERE m.is_delete = false AND m.role = 'member'";
+            $sql = "SELECT
+                    (
+                        SELECT COALESCE(COUNT(DISTINCT m.id), 0)
+                        FROM member m
+                        WHERE m.status = 'active' AND m.is_delete = FALSE
+                    ) AS members,
+                    
+                    (
+                        SELECT COALESCE(COUNT(DISTINCT s.id), 0)
+                        FROM sinyal s
+                    ) AS signals,
+                    
+                    (
+                        SELECT COALESCE(COUNT(DISTINCT md.member_id), 0)
+                        FROM member_deposit md
+                        INNER JOIN member m ON m.id = md.member_id
+                        WHERE m.status = 'active' AND m.is_delete = FALSE
+                    ) AS active_members,
+                    
+                    0 AS free_members";
             
             $result = $this->db->query($sql)->getRow();
     

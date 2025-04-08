@@ -120,8 +120,8 @@ class Member extends BaseController
         return $this->respond(error_msg(201, "member", null, $result->message), 201);
     }
 
-    public function getGet_membership() {
-        $result = $this->member->getMembership();
+    public function getGet_statistics() {
+        $result = $this->member->getStatistics();
         if (@$result->code != 200) {
 			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
 		}
@@ -204,12 +204,17 @@ class Member extends BaseController
         if (!isset($commission->code) || $commission->code != 200) {
             return $this->respond(error_msg(400, "commission", "01", 'Failed to get available commission'), 400);
         }
+
+        $balance_commission =  $commission->message->balance;
+        if($balance_commission <= 0) {
+            return $this->respond(error_msg(400, "commission", "01", 'Insufficient balance'), 400);
+        }
     
         // Lanjut transfer
         $mdata = [
             'member_id' => $idMember,
             'withdraw_type' => 'usdt',
-            'amount' => $commission->message->balance,
+            'amount' => $balance_commission,
             'jenis' => $destination
         ];
         $result = $this->withdraw->insert_withdraw($mdata);
