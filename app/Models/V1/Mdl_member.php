@@ -353,21 +353,26 @@ public function check_upline($id_member)
     public function getStatistics()
     {
         try {
-            $sql =
-            "SELECT
-                (
-                    SELECT COALESCE(COUNT(DISTINCT m.id), 0)
-                    FROM member m
-                    WHERE m.status = 'active' AND m.is_delete = FALSE
-                ) AS members,
-                
-                (
-                    SELECT COALESCE(COUNT(DISTINCT s.id), 0)
-                    FROM sinyal s
-                ) AS sinyals,
-                
-                0 AS subscribers,
-                0 AS referrals";
+            $sql = "SELECT
+                    (
+                        SELECT COALESCE(COUNT(DISTINCT m.id), 0)
+                        FROM member m
+                        WHERE m.status = 'active' AND m.is_delete = FALSE
+                    ) AS members,
+                    
+                    (
+                        SELECT COALESCE(COUNT(DISTINCT s.id), 0)
+                        FROM sinyal s
+                    ) AS signals,
+                    
+                    (
+                        SELECT COALESCE(COUNT(DISTINCT md.member_id), 0)
+                        FROM member_deposit md
+                        INNER JOIN member m ON m.id = md.member_id
+                        WHERE m.status = 'active' AND m.is_delete = FALSE
+                    ) AS active_members,
+                    
+                    0 AS free_members";
             
             $result = $this->db->query($sql)->getRow();
     
