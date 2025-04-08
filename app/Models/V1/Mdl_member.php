@@ -37,49 +37,29 @@ class Mdl_member extends Model
             $sql = "SELECT
                         member.role,
                         member.id,
+                        '-' AS subscription,
+                        '0' AS initial_capital,
                         member.email,
                         member.refcode,
                         member.created_at,
                         member.status,
-                        s.start_date,
-                        s.end_date,
-                        COALESCE(s.initial_capital, 0) AS initial_capital,
                         COALESCE(COUNT(r.id), 0) AS referral
                     FROM
                         member
-                        LEFT JOIN (
-                            SELECT
-                                member_id,
-                                start_date,
-                                end_date,
-                                initial_capital
-                            FROM
-                                subscription
-                            WHERE
-                                (member_id, start_date) IN (
-                                    SELECT
-                                        member_id,
-                                        MAX(start_date)
-                                    FROM
-                                        subscription
-                                    GROUP BY
-                                        member_id
-                                )
-                        ) s ON s.member_id = member.id
-                        LEFT JOIN member r ON r.id_referral = member.id
+                    LEFT JOIN member r
+                        ON r.id_referral = member.id
                         AND r.status = 'active'
+                        AND r.is_delete = FALSE
                     WHERE
                         member.is_delete = FALSE
-                    AND
-                        member.role = 'member'
+                        AND member.role = 'member'
                     GROUP BY
+                        member.role,
                         member.id,
                         member.email,
                         member.refcode,
                         member.created_at,
-                        member.status,
-                        s.start_date,
-                        s.end_date";
+                        member.status";
 
          $query = $this->db->query($sql)->getResult();
 
