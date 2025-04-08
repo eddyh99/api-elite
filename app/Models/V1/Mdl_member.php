@@ -350,28 +350,24 @@ public function check_upline($id_member)
         ];
     }
 
-    public function getMembership()
+    public function getStatistics()
     {
         try {
             $sql =
             "SELECT
-                        COUNT(DISTINCT m.id) AS total_members,
-                        SUM(
-                            CASE
-                                WHEN s.status = 'free' THEN 1
-                                ELSE 0
-                            END
-                        ) AS total_free_members,
-                        SUM(
-                            CASE
-                                WHEN s.status = 'active' THEN 1
-                                ELSE 0
-                            END
-                        ) AS total_subscriptions
-                    FROM
-                        member m
-                        LEFT JOIN subscription s ON s.member_id = m.id
-                    WHERE m.is_delete = false AND m.role = 'member'";
+                (
+                    SELECT COALESCE(COUNT(DISTINCT m.id), 0)
+                    FROM member m
+                    WHERE m.status = 'active' AND m.is_delete = FALSE
+                ) AS members,
+                
+                (
+                    SELECT COALESCE(COUNT(DISTINCT s.id), 0)
+                    FROM sinyal s
+                ) AS sinyals,
+                
+                0 AS subscribers,
+                0 AS referrals";
             
             $result = $this->db->query($sql)->getRow();
     
