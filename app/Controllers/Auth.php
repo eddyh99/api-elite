@@ -66,7 +66,7 @@ class Auth extends BaseController
 			"email"     => trim($data->email),
 			"passwd"    => trim($data->password),
 			"role"		=> trim($data->role),
-			"status"	=> $data->role != 'member' ? 'active' : 'new',
+			"status"	=> $data->status ? $data->status : ($data->role != 'member' ? 'active' : 'new'),
 			"timezone"  => $data->timezone,
 			'ip_addr'	=> $data->ip_address
 		);

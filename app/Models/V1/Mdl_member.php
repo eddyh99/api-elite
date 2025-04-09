@@ -76,7 +76,7 @@ class Mdl_member extends Model
                                 FROM withdraw w
                                 WHERE w.member_id = m.id AND w.jenis = 'withdraw'
                             ), 0)
-                        ) AS inital_capital,
+                        ) AS initial_capital,
 
                         -- Jumlah referral aktif
                         COALESCE(COUNT(r.id), 0) AS referral
