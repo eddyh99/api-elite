@@ -85,7 +85,7 @@ class Mdl_member extends Model
 
                     LEFT JOIN member r
                         ON r.id_referral = m.id
-                        AND r.status = 'active'
+                         AND r.status IN ('active', 'referral')
                         AND r.is_delete = FALSE
 
                     WHERE
@@ -531,6 +531,51 @@ public function check_upline($id_member)
                     'code' => 200,
                     'message' => 'No active downline members found.',
                     'data'  => []
+                ];
+            }
+        } catch (\Throwable $th) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An unexpected error occurred. Please try again later.'
+            ];
+        }
+
+        return (object) [
+            'code' => 200,
+            'message' => 'Downline members retrieved successfully..',
+            'data'    => $query
+        ];
+    }
+
+    
+    public function get_referral_member()
+    {
+        try {
+            $sql = "SELECT
+                        m.id,
+                        m.email,
+                        m.refcode,
+                        0 as commission,
+                        COALESCE(COUNT(r.id), 0) AS referral,
+                        'elite' as product
+                    FROM
+                        member m
+                        LEFT JOIN member r ON r.id_referral = m.id
+                        AND r.status IN ('active', 'referral')
+                        AND r.is_delete = FALSE
+                    WHERE
+                        m.is_delete = FALSE
+                        AND m.role = 'member'
+                        AND m.status = 'referral'
+                    GROUP BY
+                        m.role, m.id, m.email,
+                        m.refcode, m.created_at, m.status";
+            $query = $this->db->query($sql)->getResult();
+
+            if (!$query) {
+                return (object) [
+                    'code' => 200,
+                    'message' => [],
                 ];
             }
         } catch (\Throwable $th) {
