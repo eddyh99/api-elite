@@ -167,6 +167,16 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "member", null, $result->data), 200);
     }
 
+    public function getReferralmember() {
+        $result = $this->member->get_referral_member();
+
+        if (@$result->code != 200) {
+            return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
+        }
+
+        return $this->respond(error_msg(200, "member", null, $result->data), 200);
+    }
+
     public function getList_commission() {
         $id_member = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
         $result = $this->commission->get_commission_byId($id_member);
