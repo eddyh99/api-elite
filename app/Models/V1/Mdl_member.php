@@ -396,7 +396,7 @@ public function check_upline($id_member)
                     (
                         SELECT COALESCE(COUNT(DISTINCT m.id), 0)
                         FROM member m
-                        WHERE m.status = 'active' AND m.is_delete = FALSE
+                        WHERE m.status != 'disabled' AND m.is_delete = FALSE
                     ) AS members,
                     
                     (
@@ -408,10 +408,15 @@ public function check_upline($id_member)
                         SELECT COALESCE(COUNT(DISTINCT md.member_id), 0)
                         FROM member_deposit md
                         INNER JOIN member m ON m.id = md.member_id
-                        WHERE m.status = 'active' AND m.is_delete = FALSE
+                       WHERE m.status IN ('active', 'referral') AND m.is_delete = FALSE
                     ) AS active_members,
                     
-                    0 AS referrals";
+                    (
+                        SELECT COALESCE(COUNT(DISTINCT md.member_id), 0)
+                        FROM member_deposit md
+                        INNER JOIN member m ON m.id = md.member_id
+                        WHERE m.status = 'referral' AND m.is_delete = FALSE
+                    ) AS referrals";
             
             $result = $this->db->query($sql)->getRow();
     
