@@ -35,33 +35,72 @@ class Mdl_member extends Model
         try {
 
             $sql = "SELECT
-                        member.role,
-                        member.id,
-                        '-' AS subscription,
-                        '0' AS initial_capital,
-                        member.email,
-                        member.refcode,
-                        member.created_at,
-                        member.status,
+                        m.role,
+                        m.id,
+                        m.email,
+                        m.refcode,
+                        m.created_at,
+                        m.status,
+
+                        -- Total capital member
+                        (
+                        -- from trade balance
+                            COALESCE((
+                                SELECT SUM(client_wallet)
+                                FROM wallet w
+                                WHERE w.member_id = m.id
+                            ), 0)
+                            +
+                            COALESCE((
+                                SELECT SUM(amount)
+                                FROM withdraw w
+                                WHERE w.member_id = m.id AND w.jenis = 'trade'
+                            ), 0)
+                            +
+                            COALESCE((
+                                SELECT SUM(amount)
+                                FROM member_deposit d
+                                WHERE d.member_id = m.id AND d.status = 'complete'
+                            ), 0)
+
+                            -- from fund balance
+                            +
+                            COALESCE((
+                                SELECT SUM(amount)
+                                FROM withdraw w
+                                WHERE w.member_id = m.id AND w.jenis = 'balance'
+                            ), 0)
+                            -
+                            COALESCE((
+                                SELECT SUM(amount)
+                                FROM withdraw w
+                                WHERE w.member_id = m.id AND w.jenis = 'withdraw'
+                            ), 0)
+                        ) AS inital_capital,
+
+                        -- Jumlah referral aktif
                         COALESCE(COUNT(r.id), 0) AS referral
-                    FROM
-                        member
+
+                    FROM member m
+
                     LEFT JOIN member r
-                        ON r.id_referral = member.id
+                        ON r.id_referral = m.id
                         AND r.status = 'active'
                         AND r.is_delete = FALSE
-                    WHERE
-                        member.is_delete = FALSE
-                        AND member.role = 'member'
-                    GROUP BY
-                        member.role,
-                        member.id,
-                        member.email,
-                        member.refcode,
-                        member.created_at,
-                        member.status";
 
-         $query = $this->db->query($sql)->getResult();
+                    WHERE
+                        m.is_delete = FALSE
+                        AND m.role = 'member'
+
+                    GROUP BY
+                        m.role,
+                        m.id,
+                        m.email,
+                        m.refcode,
+                        m.created_at,
+                        m.status";
+                        
+            $query = $this->db->query($sql)->getResult();
 
             if (!$query) {
                 return (object) [
@@ -357,7 +396,7 @@ public function check_upline($id_member)
                     (
                         SELECT COALESCE(COUNT(DISTINCT m.id), 0)
                         FROM member m
-                        WHERE m.status = 'active' AND m.is_delete = FALSE
+                        WHERE m.status != 'disabled' AND m.is_delete = FALSE
                     ) AS members,
                     
                     (
@@ -369,10 +408,15 @@ public function check_upline($id_member)
                         SELECT COALESCE(COUNT(DISTINCT md.member_id), 0)
                         FROM member_deposit md
                         INNER JOIN member m ON m.id = md.member_id
-                        WHERE m.status = 'active' AND m.is_delete = FALSE
+                       WHERE m.status IN ('active', 'referral') AND m.is_delete = FALSE
                     ) AS active_members,
                     
-                    0 AS free_members";
+                    (
+                        SELECT COALESCE(COUNT(DISTINCT md.member_id), 0)
+                        FROM member_deposit md
+                        INNER JOIN member m ON m.id = md.member_id
+                        WHERE m.status = 'referral' AND m.is_delete = FALSE
+                    ) AS referrals";
             
             $result = $this->db->query($sql)->getRow();
     
