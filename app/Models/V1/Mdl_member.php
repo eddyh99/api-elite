@@ -197,11 +197,14 @@ class Mdl_member extends Model
             $member->insert($data);
             $id     = $this->db->insertID();
 
-            $mdata = array(
-                "refcode"   => substr($this->generate_token($id),0,8),
-            );
-            $member->where("id", $id);
-            $member->update($mdata);
+            if(!$data['refcode']) {
+                $mdata = array(
+                    "refcode"   => substr($this->generate_token($id),0,8),
+                );
+                $member->where("id", $id);
+                $member->update($mdata);
+            }
+
             return (object) [
                 'success'  => true,
                 'message' => 'User registered successfully'
@@ -210,7 +213,7 @@ class Mdl_member extends Model
             return (object) [
                 'success'  => false,
                 'code'    => $e->getCode(),
-                'message' => 'An error occurred.'
+                'message' => 'An error occurred.' .$e
             ];
         }
     }

@@ -68,6 +68,7 @@ class Auth extends BaseController
 			"role"		=> trim($data->role),
 			"status"	=> $data->status ? $data->status : ($data->role != 'member' ? 'active' : 'new'),
 			"timezone"  => $data->timezone,
+			"refcode"	=> $data->refcode ?? null,
 			'ip_addr'	=> $data->ip_address
 		);
 
