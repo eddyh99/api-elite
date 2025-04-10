@@ -175,7 +175,7 @@ class Mdl_member extends Model
             ];
         }
     
-        if ($query->status !== 'active') {
+        if (in_array($query->status, ['disabled', 'new'], true)) {
             return (object) [
                 "code"    => "400",
                 "message" => "Your account has not been activated"

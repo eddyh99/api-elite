@@ -82,6 +82,17 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "member", null, $result->message), 200);
     }
 
+    public function getHistory_trade() {
+        $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
+        $result = $this->member_signal->history($member_id);
+
+        if (@$result->code != 200) {
+			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
+		}
+
+        return $this->respond(error_msg(200, "member", null, $result->message), 200);
+    }
+
 
     // +++++++++++++++++
 
