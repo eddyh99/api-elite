@@ -173,16 +173,21 @@ class Mdl_deposit extends Model
     public function history($id_member) {
         try {
             // Update status berdasarkan email member
-            $sql = "SELECT
-                        created_at as date,
-                        amount as capital,
-                        0 as payment_amount,
-                        status
+            $commission = new Mdl_commission();
+            $sql = $commission->query_commission();
+
+            $sql .= "UNION ALL 
+                    SELECT
+                        md.created_at as date,
+                        md.amount AS commission,
+                        CONCAT('deposit') AS description,
+                        md.status
                     FROM
-                        member_deposit
-                    WHERE member_id = ?";
-    
-        $query = $this->db->query($sql, [$id_member])->getResult();
+                        member_deposit md
+                        JOIN member m ON md.member_id = m.id
+                    WHERE
+                        md.member_id = ?";
+            $query = $this->db->query($sql, [$id_member,$id_member, $id_member, $id_member])->getResult();
 
         if(!$query) {
             return (object) array(
@@ -194,7 +199,7 @@ class Mdl_deposit extends Model
         } catch (\Exception $e) {
             return (object) array(
                 "code"    => 500,
-                "message" => "An unexpected server error occurred"
+                "message" => "An unexpected server error occurred" .$e
             );
         }
     

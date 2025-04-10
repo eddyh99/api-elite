@@ -147,7 +147,7 @@ class Mdl_commission extends Model
         ];
     } 
     
-    protected function getSql_commission(): string
+    private function getSql_commission(): string
 {
     return "SELECT 
             md.created_at as date,
@@ -197,4 +197,9 @@ class Mdl_commission extends Model
     ";
 }
 
+
+    public function query_commission()
+    {
+        return $this->getSql_commission();
+    }
 }
