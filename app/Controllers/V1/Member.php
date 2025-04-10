@@ -32,7 +32,7 @@ class Member extends BaseController
         return $this->respond(error_msg($result->code, "member", null, $result->message), $result->code);
     }
 
-    public function getBalance()
+    public function postBalance()
     {
         $validation = $this->validation;
         $validation->setRules([
@@ -238,7 +238,7 @@ class Member extends BaseController
             return $this->respond(error_msg(400, "commission", "01", 'Failed to get available commission'), 400);
         }
 
-        $balance_commission =  $commission->message->balance;
+        $balance_commission =  $commission->message->usdt;
         if($balance_commission <= 0) {
             return $this->respond(error_msg(400, "commission", "01", 'Insufficient balance'), 400);
         }

@@ -102,4 +102,40 @@ class Withdraw extends BaseController
 
         return $this->respond(error_msg(200, "withdraw", null, $result->data), 200);
     }
+
+    public function postTransfer_balance() {
+        $validation = $this->validation;
+        $validation->setRules([
+            'id_member' => [
+                'rules'  => 'required'
+            ],
+            'destination' => [
+                'rules'  => 'required|in_list[trade,fund]',
+            ],
+            'amount' => [
+                'rules' => 'required'
+            ]
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return $this->fail($validation->getErrors());
+        }
+
+        $data           = $this->request->getJSON();
+
+        $mdata = [
+            'member_id' => $data->id_member,
+            'withdraw_type' => $data->destination == 'fund' ? 'fiat' : 'usdt',
+            'amount' => $data->amount ?? 0,
+            'jenis' => $data->destination == 'fund' ? 'balance' : 'trade'
+
+        ];
+        $result = $this->withdraw->insert_withdraw($mdata);
+
+        if (@$result->code != 201) {
+			return $this->respond(error_msg($result->code, "transfer", "01", $result->message), $result->code);
+		}
+
+        return $this->respond(error_msg(201, "transfer", null, $result->message), 201);
+    }
 }

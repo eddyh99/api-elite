@@ -59,9 +59,16 @@ class Mdl_wallet extends Model
                             FROM withdraw
                             WHERE member_id = ?
                             AND jenis = 'trade'
-                        ), 0) -- trade
-                            AS balance"; 
-            $query = $this->db->query($sql, [$id_member, $id_member])->getRow();
+                        ) 
+                        - COALESCE((
+                            SELECT SUM(amount)
+                            FROM withdraw
+                            WHERE member_id = ?
+                            AND jenis = 'balance' AND withdraw_type = 'fiat'
+                        ), 0) , 0) -- trade
+                            AS usdt,
+                        0 as btc"; 
+            $query = $this->db->query($sql, [$id_member, $id_member, $id_member])->getRow();
 
             return (object) [
                 'code' => 200,
