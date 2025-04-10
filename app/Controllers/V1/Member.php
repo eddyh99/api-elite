@@ -71,6 +71,18 @@ class Member extends BaseController
     }
 
 
+    public function getHistory_deposit() {
+        $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
+        $result = $this->deposit->history($member_id);
+
+        if (@$result->code != 200) {
+			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
+		}
+
+        return $this->respond(error_msg(200, "member", null, $result->message), 200);
+    }
+
+
     // +++++++++++++++++
 
     public function getHistory_payment() {
@@ -87,7 +99,7 @@ class Member extends BaseController
     public function getReferral_summary()
     {
         $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
-        $commission = $this->withdraw->getAvailable_commission($member_id);
+        $commission = $this->commission->getBalance_byId($member_id);
         $referral = $this->withdraw->get_downline($member_id);
 
         if (in_array(500, [$commission->code, $referral->code]) || !$member_id) {
@@ -96,7 +108,7 @@ class Member extends BaseController
 
         $mdata = [
             'referral' => $referral->data->downline,
-            'commission' => $commission->data->balance,
+            'commission' => $commission->message->balance,
         ];
 
         return $this->respond(error_msg(200, "member", null, $mdata), 200);

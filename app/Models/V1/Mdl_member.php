@@ -526,7 +526,7 @@ public function check_upline($id_member)
                         
                     WHERE id_referral = ? 
                         AND is_delete = 0 
-                        AND status = 'active'";
+                        AND status IN ('active', 'referral')";
             $query = $this->db->query($sql, [$id_member])->getResult();
 
             if (!$query) {
