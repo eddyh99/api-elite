@@ -76,7 +76,7 @@ class Mdl_member extends Model
                                 FROM withdraw w
                                 WHERE w.member_id = m.id AND w.jenis = 'withdraw'
                             ), 0)
-                        ) AS inital_capital,
+                        ) AS initial_capital,
 
                         -- Jumlah referral aktif
                         COALESCE(COUNT(r.id), 0) AS referral
@@ -175,7 +175,7 @@ class Mdl_member extends Model
             ];
         }
     
-        if ($query->status !== 'active') {
+        if (in_array($query->status, ['disabled', 'new'], true)) {
             return (object) [
                 "code"    => "400",
                 "message" => "Your account has not been activated"
@@ -197,11 +197,14 @@ class Mdl_member extends Model
             $member->insert($data);
             $id     = $this->db->insertID();
 
-            $mdata = array(
-                "refcode"   => substr($this->generate_token($id),0,8),
-            );
-            $member->where("id", $id);
-            $member->update($mdata);
+            if(!$data['refcode']) {
+                $mdata = array(
+                    "refcode"   => substr($this->generate_token($id),0,8),
+                );
+                $member->where("id", $id);
+                $member->update($mdata);
+            }
+
             return (object) [
                 'success'  => true,
                 'message' => 'User registered successfully'
@@ -210,7 +213,7 @@ class Mdl_member extends Model
             return (object) [
                 'success'  => false,
                 'code'    => $e->getCode(),
-                'message' => 'An error occurred.'
+                'message' => 'An error occurred.' .$e
             ];
         }
     }
@@ -523,7 +526,7 @@ public function check_upline($id_member)
                         
                     WHERE id_referral = ? 
                         AND is_delete = 0 
-                        AND status = 'active'";
+                        AND status IN ('active', 'referral')";
             $query = $this->db->query($sql, [$id_member])->getResult();
 
             if (!$query) {

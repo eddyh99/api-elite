@@ -167,6 +167,46 @@ class Mdl_deposit extends Model
             "code"    => 201,
             "message" => "Deposit has been updated successfully"
         );
-    }    
+    }  
+    
+        
+    public function history($id_member) {
+        try {
+            // Update status berdasarkan email member
+            $commission = new Mdl_commission();
+            $sql = $commission->query_commission();
+
+            $sql .= "UNION ALL 
+                    SELECT
+                        md.created_at as date,
+                        md.amount AS commission,
+                        CONCAT('deposit') AS description,
+                        md.status
+                    FROM
+                        member_deposit md
+                        JOIN member m ON md.member_id = m.id
+                    WHERE
+                        md.member_id = ?";
+            $query = $this->db->query($sql, [$id_member,$id_member, $id_member, $id_member])->getResult();
+
+        if(!$query) {
+            return (object) array(
+                "code"    => 200,
+                "message" => []
+            );
+        }
+
+        } catch (\Exception $e) {
+            return (object) array(
+                "code"    => 500,
+                "message" => "An unexpected server error occurred" .$e
+            );
+        }
+    
+        return (object) array(
+            "code"    => 200,
+            "message" => $query
+        );
+    }   
     
 }

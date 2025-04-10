@@ -116,47 +116,47 @@ class Mdl_withdraw extends Model
         ];
     }
 
-    public function getAvailable_commission($member_id) {
-        try {
+    // public function getAvailable_commission($member_id) {
+    //     try {
 
-            $sql = "SELECT
-                        COALESCE(SUM(md.commission), 0) - COALESCE(w.amount, 0) AS balance
-                    FROM
-                        member
-                        INNER JOIN member_deposit md ON md.member_id = member.id
-                        LEFT JOIN (
-                            SELECT
-                                member_id,
-                                SUM(amount) AS amount
-                            FROM
-                                withdraw
-                            GROUP BY
-                                member_id
-                        ) w ON w.member_id = member.id_referral
-                    WHERE
-                        member.id_referral = ?";
-        $query = $this->db->query($sql, [$member_id])->getRow();
-        if (!$query) {
-            return (object) [
-                'code'    => 404,
-                'message' => 'No commission data found for this member.',
-                'data'    => $query
-            ];
-        }
+    //         $sql = "SELECT
+    //                     COALESCE(SUM(md.commission), 0) - COALESCE(w.amount, 0) AS balance
+    //                 FROM
+    //                     member
+    //                     INNER JOIN member_deposit md ON md.member_id = member.id
+    //                     LEFT JOIN (
+    //                         SELECT
+    //                             member_id,
+    //                             SUM(amount) AS amount
+    //                         FROM
+    //                             withdraw
+    //                         GROUP BY
+    //                             member_id
+    //                     ) w ON w.member_id = member.id_referral
+    //                 WHERE
+    //                     member.id_referral = ?";
+    //     $query = $this->db->query($sql, [$member_id])->getRow();
+    //     if (!$query) {
+    //         return (object) [
+    //             'code'    => 404,
+    //             'message' => 'No commission data found for this member.',
+    //             'data'    => $query
+    //         ];
+    //     }
 
-        } catch (\Throwable $th) {
-            return (object) [
-                'code'    => 500,
-                'message' => 'An error occurred'
-            ];
-        }
+    //     } catch (\Throwable $th) {
+    //         return (object) [
+    //             'code'    => 500,
+    //             'message' => 'An error occurred'
+    //         ];
+    //     }
 
-        return (object) [
-            "code"    => 200,
-            "message"    => "Commission data retrieved successfully.",
-            "data"    => $query
-        ];
-    }
+    //     return (object) [
+    //         "code"    => 200,
+    //         "message"    => "Commission data retrieved successfully.",
+    //         "data"    => $query
+    //     ];
+    // }
 
     public function get_downline($member_id)
     {
@@ -165,9 +165,9 @@ class Mdl_withdraw extends Model
                         COALESCE(COUNT(1), 0) AS downline
                     FROM
                         member
-                    WHERE id_referral = 1
-                    AND status = 'active'
-                    AND is_delete = 0";
+                    WHERE id_referral = ?
+                    AND status IN ('active', 'referral')
+                    AND is_delete = FALSE";
 
             $query = $this->db->query($sql, [$member_id])->getRow();
 

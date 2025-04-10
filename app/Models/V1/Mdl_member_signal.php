@@ -77,5 +77,40 @@ class Mdl_member_signal extends Model
             ];
         }
     }
+
+    public function history($id_member) {
+        try {
+            $sql = "SELECT
+                        s.created_at as date,
+                        s.entry_price,
+                        ms.amount_btc,
+                        0 as usdt,
+                        SUBSTRING_INDEX(type, ' ', 1) AS position
+                    FROM
+                        member_sinyal ms
+                        INNER JOIN sinyal s ON s.id = ms.sinyal_id
+                    WHERE
+                        ms.member_id = ?";
+            $query = $this->db->query($sql, [$id_member])->getResult();
+
+            if(!$query) {
+                return (object) [
+                    'code' => 200,
+                    'message' => []
+                ];
+            }
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.'
+            ];
+        }
+
+        return (object) [
+            'code' => 200,
+            'message' => $query
+        ];
+    }
     
 }
