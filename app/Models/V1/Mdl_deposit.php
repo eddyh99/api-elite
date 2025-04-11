@@ -120,8 +120,10 @@ class Mdl_deposit extends Model
                     COALESCE((
                         SELECT SUM(amount)
                         FROM withdraw
-                        WHERE member_id = ? AND jenis = 'withdraw'
-                    ), 0) AS balance -- already withdrawn"; 
+                        WHERE member_id = ? AND jenis IN ('withdraw', 'trade')
+                    ), 0) AS usdt, -- already withdrawn
+                    
+                    0 as btc"; 
             $query = $this->db->query($sql, [$id_member, $id_member, $id_member])->getRow();
 
             return (object) [
@@ -173,10 +175,11 @@ class Mdl_deposit extends Model
     public function history($id_member) {
         try {
             // Update status berdasarkan email member
-            $commission = new Mdl_commission();
-            $sql = $commission->query_commission();
+            // $commission = new Mdl_commission();
+            // $sql = $commission->query_commission();
+            $sql = '';
 
-            $sql .= "UNION ALL 
+            $sql .= "-- UNION ALL
                     SELECT
                         md.created_at as date,
                         md.amount AS commission,
@@ -187,7 +190,7 @@ class Mdl_deposit extends Model
                         JOIN member m ON md.member_id = m.id
                     WHERE
                         md.member_id = ?";
-            $query = $this->db->query($sql, [$id_member,$id_member, $id_member, $id_member])->getResult();
+            $query = $this->db->query($sql, [$id_member])->getResult();
 
         if(!$query) {
             return (object) array(
