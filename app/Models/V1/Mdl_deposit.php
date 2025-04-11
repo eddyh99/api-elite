@@ -120,8 +120,10 @@ class Mdl_deposit extends Model
                     COALESCE((
                         SELECT SUM(amount)
                         FROM withdraw
-                        WHERE member_id = ? AND jenis IN ('withdraw', 'trade')
-                    ), 0) AS usdt, -- already withdrawn
+                        WHERE member_id = ? AND (
+                            (jenis = 'withdraw' AND status = 'completed')
+                            OR jenis = 'trade'
+                        )), 0) AS usdt, -- already withdrawn
                     
                     0 as btc"; 
             $query = $this->db->query($sql, [$id_member, $id_member, $id_member])->getRow();

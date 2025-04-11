@@ -40,7 +40,7 @@ class Mdl_withdraw extends Model
         } catch (\Exception $e) {
             return (object) [
                 'code'    => 500,
-                'message' => 'Withdrawal request failed. Please try again later.'
+                'message' => 'Withdrawal request failed. Please try again later.' .$e
             ];
         }
 
@@ -210,6 +210,43 @@ class Mdl_withdraw extends Model
                         AND w.status <> 'rejected'
                     GROUP BY 
                         w.jenis, w.status";
+
+            $query = $this->db->query($sql, [$member_id])->getResult();
+
+            if (!$query) {
+                return (object) [
+                    'code'    => 200,
+                    'message' => 'Withdraw history not found',
+                    'data'    => []
+                ];
+            }
+        } catch (Exception $e) {
+            return (object) [
+                'code'    => 500,
+                'message' => 'An error occurred'
+            ];
+        }
+        return (object) [
+            "code"    => 200,
+            "message"    => 'Withdraw history retrieved successfully',
+            "data"    => $query
+        ];
+    }
+
+    public function history_payment($member_id)
+    {
+        try {
+            $sql = "SELECT 
+                        w.requested_at as date,
+                        w.amount,
+                        CONCAT(w.jenis,' ',withdraw_type) AS description,
+                        w.wallet_address,
+                        w.status
+                    FROM 
+                        withdraw w
+                    WHERE 
+                        w.member_id = ?
+                        AND w.status <> 'rejected' AND w.jenis = 'withdraw'";
 
             $query = $this->db->query($sql, [$member_id])->getResult();
 
