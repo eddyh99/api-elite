@@ -119,7 +119,7 @@ class Member extends BaseController
 
         $mdata = [
             'referral' => $referral->data->downline,
-            'commission' => $commission->message->balance,
+            'commission' => $commission->message->usdt,
         ];
 
         return $this->respond(error_msg(200, "member", null, $mdata), 200);
