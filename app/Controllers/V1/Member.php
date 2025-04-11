@@ -98,7 +98,7 @@ class Member extends BaseController
 
     public function getHistory_payment() {
         $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
-        $result = $this->withdraw->history($member_id);
+        $result = $this->withdraw->history_payment($member_id);
 
         if (@$result->code != 200) {
 			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
@@ -119,7 +119,7 @@ class Member extends BaseController
 
         $mdata = [
             'referral' => $referral->data->downline,
-            'commission' => $commission->message->balance,
+            'commission' => $commission->message->usdt,
         ];
 
         return $this->respond(error_msg(200, "member", null, $mdata), 200);

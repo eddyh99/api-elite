@@ -168,7 +168,7 @@ class Mdl_commission extends Model
             w.amount AS commission,
             CASE 
                 WHEN w.jenis = 'trade' THEN 'Transfer to trade balance'
-                WHEN w.jenis = 'balance' THEN 'Transfer to withdraw balance'
+                WHEN w.jenis = 'balance' THEN 'Transfer to fund balance'
                 ELSE CONCAT(w.jenis,' ',withdraw_type)
             END AS description,
             w.status

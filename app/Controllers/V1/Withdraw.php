@@ -21,17 +21,13 @@ class Withdraw extends BaseController
         $data = $this->request->getJSON(true);
         $wallet = $data['wallet_address'] ?? null;
         $details = array_diff_key($data, array_flip(['amount', 'wallet_address', 'member_id', 'type']));
-        $amount = $this->withdraw->getAvailable_commission($data['member_id'])->data;
-
-        if ($amount->balance <= 0) {
-			return $this->respond(error_msg(400, "withdraw", "01", "Insufficient balance."), 400);
-		}
 
         $mdata = [
             'member_id' => $data['member_id'],
             'withdraw_type' => $data['type'],
-            'amount' => $amount->balance,
+            'amount' => $data['amount'],
             'wallet_address' => $wallet,
+            'jenis' => 'withdraw',
             'payment_details' => json_encode($details)
 
         ];
