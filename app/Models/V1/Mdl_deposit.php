@@ -121,7 +121,7 @@ class Mdl_deposit extends Model
                         SELECT SUM(amount)
                         FROM withdraw
                         WHERE member_id = ? AND (
-                            (jenis = 'withdraw' AND status = 'completed')
+                            (jenis = 'withdraw' AND status <> 'rejected')
                             OR jenis = 'trade'
                         )), 0) AS usdt, -- already withdrawn
                     
