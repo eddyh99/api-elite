@@ -88,13 +88,22 @@ class Mdl_signal extends Model
     {
         try {
             $sql = "SELECT
-                        ms.order_id
+                        ms.member_id,
+                        s.order_id,
+                        ms.amount_usdt,
+                        m.id_referral AS upline,
+                        (
+                            SELECT COALESCE(SUM(ms2.amount_usdt), 0)
+                            FROM member_sinyal ms2
+                            WHERE ms2.sinyal_id = s.id
+                        ) AS total_usdt
                     FROM
                         sinyal s
                         INNER JOIN member_sinyal ms ON ms.sinyal_id = s.id
                         INNER JOIN member m ON m.id = ms.member_id
                     WHERE
-                        s.id = ? AND s.status = 'new' AND s.is_deleted = 'no'";
+                        s.id = ?
+                        AND s.is_deleted = 'no'";
             $query = $this->db->query($sql, [$id_signal])->getResult();
 
             if (!$query) {
@@ -149,6 +158,7 @@ class Mdl_signal extends Model
         try {
             $sql = "SELECT
                         sinyal.id,
+                        sinyal.pair_id,
                         sinyal.order_id
                     FROM
                         sinyal
@@ -205,7 +215,8 @@ class Mdl_signal extends Model
     {
         try {
             $sql = "SELECT
-                        COALESCE( sum(ms.amount_btc), 0) as btc
+                        COALESCE( sum(ms.amount_btc), 0) as btc,
+                        status
                     FROM
                         sinyal
                         INNER JOIN member_sinyal ms ON ms.sinyal_id = sinyal.id
@@ -213,11 +224,12 @@ class Mdl_signal extends Model
                         sinyal.id = ?";
             $query = $this->db->query($sql, $id_signal)->getRow();
 
-            return (object) [
-                'code' => 200,
-                'message' => 'success',
-                'btc'   => $query->btc
-            ];
+            if (is_null($query->status)) {
+                return (object) [
+                    'code' => 404,
+                    'message' => 'Sinyal not found.'
+                ];
+            }
 
         } catch (\Exception $e) {
             return (object) [
@@ -225,6 +237,12 @@ class Mdl_signal extends Model
                 'message' => 'An error occurred'
             ];
         }
+
+        return (object) [
+            'code' => 200,
+            'message' => $query,
+            'btc' => $query->btc
+        ];
 
 
     }

@@ -42,7 +42,7 @@ CREATE TABLE `member` (
   UNIQUE KEY `refcode` (`refcode`),
   KEY `id_referral` (`id_referral`),
   CONSTRAINT `member_ibfk_1` FOREIGN KEY (`id_referral`) REFERENCES `member` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=101 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=144 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -52,8 +52,8 @@ CREATE TABLE `member` (
 LOCK TABLES `member` WRITE;
 /*!40000 ALTER TABLE `member` DISABLE KEYS */;
 INSERT INTO `member` VALUES
-(1,'yisayi7090@macho3.com','40bd001563085fc35165329ea1ff5c5ecbdbbeef','2025-04-01 03:03:34','2025-04-10 01:59:01','0mfk32m4',2,'active','Asia/Singapore',NULL,'member','180.254.224.15',0),
-(2,'a@a.a','40bd001563085fc35165329ea1ff5c5ecbdbbeef','2025-04-01 03:03:34','2025-04-09 02:49:40','0mfk32m3',1,'referral','Asia/Singapore',NULL,'member','180.254.224.15',0);
+(1,'yisayi7090@macho3.com','40bd001563085fc35165329ea1ff5c5ecbdbbeef','2025-04-01 03:03:34','2025-04-14 02:39:26','0mfk32m4',12,'active','Asia/Singapore',NULL,'member','180.254.224.15',0),
+(12,'a@a.a','40bd001563085fc35165329ea1ff5c5ecbdbbeef','2025-04-01 03:03:34','2025-04-14 02:41:48','0mfk32m5',1,'referral','Asia/Singapore',NULL,'member','180.254.224.15',0);
 /*!40000 ALTER TABLE `member` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -67,15 +67,16 @@ DROP TABLE IF EXISTS `member_commission`;
 CREATE TABLE `member_commission` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `member_id` int(11) NOT NULL,
-  `upline_id` int(11) NOT NULL,
+  `downline_id` int(11) NOT NULL,
   `amount` decimal(10,4) NOT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `member_id` (`member_id`),
-  KEY `downline_id` (`upline_id`),
+  KEY `downline_id` (`downline_id`),
   CONSTRAINT `member_commission_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `member_commission_ibfk_2` FOREIGN KEY (`upline_id`) REFERENCES `member` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  CONSTRAINT `member_commission_ibfk_2` FOREIGN KEY (`downline_id`) REFERENCES `member` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `chk_amount_positive` CHECK (`amount` >= 0)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -84,8 +85,6 @@ CREATE TABLE `member_commission` (
 
 LOCK TABLES `member_commission` WRITE;
 /*!40000 ALTER TABLE `member_commission` DISABLE KEYS */;
-INSERT INTO `member_commission` VALUES
-(1,2,1,900.0000,'2025-04-07 03:03:34');
 /*!40000 ALTER TABLE `member_commission` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -107,7 +106,7 @@ CREATE TABLE `member_deposit` (
   PRIMARY KEY (`id`),
   KEY `member_id` (`member_id`),
   CONSTRAINT `member_deposit_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -117,8 +116,8 @@ CREATE TABLE `member_deposit` (
 LOCK TABLES `member_deposit` WRITE;
 /*!40000 ALTER TABLE `member_deposit` DISABLE KEYS */;
 INSERT INTO `member_deposit` VALUES
-(1,'INV-123919',1,10000.00,100.00,'2025-04-02 15:35:46','complete'),
-(2,'INV-CED750AC',2,2000.00,20.00,'2025-04-06 15:07:14','complete');
+(5,'INV-300F2CF1',1,5000.00,50.00,'2025-04-14 05:35:14','complete'),
+(6,'INV-B746C393',12,4000.00,40.00,'2025-04-14 05:35:40','complete');
 /*!40000 ALTER TABLE `member_deposit` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -132,6 +131,7 @@ DROP TABLE IF EXISTS `member_sinyal`;
 CREATE TABLE `member_sinyal` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `amount_btc` decimal(16,6) NOT NULL,
+  `amount_usdt` decimal(16,2) NOT NULL DEFAULT 0.00,
   `member_id` int(11) DEFAULT NULL,
   `sinyal_id` int(11) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
@@ -141,7 +141,7 @@ CREATE TABLE `member_sinyal` (
   KEY `fk_member_sinyal_sinyal` (`sinyal_id`),
   CONSTRAINT `fk_member_sinyal_member` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_member_sinyal_sinyal` FOREIGN KEY (`sinyal_id`) REFERENCES `sinyal` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -151,12 +151,8 @@ CREATE TABLE `member_sinyal` (
 LOCK TABLES `member_sinyal` WRITE;
 /*!40000 ALTER TABLE `member_sinyal` DISABLE KEYS */;
 INSERT INTO `member_sinyal` VALUES
-(26,0.000290,1,50,'2025-03-28 09:16:08','2025-04-10 03:38:15'),
-(27,0.000725,2,50,'2025-03-28 09:16:08','2025-04-10 03:38:21'),
-(28,0.000243,1,52,'2025-03-28 15:05:53','2025-04-10 03:38:15'),
-(29,0.000606,2,52,'2025-03-28 15:05:53','2025-04-10 03:38:21'),
-(30,0.000243,1,53,'2025-03-28 15:12:09','2025-04-10 03:38:15'),
-(31,0.000606,2,53,'2025-03-28 15:12:09','2025-04-10 03:38:21');
+(56,0.014500,1225.46,1,74,'2025-04-14 05:36:16','2025-04-14 05:36:16'),
+(57,0.011600,980.37,12,74,'2025-04-14 05:36:16','2025-04-14 05:36:16');
 /*!40000 ALTER TABLE `member_sinyal` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -250,7 +246,7 @@ CREATE TABLE `sinyal` (
   UNIQUE KEY `order_id` (`order_id`),
   KEY `fk_admin` (`admin_id`),
   CONSTRAINT `fk_admin` FOREIGN KEY (`admin_id`) REFERENCES `member` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=78 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -260,10 +256,8 @@ CREATE TABLE `sinyal` (
 LOCK TABLES `sinyal` WRITE;
 /*!40000 ALTER TABLE `sinyal` DISABLE KEYS */;
 INSERT INTO `sinyal` VALUES
-(50,11016135,'Buy A',75000.00,NULL,143,'127.0.0.1','yes','pending','2025-03-28 16:16:08','2025-03-28 22:05:34'),
-(52,11125241,'Buy A',90000.00,NULL,143,'127.0.0.1','no','filled','2025-03-28 22:05:53','2025-03-28 22:56:28'),
-(53,11127872,'Buy B',90000.00,NULL,143,'127.0.0.1','no','filled','2025-03-28 22:12:09','2025-03-30 15:59:11'),
-(57,11418901,'Sell A',80000.00,52,143,'127.0.0.1','no','filled','2025-03-29 13:39:06','2025-03-30 16:02:50');
+(74,3030254,'Buy A',86200.00,NULL,12,'127.0.0.1','no','filled','2025-04-14 12:36:16','2025-04-14 12:38:51'),
+(77,3040602,'Sell A',84000.00,74,12,'127.0.0.1','no','filled','2025-04-14 13:08:55','2025-04-14 14:11:29');
 /*!40000 ALTER TABLE `sinyal` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -285,7 +279,7 @@ CREATE TABLE `wallet` (
   KEY `order_id` (`order_id`),
   CONSTRAINT `wallet_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`),
   CONSTRAINT `wallet_ibfk_2` FOREIGN KEY (`order_id`) REFERENCES `sinyal` (`order_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -295,8 +289,8 @@ CREATE TABLE `wallet` (
 LOCK TABLES `wallet` WRITE;
 /*!40000 ALTER TABLE `wallet` DISABLE KEYS */;
 INSERT INTO `wallet` VALUES
-(1,7.92,7.92,1,11418901),
-(2,19.79,19.79,144,11418901);
+(8,-1.27,-1.27,1,3040602),
+(9,-1.01,-1.01,12,3040602);
 /*!40000 ALTER TABLE `wallet` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -322,7 +316,7 @@ CREATE TABLE `withdraw` (
   PRIMARY KEY (`id`),
   KEY `member_id` (`member_id`),
   CONSTRAINT `withdraw_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=121 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=127 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -332,17 +326,16 @@ CREATE TABLE `withdraw` (
 LOCK TABLES `withdraw` WRITE;
 /*!40000 ALTER TABLE `withdraw` DISABLE KEYS */;
 INSERT INTO `withdraw` VALUES
-(97,2,'usdt',1500.00,NULL,NULL,'pending','trade','2025-04-10 17:09:46',NULL,NULL),
-(98,2,'fiat',500.00,NULL,NULL,'pending','balance','2025-04-10 17:09:59',NULL,NULL),
-(99,2,'fiat',500.00,NULL,NULL,'pending','balance','2025-04-10 17:32:43',NULL,NULL),
-(100,2,'fiat',500.00,NULL,NULL,'pending','balance','2025-04-11 09:10:29',NULL,NULL),
-(101,2,'usdt',1000.00,NULL,NULL,'pending','trade','2025-04-11 09:10:43',NULL,NULL),
-(103,2,'fiat',1000.00,NULL,NULL,'pending','balance','2025-04-11 09:26:12',NULL,NULL),
-(104,2,'usdt',20.00,NULL,NULL,'pending','trade','2025-04-11 09:28:25',NULL,NULL),
-(106,2,'fiat',20.00,NULL,NULL,'pending','balance','2025-04-11 09:28:53',NULL,NULL),
-(107,2,'usdt',500.00,NULL,NULL,'pending','trade','2025-04-11 09:46:52',NULL,NULL),
-(118,2,'usdt',500.00,'{\"recipient\":null,\"routing_number\":null,\"account_type\":null,\"swift_code\":null,\"address\":null,\"network\":\"TRC20\"}','lorem9999999999','completed','withdraw','2025-04-11 14:24:26',NULL,NULL),
-(120,2,'usdc',500.00,'{\"recipient\":null,\"routing_number\":null,\"account_type\":null,\"swift_code\":null,\"address\":null,\"network\":\"BLOCKCHAIN\"}','lorem9999999999','completed','withdraw','2025-04-11 14:37:43',NULL,NULL);
+(97,12,'usdt',1500.00,NULL,NULL,'pending','trade','2025-04-10 17:09:46',NULL,NULL),
+(98,12,'fiat',500.00,NULL,NULL,'pending','balance','2025-04-10 17:09:59',NULL,NULL),
+(99,12,'fiat',500.00,NULL,NULL,'pending','balance','2025-04-10 17:32:43',NULL,NULL),
+(100,12,'fiat',500.00,NULL,NULL,'pending','balance','2025-04-11 09:10:29',NULL,NULL),
+(101,12,'usdt',1000.00,NULL,NULL,'pending','trade','2025-04-11 09:10:43',NULL,NULL),
+(103,12,'fiat',1000.00,NULL,NULL,'pending','balance','2025-04-11 09:26:12',NULL,NULL),
+(104,12,'usdt',20.00,NULL,NULL,'pending','trade','2025-04-11 09:28:25',NULL,NULL),
+(106,12,'fiat',20.00,NULL,NULL,'pending','balance','2025-04-11 09:28:53',NULL,NULL),
+(107,12,'usdt',500.00,NULL,NULL,'pending','trade','2025-04-11 09:46:52',NULL,NULL),
+(121,12,'usdc',500.00,'{\"recipient\":null,\"routing_number\":null,\"account_type\":null,\"swift_code\":null,\"address\":null,\"network\":\"BLOCKCHAIN\"}','lorem9999999999','pending','withdraw','2025-04-11 15:15:37',NULL,NULL);
 /*!40000 ALTER TABLE `withdraw` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -355,4 +348,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
 
--- Dump completed on 2025-04-11 14:40:28
+-- Dump completed on 2025-04-14 14:12:09

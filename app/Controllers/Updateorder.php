@@ -59,8 +59,8 @@ class Updateorder extends BaseController
             $status = $this->updateOrder($order->order_id);
             $mdata[] = $status->order;
 
-            if ($status->side === 'SELL') {
-                $takeProfitData = $this->take_profits($status->cummulativeQuoteQty, $order->order_id);
+            if ($status->side === 'SELL' && $status->order['status'] == 'filled') {
+                $takeProfitData = $this->take_profits($status->cummulativeQuoteQty, $order->order_id, $order->pair_id);
                 $profits = array_merge($profits, $takeProfitData['profits']);
                 $commissions = array_merge($commissions, $takeProfitData['commissions']);
             }
@@ -116,17 +116,20 @@ class Updateorder extends BaseController
         return $result;
     }
 
-    private function take_profits($amount, $order_id)
+    private function take_profits($sell_amount, $order_id, $pair_id)
     {
-        $member = $this->deposit->getAmount_member();
-        if ($member->code !== 200) {
+        $signal_buy = $this->signal->get_orders($pair_id);
+        if ($signal_buy->code !== 200) {
             return ['profits' => [], 'commissions' => []];
         }
+
+        $buy_amount = $signal_buy->message[0]->total_usdt;
     
         $profits = [];
         $commissions = [];
-        foreach ($member->message as $m) {
-            $m_profit = (($m->amount / 4) / 100) * $amount;
+        foreach ($signal_buy->message as $m) {
+            $total_profit = $sell_amount - $buy_amount;
+            $m_profit = ($m->amount_usdt / $buy_amount) * $total_profit;
             $m_commission = $m_profit * 0.1;
             $netProfit = $m_profit - $m_commission;
     
