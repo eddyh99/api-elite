@@ -114,7 +114,7 @@ class Order extends BaseController
         foreach ($member->message as $m) {
             $mdata[] = [
                 'member_id' => $m->member_id,
-                'amount_btc' => (($m->amount / 4) / 100) * $amount,
+                'amount_btc' => (($m->total_amount / 4) / 100) * $amount,
                 'sinyal_id' => $signal_id
             ];
         }
