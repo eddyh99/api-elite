@@ -191,9 +191,9 @@ class Mdl_commission extends Model
         FROM
             member_commission ms
         INNER JOIN 
-            member m ON m.id = ms.member_id
+            member m ON m.id = ms.downline_id
         WHERE 
-            ms.upline_id = ?
+            ms.member_id = ?
     ";
 }
 

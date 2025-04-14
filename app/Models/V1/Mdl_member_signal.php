@@ -84,7 +84,7 @@ class Mdl_member_signal extends Model
                         s.created_at as date,
                         s.entry_price,
                         ms.amount_btc,
-                        0 as usdt,
+                        ms.amount_usdt,
                         SUBSTRING_INDEX(type, ' ', 1) AS position
                     FROM
                         member_sinyal ms
