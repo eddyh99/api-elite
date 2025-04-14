@@ -17,6 +17,21 @@ class Order extends BaseController
         $this->proxy  = model('App\Models\V1\Mdl_proxies');
     }
 
+    public function getLatestsignal()
+    {
+        $buys = $this->signal->get_latest_signals('Buy%');
+
+        if (@$buys->code != 200) {
+            return $this->respond(error_msg($buys->code, "order", '01', $buys->message), $buys->code);
+        }
+
+        if (empty($buys->message)) {
+            return $this->respond(error_msg(404, "order", '01', 'No buy orders found!'), 404);
+        }
+
+        return $this->respond(error_msg(200, "buys", null, $buys->message), 200);
+    }
+
     public function postLimit_buy()
     {
 
@@ -320,6 +335,7 @@ class Order extends BaseController
         return $active_proxies; // Hanya mengembalikan proxy yang aktif
     }
 
+    // fix cancel order
     public function getDelete()
     {
         return;

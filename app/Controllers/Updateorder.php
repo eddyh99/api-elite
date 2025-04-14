@@ -57,12 +57,18 @@ class Updateorder extends BaseController
 
         foreach($orders as $order) {
             $status = $this->updateOrder($order->order_id);
-            $mdata[] = $status->order;
+            $mdata['order'][] = $status->order;
 
             if ($status->side === 'SELL' && $status->order['status'] == 'filled') {
                 $takeProfitData = $this->take_profits($status->cummulativeQuoteQty, $order->order_id, $order->pair_id);
                 $profits = array_merge($profits, $takeProfitData['profits']);
                 $commissions = array_merge($commissions, $takeProfitData['commissions']);
+
+                // isi pair_id buy!
+                $mdata['pair_id'][] = [
+                    'id' => $order->pair_id,
+                    'pair_id' => $order->pair_id
+                ];
             }
         } 
 

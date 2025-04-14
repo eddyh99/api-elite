@@ -24,6 +24,36 @@ class Mdl_signal extends Model
     protected $returnType = 'array';
     protected $useTimestamps = true;
 
+    public function get_latest_signals($type = 'Buy%')
+    {
+        try {
+            $sql = "SELECT
+                        id,
+                        type,
+                        entry_price,
+                        status
+                    FROM
+                        sinyal
+                    WHERE
+                        sinyal.status != 'canceled'
+                        AND type LIKE ?
+                        AND pair_id IS NUll
+                        AND is_deleted = 'no'";
+            $query = $this->db->query($sql, [$type])->getResult();
+
+            return (object) [
+                'code' => 200,
+                'message' => $query
+            ];
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred'
+            ];
+        }
+    }
+
     public function add($mdata, $sell = false)
     {
         try {
@@ -194,7 +224,11 @@ class Mdl_signal extends Model
             $signal = $this->db->table("sinyal");
 
             // Update batch berdasarkan order_id
-            $signal->updateBatch($mdata, 'order_id');
+            $signal->updateBatch($mdata['order'], 'order_id');
+
+            if(!empty($mdata['pair_id'])) {
+                $signal->updateBatch($mdata['pair_id'], 'id');
+            }
 
             return (object) [
                 "code"    => 201,
