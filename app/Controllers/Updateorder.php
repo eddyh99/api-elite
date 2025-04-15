@@ -57,12 +57,18 @@ class Updateorder extends BaseController
 
         foreach($orders as $order) {
             $status = $this->updateOrder($order->order_id);
-            $mdata[] = $status->order;
+            $mdata['order'][] = $status->order;
 
-            if ($status->side === 'SELL') {
-                $takeProfitData = $this->take_profits($status->cummulativeQuoteQty, $order->order_id);
+            if ($status->side === 'SELL' && $status->order['status'] == 'filled') {
+                $takeProfitData = $this->take_profits($status->cummulativeQuoteQty, $order->order_id, $order->pair_id);
                 $profits = array_merge($profits, $takeProfitData['profits']);
                 $commissions = array_merge($commissions, $takeProfitData['commissions']);
+
+                // isi pair_id buy!
+                $mdata['pair_id'][] = [
+                    'id' => $order->pair_id,
+                    'pair_id' => $order->pair_id
+                ];
             }
         } 
 
@@ -116,20 +122,37 @@ class Updateorder extends BaseController
         return $result;
     }
 
-    private function take_profits($amount, $order_id)
+    private function take_profits($sell_amount, $order_id, $pair_id)
     {
-        $member = $this->deposit->getAmount_member();
-        if ($member->code !== 200) {
+        // Retrieve buy orders based on the selected pair
+        $signal_buy = $this->signal->get_orders($pair_id);
+    
+        // If the response is not successful
+        if ($signal_buy->code !== 200) {
             return ['profits' => [], 'commissions' => []];
         }
     
+        // Get the total amount (in USDT) used for the buy orders
+        $buy_amount = $signal_buy->message[0]->total_usdt;
+    
         $profits = [];
         $commissions = [];
-        foreach ($member->message as $m) {
-            $m_profit = (($m->amount / 4) / 100) * $amount;
+    
+        
+        foreach ($signal_buy->message as $m) {
+            // Calculate profit (difference between sell and buy)
+            $total_profit = $sell_amount - $buy_amount;
+    
+            // Calculate member profit
+            $m_profit = ($m->amount_usdt / $buy_amount) * $total_profit;
+    
+            // 10% commission
             $m_commission = $m_profit * 0.1;
+    
+            // Net profit 
             $netProfit = $m_profit - $m_commission;
     
+            // Split the net profit equally between master and client wallets
             $profits[] = [
                 'member_id' => $m->member_id,
                 'master_wallet' => round($netProfit / 2, 2),
@@ -137,6 +160,7 @@ class Updateorder extends BaseController
                 'order_id' => $order_id
             ];
     
+            // If the member has an upline
             if (!is_null($m->upline)) {
                 $commissions[] = [
                     'member_id' => $m->upline,
@@ -146,7 +170,9 @@ class Updateorder extends BaseController
             }
         }
     
+        // Return the final profit and commission distributions
         return ['profits' => $profits, 'commissions' => $commissions];
     }
+    
     
 }

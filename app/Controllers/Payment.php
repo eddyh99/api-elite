@@ -23,7 +23,7 @@ class Payment extends BaseController
         
 		$data           = $this->request->getJSON();
         $member         = $this->member->getby_email(trim($data->email))->message;
-        $referral       = $this->setting->get("referral_fee");
+        $referral       = $this->setting->get("referral_fee")->message;
         $mdata = array(
             "invoice"   => 'INV-' . strtoupper(bin2hex(random_bytes(4))),
 			"member_id" => trim($member->id),
