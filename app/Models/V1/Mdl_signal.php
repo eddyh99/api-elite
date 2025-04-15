@@ -24,22 +24,33 @@ class Mdl_signal extends Model
     protected $returnType = 'array';
     protected $useTimestamps = true;
 
-    public function get_latest_signals($type = 'Buy%')
+    public function get_latest_signals()
     {
         try {
             $sql = "SELECT
-                        id,
-                        type,
-                        entry_price,
-                        status
+                        buy.id AS id,
+                        buy.type AS type,
+                        buy.entry_price AS entry_price,
+                        buy.status AS status,
+                        sell.id AS sell_id,
+                        sell.type AS sell_type,
+                        sell.entry_price AS sell_entry_price,
+                        sell.status AS sell_status
                     FROM
-                        sinyal
+                        sinyal AS buy
+                    LEFT JOIN
+                        sinyal AS sell
+                        ON sell.pair_id = buy.id
+                        AND sell.type LIKE 'Sell%'
+                        AND sell.status = 'pending'
+                        AND sell.is_deleted = 'no'
                     WHERE
-                        sinyal.status != 'canceled'
-                        AND type LIKE ?
-                        AND pair_id IS NUll
-                        AND is_deleted = 'no'";
-            $query = $this->db->query($sql, [$type])->getResult();
+                        buy.type LIKE 'Buy%'
+                        AND buy.status != 'canceled'
+                        AND buy.pair_id IS NULL
+                        AND buy.is_deleted = 'no'";
+
+            $query = $this->db->query($sql)->getResult();
 
             return (object) [
                 'code' => 200,
@@ -329,6 +340,7 @@ class Mdl_signal extends Model
                         s.status,
                         s.type,
                         s.entry_price,
+                        '-' as admin,
                         DATE(s.created_at) AS date,
                         TIME(s.created_at) AS time
                     FROM
@@ -378,12 +390,12 @@ class Mdl_signal extends Model
             }            
     
             // Periksa apakah ada baris yang terpengaruh
-            if ($this->db->affectedRows() === 0) {
-                return (object) [
-                    'code' => 400,
-                    'message' => 'Failed.'
-                ];
-            }
+            // if ($this->db->affectedRows() === 0) {
+            //     return (object) [
+            //         'code' => 400,
+            //         'message' => 'Failed.'
+            //     ];
+            // }
         } catch (\Exception $e) {
             return (object) [
                 'code' => 500,
