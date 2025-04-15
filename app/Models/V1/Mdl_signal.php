@@ -155,6 +155,45 @@ class Mdl_signal extends Model
         ];
     }
 
+    public function get_order($id_signal)
+    {
+        try {
+            // Query to get the signal order by ID
+            $sql = "SELECT * FROM sinyal WHERE id = ?";
+            $query = $this->db->query($sql, [$id_signal])->getRow();
+    
+            // If the order is not found
+            if (!$query) {
+                return (object) [
+                    'code' => 404,
+                    'message' => 'Order not found.'
+                ];
+            }
+    
+            // If the order is not in pending status
+            if ($query->status !== 'pending') {
+                return (object) [
+                    'code' => 400,
+                    'message' => 'Only pending orders can be cancelled.'
+                ];
+            }
+    
+        } catch (\Exception $e) {
+            // General error handling
+            return (object) [
+                'code' => 500,
+                'message' => 'An unexpected error occurred.'
+            ];
+        }
+    
+        // Success response with order data
+        return (object) [
+            'code' => 200,
+            'message' => $query
+        ];
+    }
+    
+
     public function getBuy_pending()
     {
         try {

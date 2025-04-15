@@ -335,11 +335,54 @@ class Order extends BaseController
         return $active_proxies; // Hanya mengembalikan proxy yang aktif
     }
 
-    // fix cancel order
+    // cancel order
     public function getDelete()
     {
-        return;
+        // Get signal ID from request
+        $id_signal = filter_var($this->request->getVar('id_signal'), FILTER_SANITIZE_NUMBER_INT);
+    
+        // Fetch the signal order detail
+        $order = $this->signal->get_order($id_signal);
+    
+        // If the signal order is not valid or not in pending status
+        if ($order->code != 200) {
+            return $this->respond(error_msg($order->code, "signal", null, $order->message), $order->code);
+        }
+    
+        // Get the Binance order ID from the signal data
+        $id_order = $order->message->order_id;
+    
+        // Prepare Binance API endpoint and parameters
+        $url = BINANCEAPI . "/order";
+        $params = [
+            "symbol" => "BTCUSDT",
+            "orderId" => $id_order
+        ];
+    
+        // Call Binance API to cancel the order
+        $response = binanceAPI($url, $params, "DELETE");
+    
+        // If the API responds with an error code from binance
+        if (isset($response->code)) {
+            return $this->respond(error_msg(400, "binance", $response->code, $response->msg), 400);
+        }
+    
+        // If the order status is not 'CANCELED', treat it as a failure
+        if ($response->status != 'CANCELED') {
+            return $this->respond(error_msg(400, "binance", null, 'Failed to cancel order'), 400);
+        }
+    
+        // Delete the signal
+        $result = $this->signal->destroy($id_signal);
+    
+        if ($result->code != 201) {
+            return $this->respond(error_msg($order->code, "signal", null, $result->message), $order->code);
+        }
+    
+        // Success response
+        return $this->respond(error_msg(200, "signal", null, $result->message), 200);
     }
+    
 
 
     //========= for debugging ===========
