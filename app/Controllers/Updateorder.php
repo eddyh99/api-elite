@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Controllers\V1\Order;
 use CodeIgniter\API\ResponseTrait;
 
 class Updateorder extends BaseController
@@ -69,6 +70,12 @@ class Updateorder extends BaseController
                     'id' => $order->pair_id,
                     'pair_id' => $order->pair_id
                 ];
+            }
+
+            if ($status->side === 'BUY' && $status->order['status'] == 'filled') {
+
+                // update order pnglobal
+                $this->updateOrdersAll('pnglobal', $order);
             }
         } 
 
@@ -174,5 +181,32 @@ class Updateorder extends BaseController
         return ['profits' => $profits, 'commissions' => $commissions];
     }
     
+    private function updateOrdersAll($type, $signal) {
+
+        // if($type == 'pnglobal') {
+
+        $order = new Order;
+        $last_order = $order->getlast_order($signal->type);
+
+        $mdata = [
+            'type' => $signal->type,
+            'id_signal'   =>  $signal->id,
+            'latsorder_ids' => $last_order->ids
+        ];
+
+        // $url = URLPNGLOBAL . '/updateorder';
+        // $ch = curl_init($url);
+        // curl_setopt_array($ch, [
+        //     CURLOPT_RETURNTRANSFER => true,
+        //     CURLOPT_POST => true,
+        //     CURLOPT_POSTFIELDS => http_build_query($mdata),
+        // ]);
+
+        // $response = curl_exec($ch);
+        // curl_close($ch);
+
+        log_message('info', 'UPDATE ORDER PNGLOBAL RESPONSE: ' . json_encode($mdata));
+        // }
+    }
     
 }

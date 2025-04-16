@@ -209,6 +209,7 @@ class Mdl_signal extends Model
     {
         try {
             $sql = "SELECT
+                        sinyal.id,
                         sinyal.type,
                         sinyal.order_id
                     FROM
@@ -349,6 +350,47 @@ class Mdl_signal extends Model
                         date DESC,
                         time Desc";
             $query = $this->db->query($sql)->getResult();
+
+            if (!$query) {
+                return (object) [
+                    'code' => 200,
+                    'message' => []
+                ];
+            }
+        } catch (\Throwable $th) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred'
+            ];
+        }
+
+        return (object) [
+            'code' => 200,
+            'message' => $query
+        ];
+    }
+
+    public function getlast_orderFilled($types)
+    {
+        $placeholders = implode(',', array_fill(0, count($types), '?'));
+        try {
+            $sql = "WITH latest_buy AS (
+                        SELECT
+                            id,
+                            type,
+                            ROW_NUMBER() OVER (
+                                PARTITION BY type
+                                ORDER BY created_at DESC
+                            ) AS rn
+                        FROM sinyal
+                        WHERE
+                            type IN ($placeholders)
+                            AND status = 'filled'
+                            AND is_deleted = 'no'
+                            AND pair_id IS NULL
+                    )
+                    SELECT GROUP_CONCAT(id) AS ids FROM latest_buy";
+            $query = $this->db->query($sql, $types)->getRow();
 
             if (!$query) {
                 return (object) [

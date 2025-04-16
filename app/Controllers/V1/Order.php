@@ -392,8 +392,32 @@ class Order extends BaseController
         // Success response
         return $this->respond(error_msg(200, "signal", null, $result->message), 200);
     }
-    
 
+
+    public function getlast_order($type)
+    {
+        $types = [];
+        switch ($type) {
+            case 'Buy B':
+                $types = ['Buy A'];
+                break;
+            case 'Buy C':
+                $types = ['Buy A', 'Buy B'];
+                break;
+            case 'Buy D':
+                $types = ['Buy A', 'Buy B', 'Buy C'];
+                break;
+            default:
+                return [];
+                break;
+        }
+        $result = $this->signal->getlast_orderFilled($types);
+        if (@$result->code != 200) {
+            return false;
+        }
+
+        return $result->message;
+    }
 
     //========= for debugging ===========
     public function getSell_all()
