@@ -28,3 +28,6 @@ Thumbs.db
 # Sistem kontrol versi lainnya
 .svn/
 .hg/
+/writable/debugbar
+/writable/logs
+/writable/debugbar

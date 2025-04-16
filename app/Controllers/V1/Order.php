@@ -19,7 +19,7 @@ class Order extends BaseController
 
     public function getLatestsignal()
     {
-        $buys = $this->signal->get_latest_signals('Buy%');
+        $buys = $this->signal->get_latest_signals();
 
         if (@$buys->code != 200) {
             return $this->respond(error_msg($buys->code, "order", '01', $buys->message), $buys->code);
@@ -376,7 +376,7 @@ class Order extends BaseController
         $result = $this->signal->destroy($id_signal);
     
         if ($result->code != 201) {
-            return $this->respond(error_msg($order->code, "signal", null, $result->message), $order->code);
+            return $this->respond(error_msg($result->code, "signal", null, $result->message), $result->code);
         }
     
         // Success response
