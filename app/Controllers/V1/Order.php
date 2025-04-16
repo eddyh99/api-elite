@@ -114,7 +114,11 @@ class Order extends BaseController
             return $this->respond(error_msg(400, "signal", '01', $member_signal->message), 400);
         }
 
-        return $this->respond(error_msg(201, "order", null, $signal->message), 201);
+        $result = [
+            'text' => $signal->message,
+            'id'   => $signal->id
+        ];
+        return $this->respond(error_msg(201, "order", null, $result), 201);
 
     }
 
@@ -221,7 +225,13 @@ class Order extends BaseController
             return $this->respond(error_msg(400, "signal", '01', $signal->message), 400);
         }
 
-        return $this->respond(error_msg(201, "sell", null, $signal->message), 201);
+
+        $result = [
+            'text' => $signal->message,
+            'id'   => $signal->id
+        ];
+
+        return $this->respond(error_msg(201, "sell", null, $result), 201);
     }
 
     public function limit_order($side, $amount, $limit)
