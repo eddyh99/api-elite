@@ -114,7 +114,11 @@ class Order extends BaseController
             return $this->respond(error_msg(400, "signal", '01', $member_signal->message), 400);
         }
 
-        return $this->respond(error_msg(201, "order", null, $signal->message), 201);
+        $result = [
+            'text' => $signal->message,
+            'id'   => $signal->id
+        ];
+        return $this->respond(error_msg(201, "order", null, $result), 201);
 
     }
 
@@ -221,7 +225,13 @@ class Order extends BaseController
             return $this->respond(error_msg(400, "signal", '01', $signal->message), 400);
         }
 
-        return $this->respond(error_msg(201, "sell", null, $signal->message), 201);
+
+        $result = [
+            'text' => $signal->message,
+            'id'   => $signal->id
+        ];
+
+        return $this->respond(error_msg(201, "sell", null, $result), 201);
     }
 
     public function limit_order($side, $amount, $limit)
@@ -382,8 +392,32 @@ class Order extends BaseController
         // Success response
         return $this->respond(error_msg(200, "signal", null, $result->message), 200);
     }
-    
 
+
+    public function getlast_order($type)
+    {
+        $types = [];
+        switch ($type) {
+            case 'Buy B':
+                $types = ['Buy A'];
+                break;
+            case 'Buy C':
+                $types = ['Buy A', 'Buy B'];
+                break;
+            case 'Buy D':
+                $types = ['Buy A', 'Buy B', 'Buy C'];
+                break;
+            default:
+                return [];
+                break;
+        }
+        $result = $this->signal->getlast_orderFilled($types);
+        if (@$result->code != 200) {
+            return false;
+        }
+
+        return $result->message;
+    }
 
     //========= for debugging ===========
     public function getSell_all()
