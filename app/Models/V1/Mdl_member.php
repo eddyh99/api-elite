@@ -197,13 +197,13 @@ class Mdl_member extends Model
             $member->insert($data);
             $id     = $this->db->insertID();
 
-            if(!$data['refcode']) {
-                $mdata = array(
-                    "refcode"   => substr($this->generate_token($id),0,8),
-                );
-                $member->where("id", $id);
-                $member->update($mdata);
-            }
+            // if(!$data['refcode']) {
+            //     $mdata = array(
+            //         "refcode"   => substr($this->generate_token($id),0,8),
+            //     );
+            //     $member->where("id", $id);
+            //     $member->update($mdata);
+            // }
 
             return (object) [
                 'success'  => true,
