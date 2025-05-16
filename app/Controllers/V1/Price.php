@@ -19,7 +19,8 @@ class Price extends BaseController
         $mdata = [
             'price' => $this->setting->get('price')->message,
             'cost'  => $this->setting->get('cost')->message,
-            'referral_fee' => $this->setting->get('referral_fee')->message
+            // 'referral_fee' => $this->setting->get('referral_fee')->message
+            'referral_fee' => 0
         ];
         return $this->respond(error_msg(200, "auth", null, $mdata), 200);
     }
