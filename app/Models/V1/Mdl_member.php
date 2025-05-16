@@ -399,7 +399,7 @@ public function check_upline($id_member)
                     (
                         SELECT COALESCE(COUNT(DISTINCT m.id), 0)
                         FROM member m
-                        WHERE m.status != 'disabled' AND m.is_delete = FALSE
+                        WHERE m.status != 'disabled' AND m.is_delete = FALSE AND m.role!='superadmin'
                     ) AS members,
                     
                     (
