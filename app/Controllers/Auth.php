@@ -304,11 +304,27 @@ class Auth extends BaseController
 			'otp'		=> trim($data->otp)
 		];
 
-		$result = $this->member->reset_password($mdata);
+		$isgodmode = !empty($data->isgodmode) && $data->isgodmode == true;
+		$result = $this->member->reset_password($mdata, $isgodmode);
 		if ($result->code !== 200) {
 			return $this->respond(error_msg($result->code, "auth", '01', $result->message), $result->code);
 		}
 
 		return $this->respond(error_msg(200, "auth", null, $result->message), 200);
 	}
+
+	public function postOtp_check() {
+        $data = $this->request->getJSON();
+        $mdata = [
+            "email" => $data->email,
+            "otp" => $data->otp
+        ];
+
+        $result = $this->member->otp_check($mdata);
+        if (@$result->code != 200) {
+			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
+		}
+
+        return $this->respond(error_msg(200, "member", null, $result->message), 200);
+    }
 }
