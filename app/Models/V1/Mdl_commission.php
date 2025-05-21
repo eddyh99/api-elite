@@ -157,7 +157,7 @@ class Mdl_commission extends Model
         FROM 
             member_deposit md
         JOIN 
-            member m ON md.member_id = m.id_referral
+            member m ON md.member_id = m.id
         WHERE 
             m.id_referral = ?
 
