@@ -412,10 +412,9 @@ public function check_upline($id_member)
                     ) AS signals,
                     
                     (
-                        SELECT COALESCE(COUNT(DISTINCT md.member_id), 0)
-                        FROM member_deposit md
-                        INNER JOIN member m ON m.id = md.member_id
-                       WHERE m.status IN ('active', 'referral') AND m.is_delete = FALSE
+                        SELECT COALESCE(COUNT(DISTINCT m.id), 0)
+                        FROM member m
+                       WHERE m.status IN ('active', 'referral') AND m.is_delete = FALSE AND m.role != 'superadmin'
                     ) AS active_members,
                     
                     (
