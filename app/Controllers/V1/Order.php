@@ -115,7 +115,8 @@ class Order extends BaseController
             return $this->respond(error_msg(400, "order", '01', $result), 400);
         }  
         
-        $member = $this->getBTC_member($trade_balance ,$order->origQty, $order->cummulativeQuoteQty, $signal->id);
+        $cost = floor(($order->origQty * $data->limit) * 100) / 100;
+        $member = $this->getBTC_member($trade_balance ,$order->origQty, $cost, $signal->id);
         $member_signal = $this->member_signal->add($member);
         if (@$member_signal->code != 201) {
             $result['text'] =  $member_signal->message;
