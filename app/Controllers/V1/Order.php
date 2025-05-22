@@ -84,13 +84,14 @@ class Order extends BaseController
             return $this->respond(error_msg(400, "binance", '02', 'Previous buy still pending'), 400);
         }
 
-        $deposit  = $this->deposit->get_amount();
+        $deposit  = $this->deposit->getTotal_tradeBalance();
 
         if (@$deposit->code != 200) {
             return $this->respond(error_msg(400, "signal", '01', $deposit->message), 400);
         }
 
-        $order = $this->limit_order('BUY', $deposit->message, $data->limit);      
+        $trade_balance = ($deposit->message /4);
+        $order = $this->limit_order('BUY', $trade_balance, $data->limit);      
 
         $mdata = [
             'admin_id' => $data->admin_id,
@@ -114,7 +115,7 @@ class Order extends BaseController
             return $this->respond(error_msg(400, "order", '01', $result), 400);
         }  
         
-        $member = $this->getBTC_member($deposit->message ,$order->origQty, $order->cummulativeQuoteQty, $signal->id);
+        $member = $this->getBTC_member($trade_balance ,$order->origQty, $order->cummulativeQuoteQty, $signal->id);
         $member_signal = $this->member_signal->add($member);
         if (@$member_signal->code != 201) {
             $result['text'] =  $member_signal->message;
@@ -125,9 +126,9 @@ class Order extends BaseController
 
     }
 
-    private function getBtc_member($total_usdt ,$amount_btc, $cost, $signal_id)
+    private function getBtc_member($trade_balance ,$amount_btc, $cost, $signal_id)
     {
-        $member = $this->deposit->getAmount_member();
+        $member = $this->deposit->getMember_tradeBalance();
         if ($member->code != 200) {
             return false;
         }
@@ -139,8 +140,8 @@ class Order extends BaseController
 
         $mdata = [];
         foreach ($member->message as $m) {
-            $percent = ($m->total_amount / 4) / $total_usdt;
-            $btc = $amount_btc * $percent;
+            $percent = ($m->trade_balance / 4) / $trade_balance;
+            $btc     = $amount_btc * $percent;
 
             $mdata[] = [
                 'member_id' => $m->member_id,

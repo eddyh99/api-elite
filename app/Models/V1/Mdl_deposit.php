@@ -45,16 +45,50 @@ class Mdl_deposit extends Model
         }
     }
 
-    public function get_amount()
-    {
+    // public function get_amount()
+    // {
+    //     try {
+    //         $sql = "SELECT
+    //                     COALESCE(SUM(amount), 0) / 4 AS amount
+    //                 FROM
+    //                     member_deposit
+    //                 WHERE
+    //                     status = 'complete';
+    //                 ";
+    //         $query = $this->db->query($sql)->getRow();
+
+    //         return (object) [
+    //             'code' => 200,
+    //             'message' => $query->amount
+    //         ];
+
+    //     } catch (\Exception $e) {
+    //         return (object) [
+    //             'code' => 500,
+    //             'message' => 'An error occurred.' .$e
+    //         ];
+    //     }
+    // }
+
+    public function getTotal_tradeBalance() {
         try {
             $sql = "SELECT
-                        COALESCE(SUM(amount), 0) / 4 AS amount
-                    FROM
-                        member_deposit
-                    WHERE
-                        status = 'complete';
-                    ";
+                        COALESCE((
+                            SELECT SUM(client_wallet)
+                            FROM wallet
+                        ), 0) -- wallet
+
+                        + COALESCE((
+                            SELECT SUM(amount)
+                            FROM withdraw
+                            WHERE jenis = 'trade'
+                        ) 
+                        - COALESCE((
+                            SELECT SUM(amount)
+                            FROM withdraw
+                            WHERE jenis = 'balance' AND withdraw_type = 'fiat'
+                        ), 0) , 0) -- trade
+                            AS amount";
             $query = $this->db->query($sql)->getRow();
 
             return (object) [
@@ -71,22 +105,32 @@ class Mdl_deposit extends Model
     }
 
     // balance trade
-    public function getAmount_member() {
+    public function getMember_tradeBalance() {
         try {
-            $sql = "SELECT
-                        ms.member_id,
-                        m.id_referral AS upline,
-                        SUM(ms.amount) + COALESCE(
-                            (SELECT SUM(client_wallet) FROM wallet w WHERE w.member_id = ms.member_id), 
-                            0
-                        ) AS total_amount
-                    FROM
-                        member_deposit ms
-                        INNER JOIN member m ON m.id = ms.member_id
-                    WHERE
-                        ms.status = 'complete'
-                    GROUP BY
-                        ms.member_id";
+            $sql = "SELECT 
+                        m.id AS member_id,
+                        COALESCE(w.client_wallet, 0) 
+                        + COALESCE(wd_trade.total_trade_withdraw, 0)
+                        - COALESCE(wd_fiat.total_fiat_withdraw, 0) AS trade_balance
+                    FROM member m
+
+                    LEFT JOIN wallet w ON w.member_id = m.id
+
+                    LEFT JOIN (
+                        SELECT member_id, SUM(amount) AS total_trade_withdraw
+                        FROM withdraw
+                        WHERE jenis = 'trade'
+                        GROUP BY member_id
+                    ) wd_trade ON wd_trade.member_id = m.id
+
+                    LEFT JOIN (
+                        SELECT member_id, SUM(amount) AS total_fiat_withdraw
+                        FROM withdraw
+                        WHERE jenis = 'balance' AND withdraw_type = 'fiat'
+                        GROUP BY member_id
+                    ) wd_fiat ON wd_fiat.member_id = m.id
+
+                    HAVING trade_balance > 0";
             $query = $this->db->query($sql)->getResult();
 
             return (object) [
