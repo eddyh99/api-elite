@@ -210,10 +210,6 @@ class Order extends BaseController
         }
 
         $order = $this->limit_order('SELL', $signal->btc, $data->limit);
-
-        if (!isset($order->orderId) || !isset($order->origQty)) {
-            return $this->respond(error_msg(400, "order", '01', 'Order Failed'), 400);
-        }
         
         $mdata = [
             'admin_id' => $data->admin_id,
@@ -228,11 +224,15 @@ class Order extends BaseController
             return $this->respond(error_msg(400, "signal", '01', $signal->message), 400);
         }
 
-
         $result = [
             'text' => $signal->message,
             'id'   => $signal->id
         ];
+
+        if (!isset($order->orderId) || !isset($order->origQty)) {
+            $result['text'] = 'Order Failed.';
+            return $this->respond(error_msg(400, "order", '01', $result), 400);
+        }
 
         return $this->respond(error_msg(201, "sell", null, $result), 201);
     }
