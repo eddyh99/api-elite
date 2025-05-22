@@ -90,34 +90,37 @@ class Order extends BaseController
             return $this->respond(error_msg(400, "signal", '01', $deposit->message), 400);
         }
 
-        $order = $this->limit_order('BUY', $deposit->message, $data->limit);
-
-        if (!isset($order->orderId) || !isset($order->origQty)) {
-            return $this->respond(error_msg(400, "order", '01', 'Order Failed'), 400);
-        }        
+        $order = $this->limit_order('BUY', $deposit->message, $data->limit);      
 
         $mdata = [
             'admin_id' => $data->admin_id,
             'ip_addr'  => $data->ip_address,
             'type'     => $data->type,
-            'order_id' => $order->orderId,
+            'order_id' => $order->orderId ?? null,
             'entry_price' => $data->limit
         ];
         $signal = $this->signal->add($mdata);
         if (@$signal->code != 201) {
             return $this->respond(error_msg(400, "signal", '01', $signal->message), 400);
         }
-        
-        $member = $this->getBTC_member($deposit->message ,$order->origQty, $order->cummulativeQuoteQty, $signal->id);
-        $member_signal = $this->member_signal->add($member);
-        if (@$member_signal->code != 201) {
-            return $this->respond(error_msg(400, "signal", '01', $member_signal->message), 400);
-        }
 
         $result = [
             'text' => $signal->message,
             'id'   => $signal->id
         ];
+
+        if (!isset($order->orderId) || !isset($order->origQty)) {
+            $result['text'] = 'Order Failed.';
+            return $this->respond(error_msg(400, "order", '01', $result), 400);
+        }  
+        
+        $member = $this->getBTC_member($deposit->message ,$order->origQty, $order->cummulativeQuoteQty, $signal->id);
+        $member_signal = $this->member_signal->add($member);
+        if (@$member_signal->code != 201) {
+            $result['text'] =  $member_signal->message;
+            return $this->respond(error_msg(400, "signal", '01', $result), 400);
+        }
+
         return $this->respond(error_msg(201, "order", null, $result), 201);
 
     }
