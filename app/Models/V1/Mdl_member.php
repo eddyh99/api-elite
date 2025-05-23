@@ -59,7 +59,28 @@ class Mdl_member extends Model
                         WHERE member_id = m.id AND (
                             (jenis = 'withdraw' AND status <> 'rejected')
                             OR jenis = 'trade'
-                        )), 0) AS initial_capital,
+                        )), 0) AS fund,
+
+                        -- trade
+                        COALESCE((
+                            SELECT SUM(client_wallet)
+                            FROM wallet
+                            WHERE member_id = m.id
+                        ), 0) -- wallet
+
+                        + COALESCE((
+                            SELECT SUM(amount)
+                            FROM withdraw
+                            WHERE member_id = m.id
+                            AND jenis = 'trade'
+                        ) 
+                        - COALESCE((
+                            SELECT SUM(amount)
+                            FROM withdraw
+                            WHERE member_id = m.id
+                            AND jenis = 'balance' AND withdraw_type = 'fiat'
+                        ), 0) , 0) -- trade
+                            AS trade,
 
                         -- Jumlah referral aktif
                         COALESCE(COUNT(r.id), 0) AS referral
