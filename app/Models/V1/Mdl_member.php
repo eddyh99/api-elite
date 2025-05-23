@@ -463,38 +463,14 @@ public function check_upline($id_member)
     {
         try {
             $sql = "SELECT
-            CASE
-                WHEN s.status = 'free' THEN 'Free Member'
-                ELSE 'Normal Member'
-            END AS membership_status,
-            s.start_date,
-            CASE
-                WHEN s.status != 'expired' THEN 'active'
-                ELSE 'expired'
-            END AS subscription_status,
-            DATEDIFF(s.end_date, s.start_date) AS subscription_plan,
+            m.id,
+            m.created_at as start_date,
+            'Normal Member' as membership_status,
+            '-' as subscription_plan,
+            '-' as subscription_status,
             m.refcode
         FROM
             member m
-            LEFT JOIN (
-                SELECT
-                    member_id,
-                    start_date,
-                    end_date,
-                    status
-                FROM
-                    subscription
-                WHERE
-                    (member_id, start_date) IN (
-                        SELECT
-                            member_id,
-                            MAX(start_date)
-                        FROM
-                            subscription
-                        GROUP BY
-                            member_id
-                    )
-            ) s ON s.member_id = m.id
         WHERE
             m.email = ?";
 
@@ -507,7 +483,7 @@ public function check_upline($id_member)
                 ];
             }
     
-        } catch (\Throwable $th) {
+        } catch (\Exception $e) {
             return (object) [
                 'code'    => 500,
                 'message' => 'An unexpected error occurred. Please try again later.'
