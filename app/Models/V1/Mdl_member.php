@@ -41,42 +41,25 @@ class Mdl_member extends Model
                         m.refcode,
                         m.created_at,
                         m.status,
-
-                        -- Total capital member
-                        (
-                        -- from trade balance
-                            COALESCE((
-                                SELECT SUM(client_wallet)
-                                FROM wallet w
-                                WHERE w.member_id = m.id
-                            ), 0)
-                            +
-                            COALESCE((
-                                SELECT SUM(amount)
-                                FROM withdraw w
-                                WHERE w.member_id = m.id AND w.jenis = 'trade'
-                            ), 0)
-                            +
-                            COALESCE((
-                                SELECT SUM(amount)
-                                FROM member_deposit d
-                                WHERE d.member_id = m.id AND d.status = 'complete'
-                            ), 0)
-
-                            -- from fund balance
-                            +
-                            COALESCE((
-                                SELECT SUM(amount)
-                                FROM withdraw w
-                                WHERE w.member_id = m.id AND w.jenis = 'balance'
-                            ), 0)
-                            -
-                            COALESCE((
-                                SELECT SUM(amount)
-                                FROM withdraw w
-                                WHERE w.member_id = m.id AND w.jenis = 'withdraw'
-                            ), 0)
-                        ) AS initial_capital,
+                        COALESCE((
+                        SELECT SUM(amount)
+                        FROM member_deposit
+                        WHERE status = 'complete' AND member_id = m.id
+                    ), 0) -- deposit
+                    +
+                    COALESCE((
+                        SELECT SUM(amount)
+                        FROM withdraw
+                        WHERE member_id = m.id AND jenis = 'balance'
+                    ), 0) -- balance
+                    -
+                    COALESCE((
+                        SELECT SUM(amount)
+                        FROM withdraw
+                        WHERE member_id = m.id AND (
+                            (jenis = 'withdraw' AND status <> 'rejected')
+                            OR jenis = 'trade'
+                        )), 0) AS initial_capital,
 
                         -- Jumlah referral aktif
                         COALESCE(COUNT(r.id), 0) AS referral
