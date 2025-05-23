@@ -463,6 +463,7 @@ public function check_upline($id_member)
     {
         try {
             $sql = "SELECT
+            m.id,
             m.created_at as start_date,
             'Normal Member' as membership_status,
             '-' as subscription_plan,
