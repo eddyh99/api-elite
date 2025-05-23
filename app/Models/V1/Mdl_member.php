@@ -504,11 +504,14 @@ public function check_upline($id_member)
     public function get_downline_byId($id_member)
     {
         try {
-            $sql = "SELECT * 
-                        FROM member 
-                        
-                    WHERE id_referral = ? 
-                        AND is_delete = 0 
+            $sql = "SELECT
+                        *,
+                    '-' as subscription
+                    FROM
+                        member
+                    WHERE
+                        id_referral = 104
+                        AND is_delete = 0
                         AND status IN ('active', 'referral')";
             $query = $this->db->query($sql, [$id_member])->getResult();
 
@@ -543,7 +546,7 @@ public function check_upline($id_member)
                         m.refcode,
                         0 as commission,
                         COALESCE(COUNT(r.id), 0) AS referral,
-                        'elite' as product
+                        'hedgefund' as product
                     FROM
                         member m
                         LEFT JOIN member r ON r.id_referral = m.id
@@ -551,8 +554,8 @@ public function check_upline($id_member)
                         AND r.is_delete = FALSE
                     WHERE
                         m.is_delete = FALSE
-                        AND m.role = 'member'
-                        AND m.status = 'referral'
+                        AND m.role = 'referral'
+                        -- AND m.status = 'referral'
                     GROUP BY
                         m.role, m.id, m.email,
                         m.refcode, m.created_at, m.status";

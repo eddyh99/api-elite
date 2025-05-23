@@ -34,7 +34,7 @@ class Auth extends BaseController
 				]
 			],
 			'role' => [
-				'rules'  => 'required|in_list[member,admin,manager,superadmin]',
+				'rules'  => 'required|in_list[member,admin,manager,superadmin,referral]',
 				'errors' => [
 					'required' => 'User role is required.',
 					'in_list'  => 'Invalid user role.'
