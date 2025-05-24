@@ -149,27 +149,55 @@ class Mdl_deposit extends Model
     public function getBalance_byIdMember($id_member) {
         try {
             $sql = "SELECT
-                    COALESCE((
+                      -- USDT balance: deposits + balance withdraws - real withdraws/trades
+                      COALESCE((
                         SELECT SUM(amount)
                         FROM member_deposit
-                        WHERE status = 'complete' AND member_id = ?
-                    ), 0) -- deposit
-                    +
-                    COALESCE((
+                        WHERE status = 'complete' AND member_id = 25
+                      ), 0)
+                      +
+                      COALESCE((
                         SELECT SUM(amount)
                         FROM withdraw
-                        WHERE member_id = ? AND jenis = 'balance'
-                    ), 0) -- balance
-                    -
-                    COALESCE((
+                        WHERE member_id = 25 AND jenis = 'balance' AND withdraw_type = 'usdt'
+                      ), 0)
+                      -
+                      COALESCE((
                         SELECT SUM(amount)
                         FROM withdraw
-                        WHERE member_id = ? AND (
-                            (jenis = 'withdraw' AND status <> 'rejected')
-                            OR jenis = 'trade'
-                        )), 0) AS usdt, -- already withdrawn
+                        WHERE member_id = 25
+                          AND (
+                            (jenis = 'withdraw' AND status <> 'rejected' AND withdraw_type = 'usdt')
+                            OR (jenis = 'trade' AND withdraw_type = 'usdt')
+                          )
+                      ), 0) AS usdt,
                     
-                    0 as btc"; 
+                      -- BTC balance: balance - trade - actual withdrawn
+                      COALESCE((
+                        SELECT SUM(x.amount)
+                        FROM withdraw x
+                        WHERE x.member_id = 25
+                          AND x.jenis = 'balance'
+                          AND x.withdraw_type = 'btc'
+                      ), 0)
+                      -
+                      COALESCE((
+                        SELECT SUM(y.amount)
+                        FROM withdraw y
+                        WHERE y.member_id = 25
+                          AND y.jenis = 'trade'
+                          AND y.withdraw_type = 'btc'
+                      ), 0)
+                      -
+                      COALESCE((
+                        SELECT SUM(z.amount)
+                        FROM withdraw z
+                        WHERE z.member_id = 25
+                          AND (
+                            (z.jenis = 'withdraw' AND z.status <> 'rejected' AND z.withdraw_type = 'btc')
+                            OR (z.jenis = 'trade' AND z.withdraw_type = 'btc')
+                          )
+                      ), 0) AS btc;"; 
             $query = $this->db->query($sql, [$id_member, $id_member, $id_member])->getRow();
 
             return (object) [

@@ -6,7 +6,7 @@ function binanceAPI($url, $params = [], $method = "GET")
     $timestamp = round(microtime(true) * 1000);
     $params += ['timestamp' => $timestamp];
     $query_string = http_build_query($params);
-    
+
     // Buat tanda tangan (signature)
     $signature = hash_hmac('sha256', $query_string, $api_secret);
     

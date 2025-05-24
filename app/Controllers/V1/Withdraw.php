@@ -108,6 +108,9 @@ class Withdraw extends BaseController
             'destination' => [
                 'rules'  => 'required|in_list[trade,fund]',
             ],
+            'coin' => [
+                'rules'  => 'required|in_list[usdt,btc]',
+            ],
             'amount' => [
                 'rules' => 'required'
             ]
@@ -121,7 +124,7 @@ class Withdraw extends BaseController
 
         $mdata = [
             'member_id' => $data->id_member,
-            'withdraw_type' => $data->destination == 'fund' ? 'fiat' : 'usdt',
+            'withdraw_type' => $data->coin == 'usdt' ? 'usdt' : 'btc',
             'amount' => $data->amount ?? 0,
             'jenis' => $data->destination == 'fund' ? 'balance' : 'trade'
 
