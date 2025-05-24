@@ -153,19 +153,19 @@ class Mdl_deposit extends Model
                       COALESCE((
                         SELECT SUM(amount)
                         FROM member_deposit
-                        WHERE status = 'complete' AND member_id = 25
+                        WHERE status = 'complete' AND member_id = ?
                       ), 0)
                       +
                       COALESCE((
                         SELECT SUM(amount)
                         FROM withdraw
-                        WHERE member_id = 25 AND jenis = 'balance' AND withdraw_type = 'usdt'
+                        WHERE member_id = ? AND jenis = 'balance' AND withdraw_type = 'usdt'
                       ), 0)
                       -
                       COALESCE((
                         SELECT SUM(amount)
                         FROM withdraw
-                        WHERE member_id = 25
+                        WHERE member_id = ?
                           AND (
                             (jenis = 'withdraw' AND status <> 'rejected' AND withdraw_type = 'usdt')
                             OR (jenis = 'trade' AND withdraw_type = 'usdt')
@@ -176,7 +176,7 @@ class Mdl_deposit extends Model
                       COALESCE((
                         SELECT SUM(x.amount)
                         FROM withdraw x
-                        WHERE x.member_id = 25
+                        WHERE x.member_id = ?
                           AND x.jenis = 'balance'
                           AND x.withdraw_type = 'btc'
                       ), 0)
@@ -184,7 +184,7 @@ class Mdl_deposit extends Model
                       COALESCE((
                         SELECT SUM(y.amount)
                         FROM withdraw y
-                        WHERE y.member_id = 25
+                        WHERE y.member_id = ?
                           AND y.jenis = 'trade'
                           AND y.withdraw_type = 'btc'
                       ), 0)
@@ -192,13 +192,13 @@ class Mdl_deposit extends Model
                       COALESCE((
                         SELECT SUM(z.amount)
                         FROM withdraw z
-                        WHERE z.member_id = 25
+                        WHERE z.member_id = ?
                           AND (
                             (z.jenis = 'withdraw' AND z.status <> 'rejected' AND z.withdraw_type = 'btc')
                             OR (z.jenis = 'trade' AND z.withdraw_type = 'btc')
                           )
                       ), 0) AS btc;"; 
-            $query = $this->db->query($sql, [$id_member, $id_member, $id_member])->getRow();
+            $query = $this->db->query($sql, [$id_member, $id_member, $id_member,$id_member, $id_member, $id_member])->getRow();
 
             return (object) [
                 'code' => 200,
