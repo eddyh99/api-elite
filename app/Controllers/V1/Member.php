@@ -259,5 +259,9 @@ class Member extends BaseController
         return $this->respond(error_msg(201, "member", null, $result->message), 201);
     }
     
+    public function getList_activemember(){
+        $result = $this->member->get_activemember();
+        return $this->respond(error_msg($result->code, "member", null, $result->message), $result->code);
+    }
 
 }

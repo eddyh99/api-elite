@@ -407,7 +407,7 @@ public function check_upline($id_member)
                     (
                         SELECT COALESCE(COUNT(DISTINCT m.id), 0)
                         FROM member m
-                        WHERE m.status != 'disabled' AND m.is_delete = FALSE
+                        WHERE m.status != 'disabled' AND m.is_delete = FALSE AND m.role!='superadmin'
                     ) AS members,
                     
                     (
@@ -608,6 +608,97 @@ public function check_upline($id_member)
                 'message' => false
             ];
         }
+    }
+    
+    public function get_activemember(){
+        try {
+
+            $sql = "SELECT
+                        m.role,
+                        m.id,
+                        m.email,
+                        m.refcode,
+                        m.created_at,
+                        m.status,
+
+                        -- Total capital member
+                        (
+                        -- from trade balance
+                            COALESCE((
+                                SELECT SUM(client_wallet)
+                                FROM wallet w
+                                WHERE w.member_id = m.id
+                            ), 0)
+                            +
+                            COALESCE((
+                                SELECT SUM(amount)
+                                FROM withdraw w
+                                WHERE w.member_id = m.id AND w.jenis = 'trade'
+                            ), 0)
+                            +
+                            COALESCE((
+                                SELECT SUM(amount)
+                                FROM member_deposit d
+                                WHERE d.member_id = m.id AND d.status = 'complete'
+                            ), 0)
+
+                            -- from fund balance
+                            +
+                            COALESCE((
+                                SELECT SUM(amount)
+                                FROM withdraw w
+                                WHERE w.member_id = m.id AND w.jenis = 'balance'
+                            ), 0)
+                            -
+                            COALESCE((
+                                SELECT SUM(amount)
+                                FROM withdraw w
+                                WHERE w.member_id = m.id AND w.jenis = 'withdraw'
+                            ), 0)
+                        ) AS initial_capital,
+
+                        -- Jumlah referral aktif
+                        COALESCE(COUNT(r.id), 0) AS referral
+
+                    FROM member m
+
+                    LEFT JOIN member r
+                        ON r.id_referral = m.id
+                         AND r.status IN ('active', 'referral')
+                        AND r.is_delete = FALSE
+
+                    WHERE
+                        m.is_delete = FALSE
+                        AND m.role = 'member'
+                        AND m.status IN ('active','referral')
+                    GROUP BY
+                        m.role,
+                        m.id,
+                        m.email,
+                        m.refcode,
+                        m.created_at,
+                        m.status";
+                        
+            $query = $this->db->query($sql)->getResult();
+
+            if (!$query) {
+                return (object) [
+                    'code'    => 404,
+                    'message' => []
+                ];
+            }
+    
+        } catch (\Exception $e) {
+            return (object) [
+                'code'    => 500,
+                'message' => 'An error occurred'
+            ];
+        }
+
+        return (object) [
+            "code"    => 200,
+            "message"    => $query
+        ];
     }
 }
 
