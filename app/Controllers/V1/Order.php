@@ -116,6 +116,10 @@ class Order extends BaseController
         } 
         
         $cost = floor(($order->origQty * $data->limit) * 100) / 100;
+
+        if($order->status == 'FILLED') {
+            $cost = $order->cummulativeQuoteQty;
+        }
         
         $member = $this->getBTC_member($trade_balance, $cost, $signal->id, $data->type);
         $member_signal = $this->member_signal->add($member);
