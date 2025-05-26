@@ -113,10 +113,11 @@ class Order extends BaseController
         if (!isset($order->orderId) || !isset($order->origQty)) {
             $result['text'] = 'Order Failed.';
             return $this->respond(error_msg(400, "order", '01', $result), 400);
-        }  
+        } 
         
         $cost = floor(($order->origQty * $data->limit) * 100) / 100;
-        $member = $this->getBTC_member($trade_balance ,$order->origQty, $cost, $signal->id);
+        
+        $member = $this->getBTC_member($trade_balance, $cost, $signal->id, $data->type);
         $member_signal = $this->member_signal->add($member);
         if (@$member_signal->code != 201) {
             $result['text'] =  $member_signal->message;
@@ -127,8 +128,14 @@ class Order extends BaseController
 
     }
 
-    private function getBtc_member($trade_balance ,$amount_btc, $cost, $signal_id)
+    private function getBtc_member($trade_balance, $cost, $signal_id, $type)
     {
+        $amount_btc = $this->getBalance_BTC();
+        if($type != 'BUY A') {
+            $prev_signal = $this->signal->getPrev_signals($type)->message;
+            $amount_btc -= $prev_signal->btc;
+        } 
+
         $member = $this->deposit->getMember_tradeBalance();
         if ($member->code != 200) {
             return false;
@@ -152,6 +159,21 @@ class Order extends BaseController
             ];
         }
         return $mdata;
+    }
+
+    public function getBalance_BTC()
+    {
+        $url = BINANCEAPI . "/account";
+
+        $response = binanceAPI($url, []);
+        if (isset($response->code)) {
+            return false;
+        }
+
+		$btc = array_values(array_filter($response->balances, function ($bal) {
+			return $bal->asset === 'BTC';
+		}));
+        return $btc[0]->free;
     }
 
     public function postLimit_sell()
@@ -235,6 +257,21 @@ class Order extends BaseController
             $result['text'] = 'Order Failed.';
             return $this->respond(error_msg(400, "order", '01', $result), 400);
         }
+
+        // $member = array_map(function ($order) use ($data) {
+        //     return [
+        //         'member_id' => $order['id_member'],
+        //         'order_id' => $order['orderId'] ?? null,
+        //         'amount_btc' => $order['origQty'] ?? 0,
+        //         'sinyal_id'  => $data->signal_id
+        //     ];
+        // }, $orders);
+
+        // $member_signal = $this->member_signal->add($member);
+        // if (@$member_signal->code != 201) {
+        //     $result['text'] =  $member_signal->message;
+        //     return $this->respond(error_msg(400, "signal", '01', $result), 400);
+        // }
 
         return $this->respond(error_msg(201, "sell", null, $result), 201);
     }
@@ -367,24 +404,26 @@ class Order extends BaseController
         // Get the Binance order ID from the signal data
         $id_order = $order->message->order_id;
     
-        // Prepare Binance API endpoint and parameters
-        $url = BINANCEAPI . "/order";
-        $params = [
-            "symbol" => "BTCUSDT",
-            "orderId" => $id_order
-        ];
-    
-        // Call Binance API to cancel the order
-        $response = binanceAPI($url, $params, "DELETE");
-    
-        // If the API responds with an error code from binance
-        if (isset($response->code)) {
-            return $this->respond(error_msg(400, "binance", $response->code, $response->msg), 400);
-        }
-    
-        // If the order status is not 'CANCELED', treat it as a failure
-        if ($response->status != 'CANCELED') {
-            return $this->respond(error_msg(400, "binance", null, 'Failed to cancel order'), 400);
+        if(!is_null($id_order)) {
+            // Prepare Binance API endpoint and parameters
+            $url = BINANCEAPI . "/order";
+            $params = [
+                "symbol" => "BTCUSDT",
+                "orderId" => $id_order
+            ];
+        
+            // Call Binance API to cancel the order
+            $response = binanceAPI($url, $params, "DELETE");
+        
+            // If the API responds with an error code from binance
+            if (isset($response->code)) {
+                return $this->respond(error_msg(400, "binance", $response->code, $response->msg), 400);
+            }
+        
+            // If the order status is not 'CANCELED', treat it as a failure
+            if ($response->status != 'CANCELED') {
+                return $this->respond(error_msg(400, "binance", null, 'Failed to cancel order'), 400);
+            }
         }
     
         // Delete the signal

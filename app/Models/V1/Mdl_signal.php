@@ -65,6 +65,42 @@ class Mdl_signal extends Model
         }
     }
 
+    public function getPrev_signals($current_signal)
+    {
+        try {
+            $sql = "SELECT
+                        SUM(amount_btc) as btc
+                    FROM
+                        sinyal AS buy
+                    LEFT JOIN
+                        sinyal AS sell
+                        ON sell.pair_id = buy.id
+                        AND sell.type LIKE 'Sell%'
+                        AND sell.status = 'pending'
+                        AND sell.is_deleted = 'no'
+                    LEFT JOIN member_sinyal ms ON ms.sinyal_id = buy.id
+                    WHERE
+                        buy.type LIKE 'Buy%'
+                        AND buy.status != 'canceled'
+                        AND buy.type != ?
+                        AND buy.pair_id IS NULL
+                        AND buy.is_deleted = 'no'";
+
+            $query = $this->db->query($sql, [$current_signal])->getRow();
+
+            return (object) [
+                'code' => 200,
+                'message' => $query
+            ];
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred'
+            ];
+        }
+    }
+
     public function add($mdata, $sell = false)
     {
         try {
@@ -94,7 +130,7 @@ class Mdl_signal extends Model
         } catch (\Exception $e) {
             return (object) [
                 'code'    => 500,
-                'message' => 'An error occurred.'
+                'message' => 'An error occurred.' .$e
             ];
         }
     }
