@@ -700,5 +700,51 @@ public function check_upline($id_member)
             "message"    => $query
         ];
     }
+
+    public function history_transaction($id_member) {
+        try {
+            $sql = "SELECT
+                        w.requested_at as date,
+                        w.amount,
+                    'withdraw' as type
+                    FROM
+                        withdraw w
+                    WHERE
+                        w.member_id = ?
+                        AND w.status <> 'rejected'
+                        AND w.jenis = 'withdraw'
+                        
+                    UNION ALL
+                    
+                    SELECT
+                        created_at as date,
+                        amount,
+                        'deposit' as 'type'
+                    from
+                        member_deposit
+                    where
+                        member_id = ?
+                        AND status = 'complete'";
+            $query = $this->db->query($sql, [$id_member, $id_member])->getResult();
+
+            if(!$query) {
+                return (object) [
+                    'code' => 200,
+                    'message' => []
+                ];
+            }
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.'
+            ];
+        }
+
+        return (object) [
+            'code' => 200,
+            'message' => $query
+        ];
+    }
 }
 
