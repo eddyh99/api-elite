@@ -18,6 +18,7 @@ class Updateorder extends BaseController
         $this->deposit  = model('App\Models\V1\Mdl_deposit');
         $this->commission  = model('App\Models\V1\Mdl_commission');
         $this->wallet  = model('App\Models\V1\Mdl_wallet');
+        $this->member_signal  = model('App\Models\V1\Mdl_member_signal');
     }
 
     public function getIndex()
@@ -55,15 +56,18 @@ class Updateorder extends BaseController
         $mdata = [];
         $profits = [];
         $commissions = [];
+        $member_signal = [];
 
         foreach($orders as $order) {
             $status = $this->updateOrder($order->order_id);
             $mdata['order'][] = $status->order;
 
             if ($status->side === 'SELL' && $status->order['status'] == 'filled') {
-                $takeProfitData = $this->take_profits($status->cummulativeQuoteQty, $order->order_id, $order->pair_id);
+                $total_usdt = ($status->cummulativeQuoteQty - $status->commission);
+                $takeProfitData = $this->take_profits($status->origQty, $total_usdt, $order->order_id, $order->id, $order->pair_id);
                 $profits = array_merge($profits, $takeProfitData['profits']);
                 $commissions = array_merge($commissions, $takeProfitData['commissions']);
+                $member_signal = array_merge($member_signal, $takeProfitData['member_signal']);
 
                 // isi pair_id buy!
                 $mdata['pair_id'][] = [
@@ -97,6 +101,12 @@ class Updateorder extends BaseController
             log_message('info', 'MEMBER COMMISSION: ' . json_encode($commissions));
         }
 
+        // add member signal (sell)
+        if (!empty($member_signal)) {
+            $this->member_signal->add($member_signal);
+            log_message('info', 'MEMBER SIGNAL: ' . json_encode($member_signal));
+        }
+
         $result = $this->signal->updateStatus_byOrder($mdata);
         if (@$result->code != 201) {
             return $this->respond(error_msg($result->code, "buy", "01", $result->message), $result->code);
@@ -120,6 +130,12 @@ class Updateorder extends BaseController
             $is_filled = $response->status === 'FILLED' ? 'filled' : 'pending';
             $side = $response->side;
             $cummulativeQuoteQty = $response->cummulativeQuoteQty;
+            $origQty = $response->origQty;
+
+            $commission = 0;
+            if (!empty($response->fills) && isset($response->fills[0]->commission)) {
+                $commission = $response->fills[0]->commission;
+            }
         }
     
         $result =  (object) [
@@ -128,42 +144,47 @@ class Updateorder extends BaseController
                 'order_id' => $order_id,
             ],
             'side'  => $side ?? null,
-            'cummulativeQuoteQty' => $cummulativeQuoteQty ?? 0
+            'cummulativeQuoteQty' => $cummulativeQuoteQty ?? 0,
+            'origQty' => $origQty ?? 0,
+            'commission' => $commission ?? 0
         ]; 
         
         log_message('info', 'STATUS ORDER: ' . json_encode($result));
         return $result;
     }
 
-    private function take_profits($sell_amount, $order_id, $pair_id)
+    private function take_profits($total_btc, $sell_amount, $order_id, $signal_id, $pair_id)
     {
         // Retrieve buy orders based on the selected pair
         $signal_buy = $this->signal->get_orders($pair_id);
     
         // If the response is not successful
         if ($signal_buy->code !== 200) {
-            return ['profits' => [], 'commissions' => []];
+            return ['profits' => [], 'commissions' => [], 'member_signal' => []];
         }
-    
-        // Get the total amount (in USDT) used for the buy orders
-        $buy_amount = $signal_buy->message[0]->total_usdt;
     
         $profits = [];
         $commissions = [];
+        $member_signal = [];
     
         
         foreach ($signal_buy->message as $m) {
             // Calculate profit (difference between sell and buy)
-            $total_profit = $sell_amount - $buy_amount;
-    
-            // Calculate member profit
-            $m_profit = ($m->amount_usdt / $buy_amount) * $total_profit;
+            $amount_usdt = ($m->amount_btc / $total_btc) * $sell_amount;
+            $profit = $amount_usdt - $m->amount_usdt; //margin
     
             // 10% commission
-            $m_commission = $m_profit * 0.1;
+            $m_commission = $profit * 0.1;
     
             // Net profit 
-            $netProfit = $m_profit - $m_commission;
+            $netProfit = $profit - $m_commission;
+
+            $member_signal[] = [
+                'member_id'    => $m->member_id,
+                'amount_btc'   => $m->amount_btc,
+                'amount_usdt'  => $amount_usdt,
+                'sinyal_id'    => $signal_id
+            ];
     
             // Split the net profit equally between master and client wallets
             $profits[] = [
@@ -184,7 +205,7 @@ class Updateorder extends BaseController
         }
     
         // Return the final profit and commission distributions
-        return ['profits' => $profits, 'commissions' => $commissions];
+        return ['profits' => $profits, 'commissions' => $commissions, 'member_signal' => $member_signal];
     }
     
     private function updateOrdersAll($type, $signal) {
