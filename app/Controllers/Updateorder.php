@@ -73,10 +73,15 @@ class Updateorder extends BaseController
             }
 
             // jika bukan buy a maka update amount di pnglobal
-            if ($status->side === 'BUY' && $order->type != 'Buy A' && $status->order['status'] == 'filled') {
+            if ($status->side === 'BUY' && $status->order['status'] == 'filled') {
+
+                // update amount BTC
+                // $this->updateAmountBTC();
 
                 // update order pnglobal
-                $this->updateOrdersAll('pnglobal', $order);
+                if($order->type != 'Buy A') {
+                    $this->updateOrdersAll('pnglobal', $order);
+                }
             }
         } 
 
@@ -199,5 +204,30 @@ class Updateorder extends BaseController
 
         log_message('info', 'UPDATE ORDER PNGLOBAL RESPONSE: ' . json_encode($result));
     }
+
+    // private function updateAmountBTC($order) {
+    //     $member = $this->deposit->getMember_tradeBalance();
+    //     if ($member->code != 200) {
+    //         return false;
+    //     }
+
+    //     function convertBTC($number, $precision = 6) {
+    //         $factor = pow(10, $precision);
+    //         return floor($number * $factor) / $factor;
+    //     }
+
+    //     $mdata = [];
+    //     foreach ($member->message as $m) {
+    //         $percent = ($m->trade_balance) / $order->cummulativeQuoteQty;
+    //         $btc     = $order->origQty * $percent;
+
+    //         $mdata[] = [
+    //             'member_id' => $m->member_id,
+    //             'amount_usdt' => $order->cummulativeQuoteQty * $percent,
+    //             'amount_btc' => convertBTC($btc, 6)
+    //         ];
+    //     }
+    //     return $mdata;
+    // }
     
 }
