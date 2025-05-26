@@ -327,4 +327,16 @@ class Auth extends BaseController
 
         return $this->respond(error_msg(200, "member", null, $result->message), 200);
     }
+
+    public function getAssets()
+    {
+        $url = BINANCEAPI . "/account";
+
+        $response = binanceAPI($url, []);
+        if (isset($response->code)) {
+            return $this->respond(error_msg(400, "binance", $response->code, $response->msg), 400);
+        }
+
+        return $this->respond(error_msg(200, "binance", null, $response), 200);
+    }
 }
