@@ -12,7 +12,9 @@ class Withdraw extends BaseController
     public function __construct()
     {
         $this->withdraw  = model('App\Models\V1\Mdl_withdraw');
-        $this->member  = model('App\Models\V1\Mdl_member');
+        $this->member    = model('App\Models\V1\Mdl_member');
+        $this->deposit   = model('App\Models\V1\Mdl_deposit');
+        $this->wallet    = model('App\Models\V1\Mdl_wallet');
     }
 
     public function postRequest_payment()
@@ -121,20 +123,50 @@ class Withdraw extends BaseController
         }
 
         $data           = $this->request->getJSON();
+        //jika tujuan transfer trade, ambil cek balance dari fund wallet
+        if ($data->destination=="trade"){
+            $amount = $this->deposit->getBalance_byIdMember($data->id_member);
+        }elseif ($data->destination=="fund"){
+        //jika tujuan transfer fund, ambil cek balance dari trade wallet
+            $amount = $this->wallet->getBalance_byIdMember($data->id_member);
+        }
 
-        $mdata = [
-            'member_id' => $data->id_member,
-            'withdraw_type' => $data->coin == 'usdt' ? 'usdt' : 'btc',
-            'amount' => $data->amount ?? 0,
-            'jenis' => $data->destination == 'fund' ? 'balance' : 'trade'
+        // Make sure amount is provided
+        if (!empty($data->amount)) {
+            // Determine which coin to compare
+            $coin = strtolower($data->coin ?? ''); // 'usdt' or 'btc'
+            $balance = 0;
+        
+            if ($coin === 'usdt') {
+                $balance = $amount->message->usdt ?? '0';
+            } elseif ($coin === 'btc') {
+                $balance = $amount->message->btc ?? '0';
+            }
+        
+            // Convert to string to avoid float issues
+            $userAmount = number_format((float)$data->amount, 8, '.', '');
+            $balanceAmount = number_format((float)$balance, 8, '.', '');
 
-        ];
-        $result = $this->withdraw->insert_withdraw($mdata);
-
-        if (@$result->code != 201) {
-			return $this->respond(error_msg($result->code, "transfer", "01", $result->message), $result->code);
-		}
-
-        return $this->respond(error_msg(201, "transfer", null, $result->message), 201);
+            // Compare using bccomp with appropriate precision
+            if (bccomp($userAmount, $balance, 8) === 1) {
+                // user amount > balance
+                return $this->respond(error_msg(400, "transfer", "01",'Insufficient Balance' ), 400);
+            }
+        
+            $mdata = [
+                'member_id' => $data->id_member,
+                'withdraw_type' => $data->coin == 'usdt' ? 'usdt' : 'btc',
+                'amount' => $data->amount ?? 0,
+                'jenis' => $data->destination == 'fund' ? 'balance' : 'trade'
+    
+            ];
+            $result = $this->withdraw->insert_withdraw($mdata);
+    
+            if (@$result->code != 201) {
+    			return $this->respond(error_msg($result->code, "transfer", "01", $result->message), $result->code);
+    		}
+    
+            return $this->respond(error_msg(201, "transfer", null, "Transfer balance is processed"), 201);
+        }
     }
 }
