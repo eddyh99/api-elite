@@ -705,31 +705,20 @@ public function check_upline($id_member)
         ];
     }
 
-    public function history_transaction($id_member) {
+    public function history_trade($id_member) {
         try {
             $sql = "SELECT
-                        w.requested_at as date,
-                        w.amount,
-                    'withdraw' as type
+                        ms.created_at as date,
+                        ms.amount_btc,
+                        ms.amount_usdt,
+                        s.entry_price,
+                        SUBSTRING_INDEX(s.type, ' ', 1) AS position
                     FROM
-                        withdraw w
+                        member_sinyal ms
+                    INNER JOIN sinyal s ON s.id = ms.sinyal_id
                     WHERE
-                        w.member_id = ?
-                        AND w.status <> 'rejected'
-                        AND w.jenis = 'withdraw'
-                        
-                    UNION ALL
-                    
-                    SELECT
-                        created_at as date,
-                        amount,
-                        'deposit' as 'type'
-                    from
-                        member_deposit
-                    where
-                        member_id = ?
-                        AND status = 'complete'";
-            $query = $this->db->query($sql, [$id_member, $id_member])->getResult();
+                        member_id = ?";
+            $query = $this->db->query($sql, [$id_member])->getResult();
 
             if(!$query) {
                 return (object) [

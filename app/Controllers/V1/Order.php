@@ -134,7 +134,7 @@ class Order extends BaseController
 
     private function getBtc_member($trade_balance, $cost, $signal_id, $type)
     {
-        $amount_btc = $this->getBalance_BTC();
+        $amount_btc = $this->getAssets("BTC");
         if($type != 'BUY A') {
             $prev_signal = $this->signal->getPrev_signals($type)->message;
             $amount_btc -= $prev_signal->btc;
@@ -165,7 +165,7 @@ class Order extends BaseController
         return $mdata;
     }
 
-    public function getBalance_BTC()
+    public function getAssets($coin)
     {
         $url = BINANCEAPI . "/account";
 
@@ -174,8 +174,8 @@ class Order extends BaseController
             return false;
         }
 
-		$btc = array_values(array_filter($response->balances, function ($bal) {
-			return $bal->asset === 'BTC';
+		$btc = array_values(array_filter($response->balances, function ($bal) use ($coin){
+			return $bal->asset === $coin;
 		}));
         return $btc[0]->free;
     }
@@ -261,21 +261,6 @@ class Order extends BaseController
             $result['text'] = 'Order Failed.';
             return $this->respond(error_msg(400, "order", '01', $result), 400);
         }
-
-        // $member = array_map(function ($order) use ($data) {
-        //     return [
-        //         'member_id' => $order['id_member'],
-        //         'order_id' => $order['orderId'] ?? null,
-        //         'amount_btc' => $order['origQty'] ?? 0,
-        //         'sinyal_id'  => $data->signal_id
-        //     ];
-        // }, $orders);
-
-        // $member_signal = $this->member_signal->add($member);
-        // if (@$member_signal->code != 201) {
-        //     $result['text'] =  $member_signal->message;
-        //     return $this->respond(error_msg(400, "signal", '01', $result), 400);
-        // }
 
         return $this->respond(error_msg(201, "sell", null, $result), 201);
     }

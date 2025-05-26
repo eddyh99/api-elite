@@ -168,6 +168,7 @@ class Mdl_signal extends Model
                         ms.member_id,
                         s.order_id,
                         ms.amount_usdt,
+                        ms.amount_btc,
                         m.id_referral AS upline,
                         (
                             SELECT COALESCE(SUM(ms2.amount_usdt), 0)
