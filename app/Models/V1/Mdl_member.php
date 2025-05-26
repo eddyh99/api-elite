@@ -201,7 +201,7 @@ class Mdl_member extends Model
             $member->insert($data);
             $id     = $this->db->insertID();
 
-            if(!$data['refcode']) {
+            if(!$data['refcode'] && $data['role'] == 'referral') {
                 $mdata = array(
                     "refcode"   => substr($this->generate_token($id),0,8),
                 );
