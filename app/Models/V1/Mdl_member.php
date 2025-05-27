@@ -707,18 +707,46 @@ public function check_upline($id_member)
 
     public function history_trade($id_member) {
         try {
-            $sql = "SELECT
-                        ms.created_at as date,
-                        ms.amount_btc,
-                        ms.amount_usdt,
-                        s.entry_price,
-                        SUBSTRING_INDEX(s.type, ' ', 1) AS position
-                    FROM
-                        member_sinyal ms
-                    INNER JOIN sinyal s ON s.id = ms.sinyal_id
-                    WHERE
-                        member_id = ?";
-            $query = $this->db->query($sql, [$id_member])->getResult();
+            $sql = "-- order filled
+                        SELECT
+                            s.status,
+                            s.entry_price,
+                            s.created_at AS date,
+                            CASE
+                                WHEN s.status = 'pending' THEN 0
+                                ELSE ms.amount_btc
+                            END AS amount_btc,
+                            ms.amount_usdt,
+                            SUBSTRING_INDEX(s.type, ' ', 1) AS position
+                        FROM
+                            sinyal s
+                            INNER JOIN member_sinyal ms ON ms.sinyal_id = s.id
+                        WHERE
+                            ms.member_id = ?
+
+                        UNION ALL
+
+                        -- order pending/canceled
+                        SELECT
+                            s.status,
+                            s.entry_price,
+                            s.created_at AS date,
+                            CASE 
+                                WHEN SUBSTRING_INDEX(s.type, ' ', 1) = 'Buy' THEN 0 
+                                ELSE ms.amount_btc 
+                            END AS amount_btc,
+                            CASE 
+                                WHEN SUBSTRING_INDEX(s.type, ' ', 1) = 'Sell' THEN 0 
+                                ELSE ms.amount_usdt 
+                            END AS amount_usdt,
+                            SUBSTRING_INDEX(s.type, ' ', 1) AS position
+                        FROM
+                            sinyal s
+                            INNER JOIN member_sinyal ms ON ms.sinyal_id = s.pair_id
+                        WHERE
+                            ms.member_id = ?
+                            AND s.status != 'filled'";
+            $query = $this->db->query($sql, [$id_member, $id_member])->getResult();
 
             if(!$query) {
                 return (object) [
