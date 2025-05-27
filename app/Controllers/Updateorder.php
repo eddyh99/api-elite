@@ -172,12 +172,11 @@ class Updateorder extends BaseController
             // Calculate profit (difference between sell and buy)
             $amount_usdt = ($m->amount_btc / $total_btc) * $sell_amount;
             $profit = $amount_usdt - $m->amount_usdt; //margin
-    
-            // 10% commission
-            $m_commission = $profit * 0.1;
-    
+
             // Net profit 
-            $netProfit = $profit - $m_commission;
+            $netProfit = $profit - (0.01*$profit);
+            $m_commission = ($netProfit/2) * 0.1;
+    
 
             $member_signal[] = [
                 'member_id'    => $m->member_id,
