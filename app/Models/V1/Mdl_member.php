@@ -94,7 +94,6 @@ class Mdl_member extends Model
 
                     WHERE
                         m.is_delete = FALSE
-                        AND m.role = 'member'
 
                     GROUP BY
                         m.role,
@@ -468,11 +467,16 @@ public function check_upline($id_member)
         try {
             $sql = "SELECT
             m.id,
-            m.created_at as start_date,
-            'Normal Member' as membership_status,
-            '-' as subscription_plan,
-            '-' as subscription_status,
-            m.refcode
+            m.created_at AS start_date,
+            CASE 
+                WHEN m.role = 'member' THEN 'Normal Member'
+                WHEN m.role = 'referral' THEN 'Referral Member'
+                ELSE 'Unknown'
+            END AS membership_status,
+            '-' AS subscription_plan,
+            '-' AS subscription_status,
+            m.refcode,
+            m.role
         FROM
             member m
         WHERE
@@ -510,7 +514,7 @@ public function check_upline($id_member)
                     FROM
                         member
                     WHERE
-                        id_referral = 104
+                        id_referral = ?
                         AND is_delete = 0
                         AND status IN ('active', 'referral')";
             $query = $this->db->query($sql, [$id_member])->getResult();

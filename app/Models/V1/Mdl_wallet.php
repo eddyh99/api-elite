@@ -53,7 +53,18 @@ class Mdl_wallet extends Model
                             FROM wallet
                             WHERE member_id = ?
                         ), 0) -- wallet
-
+                        - COALESCE(
+                            (SELECT SUM(
+                               CASE
+                                 WHEN s.type LIKE 'Buy%'  THEN ms.amount_usdt
+                                 ELSE 0
+                               END
+                             )
+                             FROM member_sinyal ms
+                             JOIN sinyal s  ON s.id = ms.sinyal_id
+                             WHERE ms.member_id = ?
+                            ), 0
+                          )
                         + COALESCE((
                             SELECT SUM(amount)
                             FROM withdraw
@@ -64,11 +75,41 @@ class Mdl_wallet extends Model
                             SELECT SUM(amount)
                             FROM withdraw
                             WHERE member_id = ?
-                            AND jenis = 'balance' AND withdraw_type = 'fiat'
+                            AND jenis = 'balance'
+       						AND withdraw_type = 'usdt'
                         ), 0) , 0) -- trade
                             AS usdt,
-                        0 as btc"; 
-            $query = $this->db->query($sql, [$id_member, $id_member, $id_member])->getRow();
+                      COALESCE(
+                        (SELECT SUM(
+                           CASE
+                             WHEN s.type LIKE 'Buy%'  THEN ms.amount_btc
+                             WHEN s.type LIKE 'Sell%' THEN -ms.amount_btc
+                             ELSE 0
+                           END
+                         )
+                         FROM member_sinyal ms
+                         JOIN sinyal s  ON s.id = ms.sinyal_id
+                         WHERE ms.member_id = ?
+                        ), 0
+                      )
+                      + COALESCE(
+                        (SELECT SUM(x.amount)
+                         FROM withdraw x
+                         WHERE x.member_id     = ?
+                           AND x.jenis         = 'trade'
+                           AND x.withdraw_type = 'btc'
+                        ), 0
+                      )
+                      - COALESCE(
+                        (SELECT SUM(y.amount)
+                         FROM withdraw y
+                         WHERE y.member_id     = ?
+                           AND y.jenis         = 'balance'
+                           AND y.withdraw_type = 'btc'
+                        ), 0
+                      )
+                      AS btc;"; 
+            $query = $this->db->query($sql, [$id_member, $id_member,$id_member, $id_member,$id_member, $id_member, $id_member])->getRow();
 
             return (object) [
                 'code' => 200,
