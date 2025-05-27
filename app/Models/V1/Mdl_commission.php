@@ -92,17 +92,9 @@ class Mdl_commission extends Model
     {
         try {
             $sql = "SELECT
-                        COALESCE(comm.total_commission, 0)
-                        - (COALESCE(wd.transfered, 0) * 2) AS usdt
-                    FROM (
                         SELECT SUM(commission) AS total_commission
-                        FROM ({$this->getSql_commission()}) AS all_commission
-                    ) AS comm
-                    LEFT JOIN (
-                        SELECT SUM(amount) AS transfered
-                        FROM withdraw
-                        WHERE member_id = ? AND jenis = 'balance' AND withdraw_type = 'usdt'
-                    ) AS wd ON 1 = 1";
+                    FROM
+                        FROM ({$this->getSql_commission()} AS usdt";
 
             $query = $this->db->query($sql, [$id_member, $id_member, $id_member, $id_member])->getRow();
 
