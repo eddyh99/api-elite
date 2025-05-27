@@ -164,6 +164,25 @@ class Mdl_signal extends Model
     public function get_orders($id_signal)
     {
         try {
+            // $sql = "SELECT
+            //             ms.member_id,
+            //             s.order_id,
+            //             ms.amount_usdt,
+            //             ms.amount_btc,
+            //             m.id_referral AS upline,
+            //             (
+            //                 SELECT COALESCE(SUM(ms2.amount_usdt), 0)
+            //                 FROM member_sinyal ms2
+            //                 WHERE ms2.sinyal_id = s.id
+            //             ) AS total_usdt
+            //         FROM
+            //             sinyal s
+            //             INNER JOIN member_sinyal ms ON ms.sinyal_id = s.id
+            //             INNER JOIN member m ON m.id = ms.member_id
+            //         WHERE
+            //             s.id = ?
+            //             AND s.is_deleted = 'no'";
+
             $sql = "SELECT
                         ms.member_id,
                         s.order_id,
@@ -181,7 +200,38 @@ class Mdl_signal extends Model
                         INNER JOIN member m ON m.id = ms.member_id
                     WHERE
                         s.id = ?
-                        AND s.is_deleted = 'no'";
+                        AND s.is_deleted = 'no'
+                        AND (
+                            -- Hitung saldo BTC dan bandingkan dengan amount_btc
+                            (
+                                COALESCE((
+                                    SELECT SUM(
+                                        CASE
+                                            WHEN s2.type LIKE 'Buy%' THEN ms2.amount_btc
+                                            WHEN s2.type LIKE 'Sell%' THEN -ms2.amount_btc
+                                            ELSE 0
+                                        END)
+                                    FROM member_sinyal ms2
+                                    JOIN sinyal s2 ON s2.id = ms2.sinyal_id
+                                    WHERE ms2.member_id = ms.member_id
+                                    AND s2.status = 'filled'
+                                ), 0)
+                                + COALESCE((
+                                    SELECT SUM(w.amount)
+                                    FROM withdraw w
+                                    WHERE w.member_id = ms.member_id
+                                    AND w.jenis = 'trade'
+                                    AND w.withdraw_type = 'btc'
+                                ), 0)
+                                - COALESCE((
+                                    SELECT SUM(w2.amount)
+                                    FROM withdraw w2
+                                    WHERE w2.member_id = ms.member_id
+                                    AND w2.jenis = 'balance'
+                                    AND w2.withdraw_type = 'btc'
+                                ), 0)
+                            ) >= ms.amount_btc
+                        )";
             $query = $this->db->query($sql, [$id_signal])->getResult();
 
             if (!$query) {
@@ -336,14 +386,59 @@ class Mdl_signal extends Model
     public function getBtc_bySignal($id_signal)
     {
         try {
-            $sql = "SELECT
-                        COALESCE( sum(ms.amount_btc), 0) as btc,
+            // $sql = "SELECT
+            //             COALESCE( sum(ms.amount_btc), 0) as btc,
+            //             status
+            //         FROM
+            //             sinyal
+            //             INNER JOIN member_sinyal ms ON ms.sinyal_id = sinyal.id
+            //         where
+            //             sinyal.id = ?";
+
+            $sql = "SELECT 
+                        SUM(btc_buy) AS btc,
                         status
-                    FROM
-                        sinyal
-                        INNER JOIN member_sinyal ms ON ms.sinyal_id = sinyal.id
-                    where
-                        sinyal.id = ?";
+                    FROM (
+                        SELECT 
+                            ms.member_id,
+                            sinyal.status,
+                            ms.amount_btc AS btc_buy,
+
+                            (
+                                COALESCE((
+                                    SELECT SUM(
+                                        CASE
+                                            WHEN s.type LIKE 'Buy%' THEN ms2.amount_btc
+                                            WHEN s.type LIKE 'Sell%' THEN -ms2.amount_btc
+                                            ELSE 0
+                                        END)
+                                    FROM member_sinyal ms2
+                                    JOIN sinyal s ON s.id = ms2.sinyal_id
+                                    WHERE ms2.member_id = ms.member_id
+                                    AND s.status = 'filled'
+                                ), 0)
+                                + COALESCE((
+                                    SELECT SUM(w.amount)
+                                    FROM withdraw w
+                                    WHERE w.member_id = ms.member_id
+                                    AND w.jenis = 'trade'
+                                    AND w.withdraw_type = 'btc'
+                                ), 0)
+                                - COALESCE((
+                                    SELECT SUM(w2.amount)
+                                    FROM withdraw w2
+                                    WHERE w2.member_id = ms.member_id
+                                    AND w2.jenis = 'balance'
+                                    AND w2.withdraw_type = 'btc'
+                                ), 0)
+                            ) AS btc_balance
+
+                        FROM sinyal
+                        JOIN member_sinyal ms ON ms.sinyal_id = sinyal.id
+                        WHERE sinyal.id = ?
+                        GROUP BY ms.member_id, ms.amount_btc
+                        HAVING btc_balance >= btc_buy
+                    ) AS eligible_members";
             $query = $this->db->query($sql, $id_signal)->getRow();
 
             if (is_null($query->status)) {
@@ -356,7 +451,7 @@ class Mdl_signal extends Model
         } catch (\Exception $e) {
             return (object) [
                 'code' => 500,
-                'message' => 'An error occurred'
+                'message' => 'An error occurred' . $e
             ];
         }
 
