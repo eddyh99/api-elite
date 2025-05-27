@@ -523,5 +523,37 @@ class Mdl_signal extends Model
             ];
         }
     }
+
+    public function checkPending_sell()
+    {
+        try {
+            $sql = "SELECT 1
+                    FROM sinyal
+                    WHERE SUBSTRING_INDEX(type, ' ', 1) = 'Sell'
+                      AND status = 'pending'
+                    LIMIT 1";
+    
+            $query = $this->db->query($sql);
+    
+            if ($query->getNumRows() > 0) {
+                return (object) [
+                    'code'    => 200,
+                    'message' => true,
+                ];
+            } else {
+                return (object) [
+                    'code'    => 200,
+                    'message' => false,
+                ];
+            }
+    
+        } catch (\Exception $e) {
+            return (object) [
+                'code'    => 500,
+                'message' => true,
+                'error'   => $e->getMessage()
+            ];
+        }
+    }
     
 }

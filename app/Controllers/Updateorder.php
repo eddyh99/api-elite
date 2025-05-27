@@ -173,10 +173,12 @@ class Updateorder extends BaseController
             $amount_usdt = ($m->amount_btc / $total_btc) * $sell_amount;
             $profit = $amount_usdt - $m->amount_usdt; //margin
 
-            // Net profit 
-            $netProfit = $profit - (0.01*$profit);
-            $m_commission = ($netProfit/2) * 0.1;
     
+            // Net profit 
+            $netProfit = $profit - (0.01 * $profit);
+
+            // 10% commission
+            $m_commission = ($netProfit/2) * 0.1;
 
             $member_signal[] = [
                 'member_id'    => $m->member_id,
