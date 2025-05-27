@@ -15,6 +15,7 @@ class Withdraw extends BaseController
         $this->member    = model('App\Models\V1\Mdl_member');
         $this->deposit   = model('App\Models\V1\Mdl_deposit');
         $this->wallet    = model('App\Models\V1\Mdl_wallet');
+        $this->signal    = model('App\Models\V1\Mdl_signal');
     }
 
     public function postRequest_payment()
@@ -130,6 +131,13 @@ class Withdraw extends BaseController
         //jika tujuan transfer fund, ambil cek balance dari trade wallet
             $amount = $this->wallet->getBalance_byIdMember($data->id_member);
         }
+
+        // check pending sell
+        if ($data->destination == "fund" && $data->coin == 'btc') {
+            if ($this->signal->checkPending_sell()->message == true) {
+                return $this->respond(error_msg(400, "Sell", null, "Cannot process because there is a pending sell order."), 400);
+            }
+        }        
 
         // Make sure amount is provided
         if (!empty($data->amount)) {
