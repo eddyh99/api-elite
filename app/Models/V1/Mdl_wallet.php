@@ -47,38 +47,49 @@ class Mdl_wallet extends Model
 
     public function getBalance_byIdMember($id_member) {
         try {
-            $sql = "SELECT
-                        COALESCE((
-                            SELECT SUM(client_wallet)
-                            FROM wallet
-                            WHERE member_id = ?
-                        ), 0) -- wallet
-                        - COALESCE(
-                            (SELECT SUM(
-                               CASE
-                                 WHEN s.type LIKE 'Buy%'  THEN ms.amount_usdt
-                                 ELSE 0
-                               END
-                             )
-                             FROM member_sinyal ms
-                             JOIN sinyal s  ON s.id = ms.sinyal_id
-                             WHERE ms.member_id = ?
-                            ), 0
-                          )
-                        + COALESCE((
-                            SELECT SUM(amount)
-                            FROM withdraw
-                            WHERE member_id = ?
-                            AND jenis = 'trade'
-                        ) 
-                        - COALESCE((
-                            SELECT SUM(amount)
-                            FROM withdraw
-                            WHERE member_id = ?
-                            AND jenis = 'balance'
-       						AND withdraw_type = 'usdt'
-                        ), 0) , 0) -- trade
-                            AS usdt,
+            $sql = "SELECT 
+                        FLOOR((
+                            COALESCE((
+                                SELECT -SUM(master_wallet)
+                                FROM wallet
+                                WHERE member_id = ?
+                            ), 0)
+                            - COALESCE((
+                                SELECT SUM(
+                                    CASE
+                                        WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt
+                                    END
+                                )
+                                FROM member_sinyal ms
+                                JOIN sinyal s ON s.id = ms.sinyal_id
+                                WHERE ms.member_id = ?
+                                AND s.status != 'canceled'
+                            ), 0)
+                            + COALESCE((
+                                SELECT SUM(
+                                    CASE
+                                        WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt
+                                    END
+                                )
+                                FROM member_sinyal ms
+                                JOIN sinyal s ON s.id = ms.sinyal_id
+                                WHERE ms.member_id = ?
+                                AND s.status = 'filled'
+                            ), 0)
+                            + COALESCE((
+                                SELECT SUM(amount)
+                                FROM withdraw
+                                WHERE member_id = ?
+                                AND jenis = 'trade'
+                            ), 0)
+                            - COALESCE((
+                                SELECT SUM(amount)
+                                FROM withdraw
+                                WHERE member_id = ?
+                                AND jenis = 'balance'
+                                AND withdraw_type = 'usdt'
+                            ), 0)
+                        ) * 100) / 100 AS usdt,
                       COALESCE(
                         (SELECT SUM(
                            CASE
@@ -90,6 +101,7 @@ class Mdl_wallet extends Model
                          FROM member_sinyal ms
                          JOIN sinyal s  ON s.id = ms.sinyal_id
                          WHERE ms.member_id = ?
+                         AND s.status='filled'
                         ), 0
                       )
                       + COALESCE(
@@ -109,7 +121,7 @@ class Mdl_wallet extends Model
                         ), 0
                       )
                       AS btc;"; 
-            $query = $this->db->query($sql, [$id_member, $id_member,$id_member, $id_member,$id_member, $id_member, $id_member])->getRow();
+            $query = $this->db->query($sql, [$id_member, $id_member,$id_member, $id_member,$id_member, $id_member, $id_member, $id_member])->getRow();
 
             return (object) [
                 'code' => 200,
