@@ -159,7 +159,7 @@ class Mdl_deposit extends Model
                       COALESCE((
                         SELECT SUM(amount)
                         FROM withdraw
-                        WHERE member_id = ? AND jenis = 'balance' AND withdraw_type = 'usdt'
+                        WHERE member_id = ? AND (jenis = 'balance' or jenis='comission') AND withdraw_type = 'usdt'
                       ), 0)
                       -
                       COALESCE((

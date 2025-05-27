@@ -160,15 +160,15 @@ class Mdl_commission extends Model
             member m ON md.member_id = m.id
         WHERE 
             m.id_referral = ?
+            AND md.status='complete'
 
         UNION ALL
-
+        
         SELECT 
             w.requested_at as date,
-            w.amount AS commission,
+            -w.amount AS commission,
             CASE 
-                WHEN w.jenis = 'trade' THEN 'Transfer to trade balance'
-                WHEN w.jenis = 'balance' THEN 'Transfer to fund balance'
+                WHEN w.jenis = 'comission' THEN 'Transfer to fund balance'
                 ELSE CONCAT(w.jenis,' ',withdraw_type)
             END AS description,
             w.status
@@ -177,10 +177,10 @@ class Mdl_commission extends Model
         WHERE 
             w.member_id = ?
             AND w.status <> 'rejected'
-            AND w.withdraw_type = 'usdt' AND jenis = 'balance'
+            AND w.withdraw_type = 'usdt' AND jenis = 'comission'
         GROUP BY 
             w.jenis, w.status
-
+        
         UNION ALL
 
         SELECT

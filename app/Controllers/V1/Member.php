@@ -219,7 +219,7 @@ class Member extends BaseController
                 'rules'  => 'required'
             ],
             'destination' => [
-                'rules'  => 'required|in_list[trade,balance]',
+                'rules'  => 'required|in_list[trade,balance,comission]',
             ]
         ]);
 
