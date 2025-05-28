@@ -25,7 +25,7 @@ class Withdraw extends BaseController
         $wallet = $data['wallet_address'] ?? null;
         $details = array_diff_key($data, array_flip(['amount', 'wallet_address', 'member_id', 'type']));
 
-        $mdata = [
+        $mdata = [[
             'member_id' => $data['member_id'],
             'withdraw_type' => $data['type'],
             'amount' => $data['amount'],
@@ -33,7 +33,7 @@ class Withdraw extends BaseController
             'jenis' => 'withdraw',
             'payment_details' => json_encode($details)
 
-        ];
+        ]];
         $result = $this->withdraw->insert_withdraw($mdata);
 
         if (@$result->code != 201) {
