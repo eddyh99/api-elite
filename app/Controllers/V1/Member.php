@@ -220,6 +220,9 @@ class Member extends BaseController
             ],
             'destination' => [
                 'rules'  => 'required|in_list[trade,balance,comission]',
+            ],
+            'amount' => [
+                'rules' => 'required'
             ]
         ]);
 
@@ -239,7 +242,7 @@ class Member extends BaseController
         }
 
         $balance_commission =  $commission->message->usdt;
-        if($balance_commission <= 0) {
+        if($balance_commission <= 0 || $balance_commission < $data->amount) {
             return $this->respond(error_msg(400, "commission", "01", 'Insufficient balance'), 400);
         }
     
