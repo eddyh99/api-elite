@@ -219,7 +219,7 @@ class Member extends BaseController
                 'rules'  => 'required'
             ],
             'destination' => [
-                'rules'  => 'required|in_list[trade,balance,comission]',
+                'rules'  => 'required|in_list[fund,trade]',
             ],
             'amount' => [
                 'rules' => 'required'
@@ -247,12 +247,21 @@ class Member extends BaseController
         }
     
         // Lanjut transfer
-        $mdata = [
+        $mdata = [[
             'member_id' => $idMember,
             'withdraw_type' => 'usdt',
             'amount' => $data->amount,
-            'jenis' => $destination
-        ];
+            'jenis' => 'comission'
+        ]];
+
+        if($destination == 'trade') {
+            $mdata[] = [
+                'member_id' => $idMember,
+                'withdraw_type' => 'usdt',
+                'amount' => $data->amount,
+                'jenis' => 'trade'
+            ];
+        }
         $result = $this->withdraw->insert_withdraw($mdata);
     
         if (!isset($result->code) || $result->code != 201) {

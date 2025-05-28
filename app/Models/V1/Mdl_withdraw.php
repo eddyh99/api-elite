@@ -28,7 +28,7 @@ class Mdl_withdraw extends Model
     public function insert_withdraw($mdata)
     {
         try {
-            $query = $this->insert($mdata);
+            $query = $this->insertBatch($mdata);
     
             if (!$query) {
                 return (object) [
