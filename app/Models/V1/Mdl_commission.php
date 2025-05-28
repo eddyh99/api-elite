@@ -170,8 +170,8 @@ class Mdl_commission extends Model
             w.member_id = ?
             AND w.status <> 'rejected'
             AND w.withdraw_type = 'usdt' AND jenis = 'comission'
-        GROUP BY 
-            w.jenis, w.status
+        -- GROUP BY 
+        --     w.jenis, w.status
         
         UNION ALL
 

@@ -250,7 +250,7 @@ class Member extends BaseController
         $mdata = [
             'member_id' => $idMember,
             'withdraw_type' => 'usdt',
-            'amount' => $balance_commission,
+            'amount' => $data->amount,
             'jenis' => $destination
         ];
         $result = $this->withdraw->insert_withdraw($mdata);
