@@ -76,6 +76,7 @@ class Withdraw extends BaseController
 
         $mdata = [
             'member_id' => $member->message->id,
+            'id'        => $data->reqid,
             'data' => [
                 'status' => $data->status,
                 'admin_notes' => $data->notes ?? null,
