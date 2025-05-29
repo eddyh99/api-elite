@@ -167,7 +167,7 @@ class Mdl_deposit extends Model
                         FROM withdraw
                         WHERE member_id = ?
                           AND (
-                            (jenis = 'withdraw' AND status <> 'rejected' AND withdraw_type = 'usdt')
+                            (jenis = 'withdraw' AND status <> 'rejected' AND (withdraw_type = 'usdt' or withdraw_type = 'usdc'))
                             OR (jenis = 'trade' AND withdraw_type = 'usdt')
                           )
                       ), 0) AS usdt,

@@ -61,7 +61,9 @@ class Mdl_withdraw extends Model
                         w.withdraw_type
                     FROM
                         withdraw w
-                        INNER JOIN member m ON m.id = w.member_id";
+                        INNER JOIN member m ON m.id = w.member_id
+                    WHERE jenis='withdraw' and w.status='pending'
+                    ";
             $query = $this->db->query($sql)->getResult();
     
             if (!$query) {
@@ -277,7 +279,10 @@ class Mdl_withdraw extends Model
     public function getDetail_withdraw($id)
     {
         try {
-            $sql = "SELECT withdraw_type, wallet_address, payment_details FROM withdraw WHERE id=?";
+            $sql = "SELECT mb.email, wd.requested_at, wd.withdraw_type, wd.amount, wd.wallet_address, wd.payment_details, wd.status 
+                    FROM withdraw wd 
+                        INNER JOIN member mb ON wd.member_id=mb.id 
+                    WHERE wd.id=?";
 
             $query = $this->db->query($sql, [$id])->getRow();
 
@@ -299,9 +304,13 @@ class Mdl_withdraw extends Model
             "code"    => 200,
             "message"    => "Withdrawal data retrieved successfully",
             "data"    => [
-                'withdraw_type' => $query->withdraw_type ?? null,
-                'wallet_address' => $query->wallet_address ?? null,
-                'payment_details' => json_decode($query->payment_details)
+                'withdraw_type'     => $query->withdraw_type ?? null,
+                'wallet_address'    => $query->wallet_address ?? null,
+                'payment_details'   => json_decode($query->payment_details),
+                'status'            => $query->status ?? 'pending',
+                "amount"            => $query->amount,
+                "email"             => $query->email,
+                "requested_at"      => $query->requested_at
             ]
         ];
     }
