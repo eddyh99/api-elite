@@ -87,7 +87,10 @@ class Mdl_withdraw extends Model
     public function update_status($mdata) {
 
         try {
-            $query = $this->where('member_id', $mdata['member_id'])->set($mdata['data'])->update();
+            $query = $this->where('member_id', $mdata['member_id'])
+              ->where('id', $mdata['id'])
+              ->set($mdata['data'])
+              ->update();
     
             if (!$query) {
                 return (object) [
