@@ -92,11 +92,11 @@ class Mdl_commission extends Model
     {
         try {
             $sql = "SELECT
-                        SELECT SUM(commission) AS total_commission
+                        SUM(comm.commission) AS usdt
                     FROM
-                        FROM ({$this->getSql_commission()} AS usdt";
+                        ({$this->getSql_commission()}) AS comm";
 
-            $query = $this->db->query($sql, [$id_member, $id_member, $id_member, $id_member])->getRow();
+            $query = $this->db->query($sql, [$id_member, $id_member, $id_member])->getRow();
 
         } catch (\Exception $e) {
             return (object) [
@@ -170,8 +170,8 @@ class Mdl_commission extends Model
             w.member_id = ?
             AND w.status <> 'rejected'
             AND w.withdraw_type = 'usdt' AND jenis = 'comission'
-        GROUP BY 
-            w.jenis, w.status
+        -- GROUP BY 
+        --     w.jenis, w.status
         
         UNION ALL
 

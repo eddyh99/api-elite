@@ -219,7 +219,10 @@ class Member extends BaseController
                 'rules'  => 'required'
             ],
             'destination' => [
-                'rules'  => 'required|in_list[trade,balance,comission]',
+                'rules'  => 'required|in_list[fund,trade]',
+            ],
+            'amount' => [
+                'rules' => 'required'
             ]
         ]);
 
@@ -239,17 +242,26 @@ class Member extends BaseController
         }
 
         $balance_commission =  $commission->message->usdt;
-        if($balance_commission <= 0) {
+        if($balance_commission <= 0 || $balance_commission < $data->amount) {
             return $this->respond(error_msg(400, "commission", "01", 'Insufficient balance'), 400);
         }
     
         // Lanjut transfer
-        $mdata = [
+        $mdata = [[
             'member_id' => $idMember,
             'withdraw_type' => 'usdt',
-            'amount' => $balance_commission,
-            'jenis' => $destination
-        ];
+            'amount' => $data->amount,
+            'jenis' => 'comission'
+        ]];
+
+        if($destination == 'trade') {
+            $mdata[] = [
+                'member_id' => $idMember,
+                'withdraw_type' => 'usdt',
+                'amount' => $data->amount,
+                'jenis' => 'trade'
+            ];
+        }
         $result = $this->withdraw->insert_withdraw($mdata);
     
         if (!isset($result->code) || $result->code != 201) {
