@@ -744,7 +744,7 @@ public function check_upline($id_member)
                             INNER JOIN member_sinyal ms ON ms.sinyal_id = s.pair_id
                         WHERE
                             ms.member_id = ?
-                            AND s.status != 'filled'";
+                            AND s.status = 'pending'";
             $query = $this->db->query($sql, [$id_member, $id_member])->getResult();
 
             if(!$query) {
