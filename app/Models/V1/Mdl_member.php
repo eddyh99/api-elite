@@ -30,7 +30,8 @@ class Mdl_member extends Model
     // {
     //     $this->db = \Config\Database::connect();
     // }
-    public function get_all() {
+    public function get_all()
+    {
 
         try {
 
@@ -108,7 +109,7 @@ class Mdl_member extends Model
                         m.refcode,
                         m.created_at,
                         m.status";
-                        
+
             $query = $this->db->query($sql)->getResult();
 
             if (!$query) {
@@ -117,7 +118,6 @@ class Mdl_member extends Model
                     'message' => []
                 ];
             }
-    
         } catch (\Exception $e) {
             return (object) [
                 'code'    => 500,
@@ -131,7 +131,8 @@ class Mdl_member extends Model
         ];
     }
 
-    public function get_admin() {
+    public function get_admin()
+    {
 
         try {
 
@@ -147,7 +148,7 @@ class Mdl_member extends Model
                         AND m.status = 'active'
                         AND m.is_delete = false";
 
-         $query = $this->db->query($sql)->getResult();
+            $query = $this->db->query($sql)->getResult();
 
             if (!$query) {
                 return (object) [
@@ -155,7 +156,6 @@ class Mdl_member extends Model
                     'message' => []
                 ];
             }
-    
         } catch (\Exception $e) {
             return (object) [
                 'code'    => 500,
@@ -169,12 +169,13 @@ class Mdl_member extends Model
         ];
     }
 
-    public function getby_email($email) {
+    public function getby_email($email)
+    {
         $sql = "SELECT * FROM member
                 WHERE
                     email = ?
                 LIMIT
-                    1"; 
+                    1";
 
         $query = $this->db->query($sql, [$email])->getRow();
         if (!$query) {
@@ -183,20 +184,20 @@ class Mdl_member extends Model
                 "message" => "User not found"
             ];
         }
-    
+
         if (in_array($query->status, ['disabled', 'new'], true)) {
             return (object) [
                 "code"    => "400",
                 "message" => "Your account has not been activated"
             ];
         }
-    
+
         return (object) [
             "code"    => "200",
             "message" => $query
         ];
     }
-    
+
 
     // Tambahkan data ke database
     public function add($data)
@@ -206,9 +207,9 @@ class Mdl_member extends Model
             $member->insert($data);
             $id     = $this->db->insertID();
 
-            if(!$data['refcode'] && $data['role'] == 'referral') {
+            if (!$data['refcode'] && $data['role'] == 'referral') {
                 $mdata = array(
-                    "refcode"   => substr($this->generate_token($id),0,8),
+                    "refcode"   => substr($this->generate_token($id), 0, 8),
                 );
                 $member->where("id", $id);
                 $member->update($mdata);
@@ -222,57 +223,59 @@ class Mdl_member extends Model
             return (object) [
                 'success'  => false,
                 'code'    => $e->getCode(),
-                'message' => 'An error occurred.' .$e
+                'message' => 'An error occurred.' . $e
             ];
         }
     }
-    
 
-    private function generate_token($id) {
+
+    private function generate_token($id)
+    {
         $hashids = new Hashids('', 8, 'abcdefghijklmnopqrstuvwxyz1234567890');
-        return $hashids->encode((int)$id, time(), rand()); 
+        return $hashids->encode((int)$id, time(), rand());
     }
 
     public function getby_refcode($refcode)
-{
-    $query = $this->select('id')->where('refcode', $refcode)->first();
+    {
+        $query = $this->select('id')->where('refcode', $refcode)->first();
 
-    if (!$query) {
+        if (!$query) {
+            return (object) [
+                'exist' => false,
+                'message' => 'Referral code not found'
+            ];
+        }
+
         return (object) [
-            'exist' => false,
-            'message' => 'Referral code not found'
+            'exist' => true,
+            'message' => 'Referral found',
+            'id'    => $query['id']
         ];
     }
 
-    return (object) [
-        'exist' => true,
-        'message' => 'Referral found',
-        'id'    => $query['id']
-    ];
-}
+    public function check_upline($id_member)
+    {
+        $query = $this->select('id_referral')->where('id', $id_member)->first();
 
-public function check_upline($id_member)
-{
-    $query = $this->select('id_referral')->where('id', $id_member)->first();
+        if (!$query) {
+            return (object) [
+                'code' => 400,
+                'message' => false
+            ];
+        }
 
-    if (!$query) {
         return (object) [
-            'code' => 400,
-            'message' => false
+            'code' => 200,
+            'message' => $query['id_referral'],
         ];
     }
 
-    return (object) [
-        'code' => 200,
-        'message' => $query['id_referral'],
-    ];
-}
-
-    public function update_otp($mdata) {
+    public function update_otp($mdata)
+    {
         try {
             // Cek apakah email ada di database
             $member = $this->where('email', $mdata['email'])->first();
-            
+
             if (!$member) {
                 return (object) [
                     'code'    => 404,
@@ -295,25 +298,26 @@ public function check_upline($id_member)
         }
     }
 
-    public function activate($mdata) {
+    public function activate($mdata)
+    {
         try {
             // Cari member berdasarkan email dan otp
             $valid = $this->where('email', $mdata['email'])
-                           ->where('otp', $mdata['otp'])
-                           ->first();
-    
+                ->where('otp', $mdata['otp'])
+                ->first();
+
             if (!$valid) {
                 return (object) [
                     'code'    => 400,
                     'message' => 'Invalid token'
                 ];
             }
-    
+
             // Update status menjadi "member"
             $this->set(['status' => 'active', 'otp' => null])
-                 ->where('email', $mdata['email'])
-                 ->update();
-    
+                ->where('email', $mdata['email'])
+                ->update();
+
             return (object) [
                 'code'    => 200,
                 'message' => 'Your account has been activated'
@@ -338,23 +342,23 @@ public function check_upline($id_member)
             }
 
             $valid = $builder->first();
-    
+
             if (!$valid) {
                 return (object) [
                     'code'    => 400,
                     'message' => 'Invalid token'
                 ];
             }
-    
+
             // Update password dan hapus OTP
             $this->set([
                 'status' => $valid['status'] == 'new' ? 'active' : $valid['status'],
                 'passwd' => $mdata['password'],
                 'otp'    => null // menghapus otp
             ])
-            ->where('email', $mdata['email'])
-            ->update();
-    
+                ->where('email', $mdata['email'])
+                ->update();
+
             return (object) [
                 'code'    => 200,
                 'message' => 'Password has been reset successfully'
@@ -380,7 +384,7 @@ public function check_upline($id_member)
                 ];
             }
 
-            if($user->role == 'superadmin') {
+            if ($user->role == 'superadmin') {
                 return (object) [
                     'code'    => 403,
                     'message' => 'Action denied. Superadmin cannot be deleted.'
@@ -391,7 +395,6 @@ public function check_upline($id_member)
                 'email' => $mdata['new_email'],
                 'is_delete' => true
             ])->where('email', $user->email)->update();
-
         } catch (Exception $e) {
             return (object) [
                 'code'    => 500,
@@ -432,9 +435,9 @@ public function check_upline($id_member)
                         INNER JOIN member m ON m.id = md.member_id
                         WHERE m.status = 'referral' AND m.is_delete = FALSE
                     ) AS referrals";
-            
+
             $result = $this->db->query($sql)->getRow();
-    
+
             return (object) [
                 'code'    => 200,
                 'message' => 'Membership statistics retrieved successfully.',
@@ -447,15 +450,16 @@ public function check_upline($id_member)
             ];
         }
     }
-    
-    public function set_status($mdata) {
+
+    public function set_status($mdata)
+    {
         try {
-    
+
             // Update status "member"
             $this->set(['status' => $mdata['status']])
-                 ->where('email', $mdata['email'])
-                 ->update();
-    
+                ->where('email', $mdata['email'])
+                ->update();
+
             return (object) [
                 'code'    => 200,
                 'message' => 'The account has been updated.'
@@ -472,21 +476,143 @@ public function check_upline($id_member)
     {
         try {
             $sql = "SELECT
-            m.id,
-            m.created_at AS start_date,
-            CASE 
-                WHEN m.role = 'member' THEN 'Normal Member'
-                WHEN m.role = 'referral' THEN 'Referral Member'
-                ELSE 'Unknown'
-            END AS membership_status,
-            '-' AS subscription_plan,
-            '-' AS subscription_status,
-            m.refcode,
-            m.role
-        FROM
-            member m
-        WHERE
-            m.email = ?";
+                        m.id,
+                        m.created_at AS start_date,
+                        CASE 
+                            WHEN m.role = 'member' THEN 'Normal Member'
+                            WHEN m.role = 'referral' THEN 'Referral Member'
+                            ELSE 'Unknown'
+                        END AS membership_status,
+                        '-' AS subscription_plan,
+                        '-' AS subscription_status,
+                        m.refcode,
+                        m.role,
+                        -- USDT balance: deposits + balance withdraws - real withdraws/trades
+                        COALESCE((
+                            SELECT SUM(amount)
+                            FROM member_deposit
+                            WHERE status = 'complete' AND member_id = m.id
+                        ), 0)
+                        +
+                        COALESCE((
+                            SELECT SUM(amount)
+                            FROM withdraw
+                            WHERE member_id = m.id AND (jenis = 'balance' or jenis='comission') AND withdraw_type = 'usdt'
+                        ), 0)
+                        -
+                        COALESCE((
+                            SELECT SUM(amount)
+                            FROM withdraw
+                            WHERE member_id = m.id
+                            AND (
+                                (jenis = 'withdraw' AND status <> 'rejected' AND (withdraw_type = 'usdt' or withdraw_type = 'usdc'))
+                                OR (jenis = 'trade' AND withdraw_type = 'usdt')
+                            )
+                        ), 0) AS fund_usdt,
+                        
+                        -- BTC balance: balance - trade - actual withdrawn
+                        COALESCE((
+                            SELECT SUM(x.amount)
+                            FROM withdraw x
+                            WHERE x.member_id = m.id
+                            AND x.jenis = 'balance'
+                            AND x.withdraw_type = 'btc'
+                        ), 0)
+                        -
+                        COALESCE((
+                            SELECT SUM(y.amount)
+                            FROM withdraw y
+                            WHERE y.member_id = m.id
+                            AND y.jenis = 'trade'
+                            AND y.withdraw_type = 'btc'
+                        ), 0)
+                        -
+                        COALESCE((
+                            SELECT SUM(z.amount)
+                            FROM withdraw z
+                            WHERE z.member_id = m.id
+                            AND (
+                                (z.jenis = 'withdraw' AND z.status <> 'rejected' AND z.withdraw_type = 'btc')
+                                OR (z.jenis = 'trade' AND z.withdraw_type = 'btc')
+                            )
+                        ), 0) AS fund_btc,
+                        FLOOR((
+                            COALESCE((
+                                SELECT -SUM(master_wallet)
+                                FROM wallet
+                                WHERE member_id = m.id
+                            ), 0)
+                            - COALESCE((
+                                SELECT SUM(
+                                    CASE
+                                        WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt
+                                    END
+                                )
+                                FROM member_sinyal ms
+                                JOIN sinyal s ON s.id = ms.sinyal_id
+                                WHERE ms.member_id = m.id
+                                AND s.status != 'canceled'
+                            ), 0)
+                            + COALESCE((
+                                SELECT SUM(
+                                    CASE
+                                        WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt
+                                    END
+                                )
+                                FROM member_sinyal ms
+                                JOIN sinyal s ON s.id = ms.sinyal_id
+                                WHERE ms.member_id = m.id
+                                AND s.status = 'filled'
+                            ), 0)
+                            + COALESCE((
+                                SELECT SUM(amount)
+                                FROM withdraw
+                                WHERE member_id = m.id
+                                AND jenis = 'trade'
+                            ), 0)
+                            - COALESCE((
+                                SELECT SUM(amount)
+                                FROM withdraw
+                                WHERE member_id = m.id
+                                AND jenis = 'balance'
+                                AND withdraw_type = 'usdt'
+                            ), 0)
+                        ) * 100) / 100 AS trade_usdt,
+                      COALESCE(
+                        (SELECT SUM(
+                           CASE
+                             WHEN s.type LIKE 'Buy%'  THEN ms.amount_btc
+                             WHEN s.type LIKE 'Sell%' THEN -ms.amount_btc
+                             ELSE 0
+                           END
+                         )
+                         FROM member_sinyal ms
+                         JOIN sinyal s  ON s.id = ms.sinyal_id
+                         WHERE ms.member_id = m.id
+                         AND s.status='filled'
+                        ), 0
+                      )
+                      + COALESCE(
+                        (SELECT SUM(x.amount)
+                         FROM withdraw x
+                         WHERE x.member_id     = m.id
+                           AND x.jenis         = 'trade'
+                           AND x.withdraw_type = 'btc'
+                        ), 0
+                      )
+                      - COALESCE(
+                        (SELECT SUM(y.amount)
+                         FROM withdraw y
+                         WHERE y.member_id     = m.id
+                           AND y.jenis         = 'balance'
+                           AND y.withdraw_type = 'btc'
+                        ), 0
+                      )
+                      AS trade_btc
+                    FROM
+                        member m
+                    WHERE
+                        m.email = ?";
 
             $query = $this->db->query($sql, [$email])->getRow();
 
@@ -496,7 +622,6 @@ public function check_upline($id_member)
                     'message' => 'No member found with the given email address.'
                 ];
             }
-    
         } catch (\Exception $e) {
             return (object) [
                 'code'    => 500,
@@ -546,7 +671,7 @@ public function check_upline($id_member)
         ];
     }
 
-    
+
     public function get_referral_member()
     {
         try {
@@ -591,7 +716,7 @@ public function check_upline($id_member)
         ];
     }
 
-    
+
     public function otp_check($mdata)
     {
         try {
@@ -599,7 +724,7 @@ public function check_upline($id_member)
             $valid = $this->where('email', $mdata['email'])
                 ->where('otp', $mdata['otp'])
                 ->first();
-    
+
             if (!$valid) {
                 return (object) [
                     'code'    => 400,
@@ -611,7 +736,6 @@ public function check_upline($id_member)
                 'code'    => 200,
                 'message' => true
             ];
-
         } catch (\Exception $e) {
             return (object) [
                 'code'    => 500,
@@ -619,8 +743,9 @@ public function check_upline($id_member)
             ];
         }
     }
-    
-    public function get_activemember(){
+
+    public function get_activemember()
+    {
         try {
 
             $sql = "SELECT
@@ -688,7 +813,7 @@ public function check_upline($id_member)
                         m.refcode,
                         m.created_at,
                         m.status";
-                        
+
             $query = $this->db->query($sql)->getResult();
 
             if (!$query) {
@@ -697,7 +822,6 @@ public function check_upline($id_member)
                     'message' => []
                 ];
             }
-    
         } catch (\Exception $e) {
             return (object) [
                 'code'    => 500,
@@ -711,7 +835,8 @@ public function check_upline($id_member)
         ];
     }
 
-    public function history_trade($id_member) {
+    public function history_trade($id_member)
+    {
         try {
             $sql = "-- order filled
                         SELECT
@@ -754,13 +879,12 @@ public function check_upline($id_member)
                             AND s.status = 'pending'";
             $query = $this->db->query($sql, [$id_member, $id_member])->getResult();
 
-            if(!$query) {
+            if (!$query) {
                 return (object) [
                     'code' => 200,
                     'message' => []
                 ];
             }
-
         } catch (\Exception $e) {
             return (object) [
                 'code' => 500,
@@ -774,4 +898,3 @@ public function check_upline($id_member)
         ];
     }
 }
-
