@@ -450,10 +450,9 @@ class Mdl_member extends Model
                     ) AS active_members,
                     
                     (
-                        SELECT COALESCE(COUNT(DISTINCT md.member_id), 0)
-                        FROM member_deposit md
-                        INNER JOIN member m ON m.id = md.member_id
-                        WHERE m.status = 'referral' AND m.is_delete = FALSE
+                        SELECT COALESCE(COUNT(DISTINCT m.id), 0)
+                        FROM member m
+                        WHERE m.role = 'referral' AND m.is_delete = FALSE
                     ) AS referrals";
 
             $result = $this->db->query($sql)->getRow();
