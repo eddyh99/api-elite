@@ -81,10 +81,13 @@ defined('EXIT__AUTO_MAX')      || define('EXIT__AUTO_MAX', 125);    // highest a
 $host = $_SERVER['HTTP_HOST']; // e.g., sandbox.satoshisignal.app
 
 // Check if "sandbox" exists anywhere in the domain
+// Check if "sandbox" exists anywhere in the domain
 if (strpos($host, 'sandbox') !== false || strpos($host, 'localhost') !== false) {
     define("URLSATOSHI",'https://sandbox-api.pnglobalinternational/');
     define("BINANCEAPI",'https://testnet.binance.vision/api/v3');
+    define("URLPNGLOBAL",'https://api2-sandbox.pnglobalinternational.com/');
 }else{
     define("URLSATOSHI",'https://api.pnglobalinternational/');
     define("BINANCEAPI",'https://api.binance.com/api/v3');
+    define("URLPNGLOBAL",'http://broker.pnglobalinternational.com/');
 }
