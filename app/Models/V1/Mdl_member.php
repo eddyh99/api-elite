@@ -42,52 +42,72 @@ class Mdl_member extends Model
                         m.refcode,
                         m.created_at,
                         m.status,
+                        -- fund
                         COALESCE((
-                        SELECT SUM(amount)
-                        FROM member_deposit
-                        WHERE status = 'complete' AND member_id = m.id
-                    ), 0) -- deposit
-                    +
-                    COALESCE((
-                        SELECT SUM(amount)
-                        FROM withdraw
-                        WHERE member_id = m.id AND jenis = 'comission'
-                    ), 0) -- balance
-                    +
-                    COALESCE((
-                        SELECT SUM(amount)
-                        FROM withdraw
-                        WHERE member_id = m.id AND jenis = 'balance'
-                    ), 0) -- balance
-                    -
-                    COALESCE((
-                        SELECT SUM(amount)
-                        FROM withdraw
-                        WHERE member_id = m.id AND (
-                            (jenis = 'withdraw' AND status <> 'rejected')
-                            OR jenis = 'trade'
-                        )), 0) AS fund,
+                            SELECT SUM(amount)
+                            FROM member_deposit
+                            WHERE status = 'complete' AND member_id = m.id
+                        ), 0)
+                        +
+                        COALESCE((
+                            SELECT SUM(amount)
+                            FROM withdraw
+                            WHERE member_id = m.id AND (jenis = 'balance' or jenis='comission') AND withdraw_type = 'usdt'
+                        ), 0)
+                        -
+                        COALESCE((
+                            SELECT SUM(amount)
+                            FROM withdraw
+                            WHERE member_id = m.id
+                            AND (
+                                (jenis = 'withdraw' AND status <> 'rejected' AND (withdraw_type = 'usdt' or withdraw_type = 'usdc'))
+                                OR (jenis = 'trade' AND withdraw_type = 'usdt')
+                            )
+                        ), 0) AS fund,
 
                         -- trade
-                        COALESCE((
-                            SELECT SUM(client_wallet)
-                            FROM wallet
-                            WHERE member_id = m.id
-                        ), 0) -- wallet
-
-                        + COALESCE((
-                            SELECT SUM(amount)
-                            FROM withdraw
-                            WHERE member_id = m.id
-                            AND jenis = 'trade'
-                        ) 
-                        - COALESCE((
-                            SELECT SUM(amount)
-                            FROM withdraw
-                            WHERE member_id = m.id
-                            AND jenis = 'balance' AND withdraw_type = 'fiat'
-                        ), 0) , 0) -- trade
-                            AS trade,
+                        FLOOR((
+                            COALESCE((
+                                SELECT -SUM(master_wallet)
+                                FROM wallet
+                                WHERE member_id = m.id
+                            ), 0)
+                            - COALESCE((
+                                SELECT SUM(
+                                    CASE
+                                        WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt
+                                    END
+                                )
+                                FROM member_sinyal ms
+                                JOIN sinyal s ON s.id = ms.sinyal_id
+                                WHERE ms.member_id = m.id
+                                AND s.status != 'canceled'
+                            ), 0)
+                            + COALESCE((
+                                SELECT SUM(
+                                    CASE
+                                        WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt
+                                    END
+                                )
+                                FROM member_sinyal ms
+                                JOIN sinyal s ON s.id = ms.sinyal_id
+                                WHERE ms.member_id = m.id
+                                AND s.status = 'filled'
+                            ), 0)
+                            + COALESCE((
+                                SELECT SUM(amount)
+                                FROM withdraw
+                                WHERE member_id = m.id
+                                AND jenis = 'trade'
+                            ), 0)
+                            - COALESCE((
+                                SELECT SUM(amount)
+                                FROM withdraw
+                                WHERE member_id = m.id
+                                AND jenis = 'balance'
+                                AND withdraw_type = 'usdt'
+                            ), 0)
+                        ) * 100) / 100 AS trade,
 
                         -- Jumlah referral aktif
                         COALESCE(COUNT(r.id), 0) AS referral
