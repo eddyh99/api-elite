@@ -134,8 +134,14 @@ class Order extends BaseController
 
     private function getBtc_member($trade_balance, $cost, $signal_id, $type)
     {
+
+        function convertBTC($number, $precision = 6) {
+            $factor = pow(10, $precision);
+            return floor($number * $factor) / $factor;
+        }
+        
         $btc = $this->getAssets("BTC");
-        $amount_btc = ($btc->free + $btc->locked);
+        $amount_btc = convertBTC(($btc->free + $btc->locked));
         log_message('info', 'BTC FROM ASSETS: ' .json_encode($amount_btc));
         if($type != 'BUY A') {
             $prev_signal = $this->signal->getPrev_signals($type)->message;
@@ -147,11 +153,6 @@ class Order extends BaseController
         $member = $this->deposit->getMember_tradeBalance();
         if ($member->code != 200) {
             return false;
-        }
-
-        function convertBTC($number, $precision = 6) {
-            $factor = pow(10, $precision);
-            return floor($number * $factor) / $factor;
         }
 
         $mdata = [];
