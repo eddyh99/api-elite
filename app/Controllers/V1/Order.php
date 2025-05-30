@@ -134,11 +134,15 @@ class Order extends BaseController
 
     private function getBtc_member($trade_balance, $cost, $signal_id, $type)
     {
-        $amount_btc = $this->getAssets("BTC");
+        $btc = $this->getAssets("BTC");
+        $amount_btc = ($btc->free + $btc->locked);
+        log_message('info', 'BTC FROM ASSETS: ' .json_encode($amount_btc));
         if($type != 'BUY A') {
             $prev_signal = $this->signal->getPrev_signals($type)->message;
             $amount_btc -= $prev_signal->btc;
+            log_message('info', 'BTC FROM PREV BUY: ' .json_encode($prev_signal));
         } 
+
 
         $member = $this->deposit->getMember_tradeBalance();
         if ($member->code != 200) {
@@ -177,7 +181,7 @@ class Order extends BaseController
 		$btc = array_values(array_filter($response->balances, function ($bal) use ($coin){
 			return $bal->asset === $coin;
 		}));
-        return $btc[0]->free;
+        return $btc[0];
     }
 
     public function postLimit_sell()

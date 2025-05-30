@@ -162,13 +162,13 @@ class Withdraw extends BaseController
                 return $this->respond(error_msg(400, "transfer", "01",'Insufficient Balance' ), 400);
             }
         
-            $mdata = [
+            $mdata = [[
                 'member_id' => $data->id_member,
                 'withdraw_type' => $data->coin == 'usdt' ? 'usdt' : 'btc',
                 'amount' => $data->amount ?? 0,
                 'jenis' => $data->destination == 'fund' ? 'balance' : 'trade'
     
-            ];
+            ]];
             $result = $this->withdraw->insert_withdraw($mdata);
     
             if (@$result->code != 201) {
