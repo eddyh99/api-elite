@@ -84,7 +84,9 @@ $host = $_SERVER['HTTP_HOST']; // e.g., sandbox.satoshisignal.app
 if (strpos($host, 'sandbox') !== false || strpos($host, 'localhost') !== false) {
     define("URLSATOSHI",'https://sandbox-api.pnglobalinternational/');
     define("BINANCEAPI",'https://testnet.binance.vision/api/v3');
+    define("URLPNGLOBAL",'https://api2-sandbox.pnglobalinternational.com/');
 }else{
     define("URLSATOSHI",'https://api.pnglobalinternational/');
     define("BINANCEAPI",'https://api.binance.com/api/v3');
+    define("URLPNGLOBAL",'http://broker.pnglobalinternational.com/');
 }

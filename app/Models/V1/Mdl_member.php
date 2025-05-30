@@ -50,6 +50,12 @@ class Mdl_member extends Model
                     COALESCE((
                         SELECT SUM(amount)
                         FROM withdraw
+                        WHERE member_id = m.id AND jenis = 'comission'
+                    ), 0) -- balance
+                    +
+                    COALESCE((
+                        SELECT SUM(amount)
+                        FROM withdraw
                         WHERE member_id = m.id AND jenis = 'balance'
                     ), 0) -- balance
                     -
@@ -421,9 +427,10 @@ public function check_upline($id_member)
                     ) AS active_members,
                     
                     (
-                        SELECT COALESCE(COUNT(DISTINCT m.id), 0)
-                        FROM member m
-                        WHERE m.role = 'referral' AND m.is_delete = FALSE
+                        SELECT COALESCE(COUNT(DISTINCT md.member_id), 0)
+                        FROM member_deposit md
+                        INNER JOIN member m ON m.id = md.member_id
+                        WHERE m.status = 'referral' AND m.is_delete = FALSE
                     ) AS referrals";
             
             $result = $this->db->query($sql)->getRow();
