@@ -19,6 +19,7 @@ class Updateorder extends BaseController
         $this->commission  = model('App\Models\V1\Mdl_commission');
         $this->wallet  = model('App\Models\V1\Mdl_wallet');
         $this->member_signal  = model('App\Models\V1\Mdl_member_signal');
+        $this->setting  = model('App\Models\V1\Mdl_settings');
     }
 
     public function getIndex()
@@ -174,8 +175,9 @@ class Updateorder extends BaseController
             $profit = $amount_usdt - $m->amount_usdt; //margin
 
     
+            $cost = $this->setting->get('referral_fee')->message ?? 0.01;
             // Net profit 
-            $netProfit = $profit - (0.01 * $profit);
+            $netProfit = $profit - ($cost * $profit);
 
             // 10% commission
             $m_commission = ($netProfit/2) * 0.1;
