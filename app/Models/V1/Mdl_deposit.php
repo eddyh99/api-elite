@@ -107,30 +107,106 @@ class Mdl_deposit extends Model
     // balance trade
     public function getMember_tradeBalance() {
         try {
-            $sql = "SELECT 
-                        m.id AS member_id,
-                        COALESCE(w.client_wallet, 0) 
-                        + COALESCE(wd_trade.total_trade_withdraw, 0)
-                        - COALESCE(wd_fiat.total_fiat_withdraw, 0) AS trade_balance
-                    FROM member m
+            // $sql = "SELECT 
+            //             m.id AS member_id,
+            //             COALESCE(w.client_wallet, 0) 
+            //             + COALESCE(wd_trade.total_trade_withdraw, 0)
+            //             - COALESCE(wd_fiat.total_fiat_withdraw, 0) AS trade_balance
+            //         FROM member m
 
-                    LEFT JOIN wallet w ON w.member_id = m.id
+            //         LEFT JOIN wallet w ON w.member_id = m.id
 
-                    LEFT JOIN (
-                        SELECT member_id, SUM(amount) AS total_trade_withdraw
-                        FROM withdraw
-                        WHERE jenis = 'trade'
-                        GROUP BY member_id
-                    ) wd_trade ON wd_trade.member_id = m.id
+            //         LEFT JOIN (
+            //             SELECT member_id, SUM(amount) AS total_trade_withdraw
+            //             FROM withdraw
+            //             WHERE jenis = 'trade'
+            //             GROUP BY member_id
+            //         ) wd_trade ON wd_trade.member_id = m.id
 
-                    LEFT JOIN (
-                        SELECT member_id, SUM(amount) AS total_fiat_withdraw
-                        FROM withdraw
-                        WHERE jenis = 'balance' AND withdraw_type = 'fiat'
-                        GROUP BY member_id
-                    ) wd_fiat ON wd_fiat.member_id = m.id
+            //         LEFT JOIN (
+            //             SELECT member_id, SUM(amount) AS total_fiat_withdraw
+            //             FROM withdraw
+            //             WHERE jenis = 'balance' AND withdraw_type = 'fiat'
+            //             GROUP BY member_id
+            //         ) wd_fiat ON wd_fiat.member_id = m.id
 
-                    HAVING trade_balance > 0";
+            //         HAVING trade_balance > 0";
+            $sql = "SELECT
+                    m.id as member_id,
+                    FLOOR(
+                        (
+                            COALESCE(
+                                (
+                                    SELECT
+                                        - SUM(master_wallet)
+                                    FROM
+                                        wallet
+                                    WHERE
+                                        member_id = m.id
+                                ),
+                                0
+                            ) - COALESCE(
+                                (
+                                    SELECT
+                                        SUM(
+                                            CASE
+                                                WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt
+                                            END
+                                        )
+                                    FROM
+                                        member_sinyal ms
+                                        JOIN sinyal s ON s.id = ms.sinyal_id
+                                    WHERE
+                                        ms.member_id = m.id
+                                        AND s.status != 'canceled'
+                                ),
+                                0
+                            ) + COALESCE(
+                                (
+                                    SELECT
+                                        SUM(
+                                            CASE
+                                                WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt
+                                            END
+                                        )
+                                    FROM
+                                        member_sinyal ms
+                                        JOIN sinyal s ON s.id = ms.sinyal_id
+                                    WHERE
+                                        ms.member_id = m.id
+                                        AND s.status = 'filled'
+                                ),
+                                0
+                            ) + COALESCE(
+                                (
+                                    SELECT
+                                        SUM(amount)
+                                    FROM
+                                        withdraw
+                                    WHERE
+                                        member_id = m.id
+                                        AND jenis = 'trade'
+                                ),
+                                0
+                            ) - COALESCE(
+                                (
+                                    SELECT
+                                        SUM(amount)
+                                    FROM
+                                        withdraw
+                                    WHERE
+                                        member_id = m.id
+                                        AND jenis = 'balance'
+                                        AND withdraw_type = 'usdt'
+                                ),
+                                0
+                            )
+                        ) * 100
+                    ) / 100 AS trade_balance
+                FROM
+                    member m
+                HAVING
+                    trade_balance > 0";
             $query = $this->db->query($sql)->getResult();
 
             return (object) [
