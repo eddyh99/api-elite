@@ -473,11 +473,12 @@ class Mdl_signal extends Model
                         s.status,
                         s.type,
                         s.entry_price,
-                        '-' as admin,
+                        SUBSTRING_INDEX(m.email, '@', 1) as admin,
                         DATE(s.created_at) AS date,
                         TIME(s.created_at) AS time
                     FROM
                         sinyal s
+                        INNER JOIN member m on m.id = s.admin_id
                     ORDER BY
                         date DESC,
                         time Desc";
