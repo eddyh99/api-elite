@@ -175,7 +175,7 @@ class Updateorder extends BaseController
             $profit = $amount_usdt - $m->amount_usdt; //margin
 
     
-            $cost = $this->setting->get('referral_fee')->message ?? 0.01;
+            $cost = $this->setting->get('cost_trade')->message ?? 0.01;
             // Net profit 
             $netProfit = $profit - ($cost * $profit);
 
