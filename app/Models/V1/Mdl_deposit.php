@@ -206,7 +206,7 @@ class Mdl_deposit extends Model
                 FROM
                     member m
                 HAVING
-                    trade_balance > 0";
+                    trade_balance >= 10";
             $query = $this->db->query($sql)->getResult();
 
             return (object) [

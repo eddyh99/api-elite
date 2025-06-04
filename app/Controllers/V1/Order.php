@@ -15,6 +15,8 @@ class Order extends BaseController
         $this->signal  = model('App\Models\V1\Mdl_signal');
         $this->member_signal  = model('App\Models\V1\Mdl_member_signal');
         $this->proxy  = model('App\Models\V1\Mdl_proxies');
+        $this->setting  = model('App\Models\V1\Mdl_settings');
+        
     }
 
     public function getLatestsignal()
@@ -90,6 +92,13 @@ class Order extends BaseController
             return $this->respond(error_msg(400, "signal", '01', $deposit->message), 400);
         }
 
+        if($data->type == 'BUY A') {
+            $btc = $this->getAssets("BTC");
+            $asset_btc = ($btc->free + $btc->locked);
+        } else {
+            $asset_btc = $this->setting->get('asset_btc')->message;
+        }
+
         $trade_balance = ($deposit->message /4);
         $order = $this->limit_order('BUY', $trade_balance, $data->limit);      
 
@@ -121,7 +130,7 @@ class Order extends BaseController
             $cost = $order->cummulativeQuoteQty;
         }
         
-        $member = $this->getBTC_member($trade_balance, $cost, $signal->id, $data->type);
+        $member = $this->getBTC_member($asset_btc, $trade_balance, $cost, $signal->id, $data->type);
         $member_signal = $this->member_signal->add($member);
         if (@$member_signal->code != 201) {
             $result['text'] =  $member_signal->message;
@@ -132,7 +141,7 @@ class Order extends BaseController
 
     }
 
-    private function getBtc_member($trade_balance, $cost, $signal_id, $type)
+    private function getBtc_member($asset_btc, $trade_balance, $cost, $signal_id, $type)
     {
 
         function convertBTC($number, $precision = 6) {
@@ -143,11 +152,14 @@ class Order extends BaseController
         $btc = $this->getAssets("BTC");
         $amount_btc = convertBTC(($btc->free + $btc->locked));
         log_message('info', 'BTC FROM ASSETS: ' .json_encode($amount_btc));
-        if($type != 'BUY A') {
+        if($type == 'BUY A') {
+            $amount_btc -= ($asset_btc + 0);
+            $this->setting->store(['asset_btc' => $asset_btc ]);
+        } else {
             $prev_signal = $this->signal->getPrev_signals($type)->message;
-            $amount_btc -= $prev_signal->btc;
+            $amount_btc -= ($asset_btc + $prev_signal->btc);
             log_message('info', 'BTC FROM PREV BUY: ' .json_encode($prev_signal));
-        } 
+        }
 
 
         $member = $this->deposit->getMember_tradeBalance();

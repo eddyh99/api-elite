@@ -39,4 +39,32 @@ class Mdl_settings extends Model
             ];
         }
     }
+
+    public function store($data)
+    {
+        try {
+            $builder = $this->db->table("settings");
+            $key = key($data);
+            $value = $data[$key];
+    
+            $exists = $builder->where('key', $key)->get()->getRow();
+    
+            if ($exists) {
+                $builder->where('key', $key)->update(['value' => $value]);
+            } else {
+                $builder->insert(['key' => $key, 'value' => $value]);
+            }
+
+            return (object) [
+                'success'  => true,
+                'message' => ''
+            ];
+        } catch (\Exception $e) {
+            return (object) [
+                'success'  => false,
+                'code'    => $e->getCode(),
+                'message' => 'An error occurred.' . $e
+            ];
+        }
+    }
 }
