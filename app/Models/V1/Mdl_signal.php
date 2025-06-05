@@ -651,5 +651,39 @@ class Mdl_signal extends Model
             ];
         }
     }
+
+    public function getprofit() {
+        try {
+
+            $sql = "SELECT
+                        ROUND(SUM(ms_sell.amount_usdt - ms_buy.amount_usdt), 2) AS total_profit,
+                        (
+                            SELECT ROUND(SUM(client_wallet), 2) FROM wallet
+                        ) AS client_profit,
+                        (
+                            SELECT ROUND(SUM(commission), 2) FROM member_deposit
+                        ) AS ref_comm,
+                        (
+                            SELECT ROUND(SUM(master_wallet), 2) FROM wallet
+                        ) AS master_profit
+                    FROM sinyal s_sell
+                    JOIN member_sinyal ms_sell ON ms_sell.sinyal_id = s_sell.id
+                    JOIN sinyal s_buy ON s_buy.pair_id = s_sell.pair_id AND s_buy.type LIKE 'Buy%'
+                    JOIN member_sinyal ms_buy ON ms_buy.sinyal_id = s_buy.id AND ms_buy.member_id = ms_sell.member_id
+                    WHERE s_sell.type LIKE 'Sell%' AND s_sell.status = 'filled'";
+            $query = $this->db->query($sql)->getRow();
+
+            return (object) [
+                'code' => 200,
+                'message' => $query
+            ];
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.' .$e
+            ];
+        }
+    }
     
 }

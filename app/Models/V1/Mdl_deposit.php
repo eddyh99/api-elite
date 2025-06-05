@@ -72,23 +72,63 @@ class Mdl_deposit extends Model
 
     public function getTotal_tradeBalance() {
         try {
-            $sql = "SELECT
-                        COALESCE((
-                            SELECT SUM(client_wallet)
-                            FROM wallet
-                        ), 0) -- wallet
+            // $sql = "SELECT
+            //             COALESCE((
+            //                 SELECT SUM(client_wallet)
+            //                 FROM wallet
+            //             ), 0) -- wallet
 
-                        + COALESCE((
-                            SELECT SUM(amount)
-                            FROM withdraw
-                            WHERE jenis = 'trade'
-                        ) 
-                        - COALESCE((
-                            SELECT SUM(amount)
-                            FROM withdraw
-                            WHERE jenis = 'balance' AND withdraw_type = 'fiat'
-                        ), 0) , 0) -- trade
-                            AS amount";
+            //             + COALESCE((
+            //                 SELECT SUM(amount)
+            //                 FROM withdraw
+            //                 WHERE jenis = 'trade'
+            //             ) 
+            //             - COALESCE((
+            //                 SELECT SUM(amount)
+            //                 FROM withdraw
+            //                 WHERE jenis = 'balance' AND withdraw_type = 'fiat'
+            //             ), 0) , 0) -- trade
+            //                 AS amount";
+
+            $sql = "SELECT
+                        SUM(trade_balance) AS amount
+                    FROM (
+                        SELECT
+                            m.id AS member_id,
+                            FLOOR((
+                                COALESCE((
+                                    SELECT -SUM(master_wallet)
+                                    FROM wallet
+                                    WHERE member_id = m.id
+                                ), 0)
+                                - COALESCE((
+                                    SELECT SUM(CASE WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt END)
+                                    FROM member_sinyal ms
+                                    JOIN sinyal s ON s.id = ms.sinyal_id
+                                    WHERE ms.member_id = m.id AND s.status != 'canceled'
+                                ), 0)
+                                + COALESCE((
+                                    SELECT SUM(CASE WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt END)
+                                    FROM member_sinyal ms
+                                    JOIN sinyal s ON s.id = ms.sinyal_id
+                                    WHERE ms.member_id = m.id AND s.status = 'filled'
+                                ), 0)
+                                + COALESCE((
+                                    SELECT SUM(amount)
+                                    FROM withdraw
+                                    WHERE member_id = m.id AND jenis = 'trade'
+                                ), 0)
+                                - COALESCE((
+                                    SELECT SUM(amount)
+                                    FROM withdraw
+                                    WHERE member_id = m.id AND jenis = 'balance' AND withdraw_type = 'usdt'
+                                ), 0)
+                            ) * 100) / 100 AS trade_balance
+                        FROM
+                            member m
+                        HAVING
+                            trade_balance >= 10
+                    ) AS subquery";
             $query = $this->db->query($sql)->getRow();
 
             return (object) [

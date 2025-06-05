@@ -32,6 +32,12 @@ class Member extends BaseController
         return $this->respond(error_msg($result->code, "member", null, $result->message), $result->code);
     }
 
+    public function getGet_totalbalance()
+    {
+        $result = $this->member->getTotal_balance();
+        return $this->respond(error_msg($result->code, "member", null, $result->message), $result->code);
+    }
+
     public function postBalance()
     {
         $validation = $this->validation;
