@@ -921,8 +921,10 @@ class Mdl_member extends Model
         try {
 
             $sql = "SELECT
-                        ROUND(SUM(fund_balance), 2) AS fund,
-                        ROUND(SUM(trade_balance), 2) AS trade
+                        ROUND(SUM(fund_balance), 2) AS fund_usdt,
+                        ROUND(SUM(trade_balance), 2) AS trade_usdt,
+                        0 as fund_btc,
+                        ROUND(SUM(trade_btc), 6) AS trade_btc
                     FROM (
                         SELECT
                             m.id AS member_id,
@@ -1006,7 +1008,39 @@ class Mdl_member extends Model
                                     FROM withdraw
                                     WHERE member_id = m.id AND jenis = 'balance' AND withdraw_type = 'usdt'
                                 ), 0)
-                            ) * 100) / 100 AS trade_balance
+                            ) * 100) / 100 AS trade_balance,
+                            -- BTC trade
+                            COALESCE(
+                        (SELECT SUM(
+                           CASE
+                             WHEN s.type LIKE 'Buy%'  THEN ms.amount_btc
+                             WHEN s.type LIKE 'Sell%' THEN -ms.amount_btc
+                             ELSE 0
+                           END
+                         )
+                         FROM member_sinyal ms
+                         JOIN sinyal s  ON s.id = ms.sinyal_id
+                         WHERE ms.member_id = m.id
+                         AND s.status='filled'
+                        ), 0
+                      )
+                      + COALESCE(
+                        (SELECT SUM(x.amount)
+                         FROM withdraw x
+                         WHERE x.member_id     = m.id
+                           AND x.jenis         = 'trade'
+                           AND x.withdraw_type = 'btc'
+                        ), 0
+                      )
+                      - COALESCE(
+                        (SELECT SUM(y.amount)
+                         FROM withdraw y
+                         WHERE y.member_id     = m.id
+                           AND y.jenis         = 'balance'
+                           AND y.withdraw_type = 'btc'
+                        ), 0
+                      )
+                      AS trade_btc
                         FROM
                             member m
                     ) AS subquery";
