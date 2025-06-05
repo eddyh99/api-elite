@@ -916,4 +916,112 @@ class Mdl_member extends Model
             'message' => $query
         ];
     }
+
+    public function getTotal_balance() {
+        try {
+
+            $sql = "SELECT
+                        ROUND(SUM(fund_balance), 2) AS fund,
+                        ROUND(SUM(trade_balance), 2) AS trade
+                    FROM (
+                        SELECT
+                            m.id AS member_id,
+                                -- USDT balance: deposits + balance withdraws - real withdraws/trades
+                                COALESCE(
+                            (
+                                        SELECT
+                                            SUM(amount)
+                                        FROM
+                                            member_deposit
+                                        WHERE
+                                            status = 'complete'
+                                            AND member_id = m.id
+                                    ),
+                                    0
+                                ) + COALESCE(
+                            (
+                                        SELECT
+                                            SUM(amount)
+                                        FROM
+                                            withdraw
+                                        WHERE
+                                            member_id = m.id
+                                            AND (
+                                                jenis = 'balance'
+                                                or jenis = 'comission'
+                                            )
+                                            AND withdraw_type = 'usdt'
+                                    ),
+                                    0
+                                ) - COALESCE(
+                            (
+                                        SELECT
+                                            SUM(amount)
+                                        FROM
+                                            withdraw
+                                        WHERE
+                                            member_id = m.id
+                                            AND (
+                                                (
+                                                    jenis = 'withdraw'
+                                                    AND status <> 'rejected'
+                                                    AND (
+                                                        withdraw_type = 'usdt'
+                                                        or withdraw_type = 'usdc'
+                                                    )
+                                                )
+                                                OR (
+                                                    jenis = 'trade'
+                                                    AND withdraw_type = 'usdt'
+                                                )
+                                            )
+                                    ),
+                                    0
+                                ) AS fund_balance,
+                            FLOOR((
+                                COALESCE((
+                                    SELECT -SUM(master_wallet)
+                                    FROM wallet
+                                    WHERE member_id = m.id
+                                ), 0)
+                                - COALESCE((
+                                    SELECT SUM(CASE WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt END)
+                                    FROM member_sinyal ms
+                                    JOIN sinyal s ON s.id = ms.sinyal_id
+                                    WHERE ms.member_id = m.id AND s.status != 'canceled'
+                                ), 0)
+                                + COALESCE((
+                                    SELECT SUM(CASE WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt END)
+                                    FROM member_sinyal ms
+                                    JOIN sinyal s ON s.id = ms.sinyal_id
+                                    WHERE ms.member_id = m.id AND s.status = 'filled'
+                                ), 0)
+                                + COALESCE((
+                                    SELECT SUM(amount)
+                                    FROM withdraw
+                                    WHERE member_id = m.id AND jenis = 'trade'
+                                ), 0)
+                                - COALESCE((
+                                    SELECT SUM(amount)
+                                    FROM withdraw
+                                    WHERE member_id = m.id AND jenis = 'balance' AND withdraw_type = 'usdt'
+                                ), 0)
+                            ) * 100) / 100 AS trade_balance
+                        FROM
+                            member m
+                    ) AS subquery";
+            $query = $this->db->query($sql)->getRow();
+
+            return (object) [
+                'code' => 200,
+                'message' => $query
+            ];
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.' .$e
+            ];
+        }
+    }
 }
