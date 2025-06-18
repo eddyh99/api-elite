@@ -63,9 +63,10 @@ class Updateorder extends BaseController
             $status = $this->updateOrder($order->order_id);
             $mdata['order'][] = $status->order;
 
+            $cost = $status->cummulativeQuoteQty;
+            $total_usdt = ($cost - $status->commission);
             if ($status->side === 'SELL' && $status->order['status'] == 'filled') {
-                $total_usdt = ($status->cummulativeQuoteQty - $status->commission);
-                $takeProfitData = $this->take_profits($status->origQty, $total_usdt, $order->order_id, $order->id, $order->pair_id);
+                $takeProfitData = $this->take_profits($status->origQty, $cost, $order->order_id, $order->id, $order->pair_id);
                 $profits = array_merge($profits, $takeProfitData['profits']);
                 $commissions = array_merge($commissions, $takeProfitData['commissions']);
                 $member_signal = array_merge($member_signal, $takeProfitData['member_signal']);
@@ -80,8 +81,14 @@ class Updateorder extends BaseController
             // jika bukan buy a maka update amount di pnglobal
             if ($status->side === 'BUY' && $status->order['status'] == 'filled') {
 
-                // update amount BTC
-                // $this->updateAmountBTC();
+                $deposit  = $this->deposit->getTotal_tradeBalance();
+                $trade_balance = ( ($deposit->message + $cost) /4);
+                $asset_btc = $this->setting->get('asset_btc')->message;
+                log_message('info', 'TRADE BALANCE ORI: ' . json_encode($deposit->message));
+
+                // get btc
+                $member_btc = $this->getBtc_member($asset_btc, $trade_balance, $total_usdt, $order->id, $order->type);
+                $member_signal = array_merge($member_signal, $member_btc);
 
                 // update order pnglobal
                 if($order->type != 'Buy A') {
@@ -104,7 +111,7 @@ class Updateorder extends BaseController
 
         // add member signal (sell)
         if (!empty($member_signal)) {
-            $this->member_signal->add($member_signal);
+            $this->member_signal->addOrUpdate($member_signal);
             log_message('info', 'MEMBER SIGNAL: ' . json_encode($member_signal));
         }
 
@@ -227,6 +234,62 @@ class Updateorder extends BaseController
         $result = sendRequest($url, $mdata);
 
         log_message('info', 'UPDATE ORDER PNGLOBAL RESPONSE: ' . json_encode($result));
+    }
+
+    // 
+    public function getAssets($coin)
+    {
+        $url = BINANCEAPI . "/account";
+
+        $response = binanceAPI($url, []);
+        if (isset($response->code)) {
+            return false;
+        }
+
+		$btc = array_values(array_filter($response->balances, function ($bal) use ($coin){
+			return $bal->asset === $coin;
+		}));
+        return $btc[0];
+    }
+
+    private function getBtc_member($asset_btc, $trade_balance, $cost, $signal_id, $type)
+    {
+
+        function convertBTC($number, $precision = 6) {
+            $factor = pow(10, $precision);
+            return floor($number * $factor) / $factor;
+        }
+        
+        $btc = $this->getAssets("BTC");
+        $amount_btc = convertBTC(($btc->free + $btc->locked));
+        log_message('info', 'Trade Balance: ' .json_encode($trade_balance));
+        log_message('info', 'cost: ' .json_encode($cost));
+        if($type == 'Buy A') {
+            $amount_btc -= ($asset_btc + 0);
+            // $this->setting->store(['asset_btc' => $asset_btc ]);
+        } else {
+            $prev_signal = $this->signal->getPrev_signals($type)->message;
+            $amount_btc -= ($asset_btc + $prev_signal->btc);
+            log_message('info', 'BTC FROM PREV BUY: ' .json_encode($prev_signal));
+        }
+
+
+        $member = $this->member_signal->getby_sinyal($signal_id);
+        if ($member->code != 200) {
+            return [];
+        }
+
+        $mdata = [];
+        foreach ($member->message as $m) {
+            $btc     = ( $m->amount_usdt / $trade_balance ) * $amount_btc;
+            $mdata[] = [
+                'member_id' => $m->member_id,
+                'amount_btc' => convertBTC($btc, 6),
+                'amount_usdt' => $m->amount_usdt,
+                'sinyal_id' => $signal_id
+            ];
+        }
+        return $mdata;
     }
 
     // private function updateAmountBTC($order) {
