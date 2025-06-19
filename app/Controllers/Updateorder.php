@@ -210,6 +210,7 @@ class Updateorder extends BaseController
                     'member_id' => $m->upline,
                     'downline_id' => $m->member_id,
                     'amount' => round($m_commission, 2),
+                    'order_id' => $order_id
                 ];
             }
         }
