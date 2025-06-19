@@ -184,10 +184,14 @@ class Updateorder extends BaseController
     
             $cost = $this->setting->get('cost_trade')->message ?? 0.01;
             // Net profit 
-            $netProfit = $profit - ($cost * $profit);
+            $netProfit  = $profit - ($cost * $profit);
+
+            $client     = round($netProfit/2,4);
+            $company    = ($profit-$client);
 
             // 10% commission
-            $m_commission = ($netProfit/2) * 0.1;
+            $m_commission = $company * 0.1;
+            $master     = round($company - $m_commission,2);
 
             $member_signal[] = [
                 'member_id'    => $m->member_id,
@@ -195,23 +199,31 @@ class Updateorder extends BaseController
                 'amount_usdt'  => $amount_usdt,
                 'sinyal_id'    => $signal_id
             ];
-    
+            
             // Split the net profit equally between master and client wallets
-            $profits[] = [
-                'member_id' => $m->member_id,
-                'master_wallet' => round($netProfit / 2, 2),
-                'client_wallet' => round($netProfit / 2, 2),
-                'order_id' => $order_id
-            ];
     
             // If the member has an upline
             if (!is_null($m->upline)) {
                 $commissions[] = [
                     'member_id' => $m->upline,
                     'downline_id' => $m->member_id,
-                    'amount' => round($m_commission, 2),
+                    'amount' => round($m_commission, 4),
                     'order_id' => $order_id
                 ];
+                $profits[] = [
+                    'member_id' => $m->member_id,
+                    'master_wallet' => $master,
+                    'client_wallet' => $client,
+                    'order_id' => $order_id
+                ];
+            }else{
+                $profits[] = [
+                    'member_id' => $m->member_id,
+                    'master_wallet' => $master+$m_commission,
+                    'client_wallet' => $client,
+                    'order_id' => $order_id
+                ];
+
             }
         }
     
