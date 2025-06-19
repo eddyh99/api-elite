@@ -31,4 +31,9 @@ class Price extends BaseController
         $result = $this->signal->getprofit();
         return $this->respond(error_msg($result->code, "profit", null, $result->message), $result->code);
     }
+    
+    public function getDetail_profit(){
+        $result = $this->signal->get_detailprofit();
+        return $this->respond(error_msg($result->code, "profit", null, $result->message), $result->code);
+    }
 }
