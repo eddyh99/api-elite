@@ -661,7 +661,7 @@ class Mdl_signal extends Model
                             SELECT ROUND(SUM(client_wallet), 2) FROM wallet
                         ) AS client_profit,
                         (
-                            SELECT ROUND(SUM(commission), 2) FROM member_deposit
+                            SELECT ROUND(SUM(amount), 2) FROM member_commission
                         ) AS ref_comm,
                         (
                             SELECT ROUND(SUM(master_wallet), 2) FROM wallet
@@ -688,7 +688,7 @@ class Mdl_signal extends Model
     
     public function get_detailprofit(){
         try{
-            $sql="WITH buy_signals AS (
+            $sql="WITH buy_signals AS ( 
                     SELECT
                         s.id AS buy_id,
                         s.order_id AS buy_order_id,
@@ -737,6 +737,13 @@ class Mdl_signal extends Model
                         SUM(client_wallet) AS client_profit
                     FROM wallet
                     GROUP BY order_id
+                ),
+                commission_totals AS (
+                    SELECT
+                        order_id,
+                        SUM(amount) AS total_commission
+                    FROM member_commission
+                    GROUP BY order_id
                 )
                 SELECT
                     p.buy_id,
@@ -748,11 +755,14 @@ class Mdl_signal extends Model
                     m.total_usdt AS buy_total_usdt,
                     msell.total_usdt AS sell_total_usdt,
                     w.master_profit,
-                    w.client_profit
+                    w.client_profit,
+                    c.total_commission
                 FROM paired_signals p
                 LEFT JOIN member_amounts m ON m.sinyal_id = p.buy_id
                 LEFT JOIN member_amounts msell ON msell.sinyal_id = p.sell_id
-                LEFT JOIN wallet_profits w ON w.order_id = p.sell_order_id;";
+                LEFT JOIN wallet_profits w ON w.order_id = p.sell_order_id
+                LEFT JOIN commission_totals c ON c.order_id = p.sell_order_id;
+";
             
             $query = $this->db->query($sql)->getResult();
 
