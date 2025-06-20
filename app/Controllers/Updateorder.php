@@ -183,15 +183,9 @@ class Updateorder extends BaseController
 
     
             $cost = $this->setting->get('cost_trade')->message ?? 0.01;
-            // Net profit 
-            $netProfit  = $profit - ($cost * $profit);
-
-            $client     = round($netProfit/2,4);
-            $company    = ($profit-$client);
-
-            // 10% commission
-            $m_commission = $company * 0.1;
-            $master     = round($company - $m_commission,2);
+            // profit 
+            $client_wallet = ($profit - ($profit * $cost)) /2;
+            $master_wallet = $profit - $client_wallet;
 
             $member_signal[] = [
                 'member_id'    => $m->member_id,
@@ -201,13 +195,21 @@ class Updateorder extends BaseController
             ];
             
             // Split the net profit equally between master and client wallets
+            $profit_data = [
+                'member_id' => $m->member_id,
+                'master_wallet' => round($master_wallet, 2),
+                'client_wallet' => round($client_wallet, 2),
+                'order_id' => $order_id
+            ];
     
             // If the member has an upline
             if (!is_null($m->upline)) {
+                $commission = $master_wallet * 0.1;
+                $profit_data['master_wallet'] = round($master_wallet - $commission, 2);
                 $commissions[] = [
                     'member_id' => $m->upline,
                     'downline_id' => $m->member_id,
-                    'amount' => round($m_commission, 4),
+                    'amount' => round($commission, 2),
                     'order_id' => $order_id
                 ];
                 $profits[] = [
@@ -225,6 +227,7 @@ class Updateorder extends BaseController
                 ];
 
             }
+            $profits[] = $profit_data;
         }
     
         // Return the final profit and commission distributions
