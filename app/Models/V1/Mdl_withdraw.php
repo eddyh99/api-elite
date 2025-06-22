@@ -28,28 +28,69 @@ class Mdl_withdraw extends Model
     public function insert_withdraw($mdata)
     {
         try {
+            $withdraw = $mdata[0]; // Assuming single insert per call
+            $memberId = $withdraw['member_id'];
+            $amount = (float)($withdraw['amount'] ?? 0);
+            $jenis = $withdraw['jenis'] ?? null;
+    
+            if ($jenis === 'trade' && $amount > 0) {
+                // Fetch unmatched Buy signals for the member
+                $sql = "SELECT COUNT(*) as open_count
+                    FROM member_sinyal ms
+                    JOIN sinyal s ON s.id = ms.sinyal_id
+                    WHERE ms.member_id = ?
+                      AND s.status IN ('pending', 'filled')
+                      AND s.type LIKE 'Buy%'
+                      AND NOT EXISTS (
+                          SELECT 1
+                          FROM sinyal s2
+                          WHERE s2.type LIKE 'Sell%'
+                            AND s2.pair_id = s.pair_id
+                            AND s2.status = 'filled'
+                      )";
+                $result = $this->db->query($sql, [$memberId])->getRowArray();
+                $openCount = (int)($result['open_count'] ?? 0);
+    
+                // Determine divisor based on openCount
+                $divisor = 0;
+                if ($openCount === 1) {
+                    $divisor = 3;
+                } elseif ($openCount === 2) {
+                    $divisor = 2;
+                } elseif ($openCount === 3) {
+                    $divisor = 1;
+                }
+    
+                if ($divisor > 0) {
+                    $newAmount = $amount / $divisor;
+                    // Update position
+                    $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newAmount, $memberId]);
+                }
+            }
+    
+            // Insert withdrawal
             $query = $this->insertBatch($mdata);
     
             if (!$query) {
-                return (object) [
+                return (object)[
                     'code'    => 400,
                     'message' => 'Withdrawal request failed.'
                 ];
             }
     
+            return (object)[
+                'code'    => 201,
+                'message' => 'Withdrawal request submitted successfully.'
+            ];
+    
         } catch (\Exception $e) {
-            return (object) [
+            return (object)[
                 'code'    => 500,
-                'message' => 'Withdrawal request failed. Please try again later.' .$e
+                'message' => 'Withdrawal request failed. Please try again later. ' . $e->getMessage()
             ];
         }
-
-            
-        return (object) [
-            'code'    => 201,
-            'message' => 'Withdrawal request submitted successfully.'
-        ];
     }
+
 
     public function list_withdraw() {
         try {
