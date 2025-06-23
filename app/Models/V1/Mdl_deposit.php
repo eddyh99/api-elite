@@ -90,45 +90,46 @@ class Mdl_deposit extends Model
             //             ), 0) , 0) -- trade
             //                 AS amount";
 
-            $sql = "SELECT
-                        SUM(trade_balance) AS amount
-                    FROM (
-                        SELECT
-                            m.id AS member_id,
-                            FLOOR((
-                                COALESCE((
-                                    SELECT -SUM(master_wallet)
-                                    FROM wallet
-                                    WHERE member_id = m.id
-                                ), 0)
-                                - COALESCE((
-                                    SELECT SUM(CASE WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt END)
-                                    FROM member_sinyal ms
-                                    JOIN sinyal s ON s.id = ms.sinyal_id
-                                    WHERE ms.member_id = m.id AND s.status != 'canceled'
-                                ), 0)
-                                + COALESCE((
-                                    SELECT SUM(CASE WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt END)
-                                    FROM member_sinyal ms
-                                    JOIN sinyal s ON s.id = ms.sinyal_id
-                                    WHERE ms.member_id = m.id AND s.status = 'filled'
-                                ), 0)
-                                + COALESCE((
-                                    SELECT SUM(amount)
-                                    FROM withdraw
-                                    WHERE member_id = m.id AND jenis = 'trade'
-                                ), 0)
-                                - COALESCE((
-                                    SELECT SUM(amount)
-                                    FROM withdraw
-                                    WHERE member_id = m.id AND jenis = 'balance' AND withdraw_type = 'usdt'
-                                ), 0)
-                            ) * 100) / 100 AS trade_balance
-                        FROM
-                            member m
-                        HAVING
-                            trade_balance >= 10
-                    ) AS subquery";
+            // $sql = "SELECT
+            //             SUM(trade_balance) AS amount
+            //         FROM (
+            //             SELECT
+            //                 m.id AS member_id,
+            //                 FLOOR((
+            //                     COALESCE((
+            //                         SELECT -SUM(master_wallet)
+            //                         FROM wallet
+            //                         WHERE member_id = m.id
+            //                     ), 0)
+            //                     - COALESCE((
+            //                         SELECT SUM(CASE WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt END)
+            //                         FROM member_sinyal ms
+            //                         JOIN sinyal s ON s.id = ms.sinyal_id
+            //                         WHERE ms.member_id = m.id AND s.status != 'canceled'
+            //                     ), 0)
+            //                     + COALESCE((
+            //                         SELECT SUM(CASE WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt END)
+            //                         FROM member_sinyal ms
+            //                         JOIN sinyal s ON s.id = ms.sinyal_id
+            //                         WHERE ms.member_id = m.id AND s.status = 'filled'
+            //                     ), 0)
+            //                     + COALESCE((
+            //                         SELECT SUM(amount)
+            //                         FROM withdraw
+            //                         WHERE member_id = m.id AND jenis = 'trade'
+            //                     ), 0)
+            //                     - COALESCE((
+            //                         SELECT SUM(amount)
+            //                         FROM withdraw
+            //                         WHERE member_id = m.id AND jenis = 'balance' AND withdraw_type = 'usdt'
+            //                     ), 0)
+            //                 ) * 100) / 100 AS trade_balance
+            //             FROM
+            //                 member m
+            //             HAVING
+            //                 trade_balance >= 10
+            //         ) AS subquery";
+            $sql = "SELECT sum(position) as amount FROM member WHERE is_delete=0 AND status='active'";
             $query = $this->db->query($sql)->getRow();
 
             return (object) [
@@ -145,7 +146,7 @@ class Mdl_deposit extends Model
     }
 
     // balance trade
-    public function getMember_tradeBalance() {
+    public function getMember_tradeBalance($member_ids = null) {
         try {
             // $sql = "SELECT 
             //             m.id AS member_id,
@@ -173,6 +174,10 @@ class Mdl_deposit extends Model
             //         HAVING trade_balance > 0";
             $sql = "SELECT
                     m.id as member_id,
+                    m.position_a,
+                    m.position_b,
+                    m.position_c,
+                    m.position_d,
                     FLOOR(
                         (
                             COALESCE(
@@ -244,9 +249,13 @@ class Mdl_deposit extends Model
                         ) * 100
                     ) / 100 AS trade_balance
                 FROM
-                    member m
-                HAVING
-                    trade_balance >= 10";
+                    member m";
+
+            if (!empty($member_ids) && is_array($member_ids)) {
+                $ids = implode(',', array_map('intval', $member_ids));
+                $sql .= " WHERE m.id IN ($ids)";
+            }
+
             $query = $this->db->query($sql)->getResult();
 
             return (object) [
@@ -258,6 +267,113 @@ class Mdl_deposit extends Model
             return (object) [
                 'code' => 500,
                 'message' => 'An error occurred.' .$e
+            ];
+        }
+    }
+    
+    public function rebalanceMemberPosition($side)
+    {
+        try {
+            // Step 1: Get trade balance
+            $result = $this->getMember_tradeBalance();
+    
+            if ($result->code !== 200) {
+                return (object)[
+                    'code' => 500,
+                    'message' => 'Failed to retrieve trade balances.'
+                ];
+            }
+    
+            $totalNewPosition = 0; // Step 2: Running sum of new positions
+            $member_ids = [];
+            $side_position = [
+                'BUY A' => 'position_a',
+                'BUY B' => 'position_b',
+                'BUY C' => 'position_c',
+                'BUY D' => 'position_d'
+            ];
+
+            $last_position = [
+                'BUY B' => 'position_a',
+                'BUY C' => 'position_b',
+                'BUY D' => 'position_c'
+            ];
+
+            // step 3 update
+            foreach ($result->message as $member) {
+            $sql = "SELECT
+                        COUNT(*) as open_count
+                    FROM
+                        member_sinyal ms
+                        JOIN sinyal s ON s.id = ms.sinyal_id
+                    WHERE
+                        ms.member_id = ?
+                        AND s.status IN ('pending', 'filled')
+                        AND s.type LIKE 'Buy%'
+                        AND NOT EXISTS (
+                            SELECT
+                                1
+                            FROM
+                                sinyal s2
+                            WHERE
+                                s2.type LIKE 'Sell%'
+                                AND s2.pair_id = s.pair_id
+                                AND s2.status = 'filled')";
+            $result = $this->db->query($sql, [$member->member_id])->getRowArray();
+            $openCount = (int)($result['open_count'] ?? 0);
+
+            // Determine divisor based on openCount
+            $divisor = 0;
+            if ($openCount === 1) {
+                $divisor = 3;
+            } elseif ($openCount === 2) {
+                $divisor = 2;
+            } elseif ($openCount === 3) {
+                $divisor = 1;
+            } elseif ($openCount === 0) {
+                $divisor = 4;
+            }
+
+            $tradeBalance = (float)$member->trade_balance;
+            $newPosition = 0;
+    
+            if ($divisor > 0 && $tradeBalance >= 10) {
+                $newPosition = $tradeBalance / $divisor;
+    
+                if($openCount === 0) { //if buy a
+                    // Update position
+                    array_push($member_ids, $member->member_id); 
+                    $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
+                    $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newPosition, $member->member_id]);
+                } else {
+                    //check $newPosition >= prev position
+                    $lastPosition = $last_position[$side];
+                    if($newPosition >= $member->$lastPosition) {
+                        $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
+                        $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newPosition, $member->member_id]);
+                        array_push($member_ids, $member->member_id); 
+                    } else {
+                        $newPosition = 0;
+                    }
+
+                }
+            }
+
+            // Accumulate total
+            $totalNewPosition += $newPosition;
+        }
+
+    
+            // Step 4: Return total new position
+            return (object)[
+                'code' => 200,
+                'message' => $totalNewPosition,
+                'member_ids' => $member_ids
+            ];
+        } catch (\Exception $e) {
+            return (object)[
+                'code' => 500,
+                'message' => 'Error in rebalance process. ' . $e->getMessage()
             ];
         }
     }

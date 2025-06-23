@@ -154,6 +154,7 @@ class Mdl_member_signal extends Model
     {
         $sql = "SELECT
                 m.id AS member_id,
+                 SUM(ms.amount_usdt) OVER () AS total_usdt,
                 FLOOR((
                     COALESCE((
                         SELECT -SUM(master_wallet)
