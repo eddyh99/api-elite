@@ -273,6 +273,23 @@ class Mdl_member extends Model
         ];
     }
 
+    public function getby_ids($ids)
+    {
+        $query = $this->select('*')->whereIn('id', $ids)->findAll();
+
+        if (!$query) {
+            return (object) [
+                'code'    => 404,
+                'message' => 'Member not found'
+            ];
+        }
+
+        return (object) [
+            'code' => 200,
+            'message' => $query,
+        ];
+    }
+
     public function check_upline($id_member)
     {
         $query = $this->select('id_referral')->where('id', $id_member)->first();

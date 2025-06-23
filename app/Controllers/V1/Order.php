@@ -14,6 +14,7 @@ class Order extends BaseController
         $this->deposit  = model('App\Models\V1\Mdl_deposit');
         $this->signal  = model('App\Models\V1\Mdl_signal');
         $this->member_signal  = model('App\Models\V1\Mdl_member_signal');
+        $this->member  = model('App\Models\V1\Mdl_member');
         $this->proxy  = model('App\Models\V1\Mdl_proxies');
         $this->setting  = model('App\Models\V1\Mdl_settings');
         
@@ -86,7 +87,7 @@ class Order extends BaseController
             return $this->respond(error_msg(400, "binance", '02', 'Previous buy still pending'), 400);
         }
 
-        $deposit  = $this->deposit->rebalanceMemberPosition();
+        $deposit  = $this->deposit->rebalanceMemberPosition($data->type);
 
         if (@$deposit->code != 200) {
             return $this->respond(error_msg(400, "signal", '01', $deposit->message), 400);
@@ -128,13 +129,13 @@ class Order extends BaseController
             return $this->respond(error_msg(400, "order", '01', $result), 400);
         } 
         
-        $cost = floor(($order->origQty * $data->limit) * 100) / 100;
+        // $cost = floor(($order->origQty * $data->limit) * 100) / 100;
 
-        if($order->status == 'FILLED') {
-            $cost = $order->cummulativeQuoteQty;
-        }
+        // if($order->status == 'FILLED') {
+        //     $cost = $order->cummulativeQuoteQty;
+        // }
         
-        $member = $this->getBTC_member($trade_balance, $cost, $signal->id, $data->type);
+        $member = $this->getBTC_member($data->type, $signal->id, $deposit->member_ids);
         $member_signal = $this->member_signal->addOrUpdate($member);
         if (@$member_signal->code != 201) {
             $result['text'] =  $member_signal->message;
@@ -145,7 +146,7 @@ class Order extends BaseController
 
     }
 
-    private function getBtc_member($trade_balance, $cost, $signal_id, $type)
+    private function getBtc_member($type, $signal_id, $member_ids)
     {
 
         // function convertBTC($number, $precision = 6) {
@@ -166,19 +167,25 @@ class Order extends BaseController
         // }
 
 
-        $member = $this->deposit->getMember_tradeBalance();
+        $member = $this->member->getby_ids($member_ids);
+        $side_position = [
+            'BUY A' => 'position_a',
+            'BUY B' => 'position_b',
+            'BUY C' => 'position_c',
+            'BUY D' => 'position_d'
+        ];
+        $position = $side_position[$type];
+
         if ($member->code != 200) {
             return false;
         }
 
         $mdata = [];
         foreach ($member->message as $m) {
-            $percent = (($m->trade_balance) / 4) / $trade_balance;
-            // $btc     = $amount_btc * $percent;
 
             $mdata[] = [
-                'member_id' => $m->member_id,
-                'amount_usdt' => $cost * $percent,
+                'member_id' => $m['id'],
+                'amount_usdt' => $m[$position],
                 'amount_btc' => 0,
                 'sinyal_id' => $signal_id
             ];
