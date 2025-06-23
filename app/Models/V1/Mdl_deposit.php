@@ -174,6 +174,10 @@ class Mdl_deposit extends Model
             //         HAVING trade_balance > 0";
             $sql = "SELECT
                     m.id as member_id,
+                    m.position_a,
+                    m.position_b,
+                    m.position_c,
+                    m.position_d,
                     FLOOR(
                         (
                             COALESCE(
@@ -246,8 +250,6 @@ class Mdl_deposit extends Model
                     ) / 100 AS trade_balance
                 FROM
                     member m";
-                // HAVING
-                //     trade_balance >= 10";
 
             if (!empty($member_ids) && is_array($member_ids)) {
                 $ids = implode(',', array_map('intval', $member_ids));
@@ -292,9 +294,9 @@ class Mdl_deposit extends Model
             ];
 
             $last_position = [
-                'BUY B' => ['position_a'],
-                'BUY C' => ['position_b'],
-                'BUY D' => ['position_c']
+                'BUY B' => 'position_a',
+                'BUY C' => 'position_b',
+                'BUY D' => 'position_c'
             ];
 
             // step 3 update
@@ -333,8 +335,9 @@ class Mdl_deposit extends Model
             }
 
             $tradeBalance = (float)$member->trade_balance;
+            $newPosition = 0;
     
-            if ($divisor > 0) {
+            if ($divisor > 0 && $tradeBalance >= 10) {
                 $newPosition = $tradeBalance / $divisor;
     
                 if($openCount === 0) { //if buy a

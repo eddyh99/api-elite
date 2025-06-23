@@ -81,14 +81,14 @@ class Updateorder extends BaseController
             // jika bukan buy a maka update amount di pnglobal
             if ($status->side === 'BUY' && $status->order['status'] == 'filled') {
 
-                $deposit  = $this->deposit->getTotal_tradeBalance();
+                // $deposit  = $this->deposit->getTotal_tradeBalance();
                 // $trade_balance = ( ($deposit->message + $cost) /4);
-                $trade_balance = $deposit->message;
+                // $trade_balance = $deposit->message;
                 $asset_btc = $this->setting->get('asset_btc')->message;
-                log_message('info', 'TRADE BALANCE ORI: ' . json_encode($deposit->message));
+                // log_message('info', 'TRADE BALANCE ORI: ' . json_encode($deposit->message));
 
                 // get btc
-                $member_btc = $this->getBtc_member($asset_btc, $trade_balance, $total_usdt, $order->id, $order->type);
+                $member_btc = $this->getBtc_member($asset_btc, $order->id, $order->type);
                 $member_signal = array_merge($member_signal, $member_btc);
 
                 // update order pnglobal
@@ -302,7 +302,7 @@ class Updateorder extends BaseController
         return $btc[0];
     }
 
-    private function getBtc_member($asset_btc, $trade_balance, $cost, $signal_id, $type)
+    private function getBtc_member($asset_btc, $signal_id, $type)
     {
 
         function convertBTC($number, $precision = 6) {
@@ -312,8 +312,8 @@ class Updateorder extends BaseController
         
         $btc = $this->getAssets("BTC");
         $amount_btc = convertBTC(($btc->free + $btc->locked));
-        log_message('info', 'Trade Balance: ' .json_encode($trade_balance));
-        log_message('info', 'cost: ' .json_encode($cost));
+        // log_message('info', 'Trade Balance: ' .json_encode($trade_balance));
+        // log_message('info', 'cost: ' .json_encode($cost));
         if($type == 'Buy A') {
             $amount_btc -= ($asset_btc + 0);
             // $this->setting->store(['asset_btc' => $asset_btc ]);
@@ -331,7 +331,7 @@ class Updateorder extends BaseController
 
         $mdata = [];
         foreach ($member->message as $m) {
-            $btc     = ( $m->amount_usdt / $trade_balance ) * $amount_btc;
+            $btc     = ( $m->amount_usdt / $m->total_usdt ) * $amount_btc;
             $mdata[] = [
                 'member_id' => $m->member_id,
                 'amount_btc' => convertBTC($btc, 6),
