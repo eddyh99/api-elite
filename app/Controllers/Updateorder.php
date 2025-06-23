@@ -183,42 +183,16 @@ class Updateorder extends BaseController
 
     
             $cost = $this->setting->get('cost_trade')->message ?? 0.01;
-            // profit 
-            $client_wallet = ($profit - ($profit * $cost)) /2;
-            $master_wallet = $profit - $client_wallet;
+            // Net profit 
+            $netProfit  = $profit - ($cost * $profit);
 
-            $sql = "SELECT COUNT(*) as open_count
-                    FROM member_sinyal ms
-                    JOIN sinyal s ON s.id = ms.sinyal_id
-                    WHERE ms.member_id = ?
-                      AND s.status IN ('pending', 'filled')
-                      AND s.type LIKE 'Buy%'
-                      AND NOT EXISTS (
-                          SELECT 1
-                          FROM sinyal s2
-                          WHERE s2.type LIKE 'Sell%'
-                            AND s2.pair_id = s.pair_id
-                            AND s2.status = 'filled'
-                      )";
-            $result = $this->db->query($sql, [$m->member_id])->getRowArray();
-            $openCount = (int)($result['open_count'] ?? 0);
+            $client     = round($netProfit/2,4);
+            $company    = ($profit-$client);
 
-            // Determine divisor based on openCount
-            $divisor = 0;
-            if ($openCount === 2) {
-                $divisor = 3;
-            } elseif ($openCount === 3) {
-                $divisor = 2;
-            } elseif ($openCount === 4) {
-                $divisor = 1;
-            }
+            // 10% commission
+            $m_commission = $company * 0.1;
+            $master     = round($company - $m_commission,2);
 
-            if ($divisor > 0) {
-                $newAmount = $amount / $divisor;
-                // Update position
-                $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newAmount, $memberId]);
-            }
-            
             $member_signal[] = [
                 'member_id'    => $m->member_id,
                 'amount_btc'   => $m->amount_btc,
@@ -227,21 +201,13 @@ class Updateorder extends BaseController
             ];
             
             // Split the net profit equally between master and client wallets
-            $profit_data = [
-                'member_id' => $m->member_id,
-                'master_wallet' => round($master_wallet, 2),
-                'client_wallet' => round($client_wallet, 2),
-                'order_id' => $order_id
-            ];
     
             // If the member has an upline
             if (!is_null($m->upline)) {
-                $commission = $master_wallet * 0.1;
-                $profit_data['master_wallet'] = round($master_wallet - $commission, 2);
                 $commissions[] = [
                     'member_id' => $m->upline,
                     'downline_id' => $m->member_id,
-                    'amount' => round($commission, 2),
+                    'amount' => round($m_commission, 4),
                     'order_id' => $order_id
                 ];
                 $profits[] = [
@@ -259,7 +225,6 @@ class Updateorder extends BaseController
                 ];
 
             }
-            $profits[] = $profit_data;
         }
     
         // Return the final profit and commission distributions

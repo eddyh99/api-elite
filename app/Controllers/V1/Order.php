@@ -86,7 +86,7 @@ class Order extends BaseController
             return $this->respond(error_msg(400, "binance", '02', 'Previous buy still pending'), 400);
         }
 
-        $deposit  = $this->deposit->rebalanceMemberPosition();
+        $deposit  = $this->deposit->getTotal_tradeBalance();
 
         if (@$deposit->code != 200) {
             return $this->respond(error_msg(400, "signal", '01', $deposit->message), 400);
@@ -102,7 +102,7 @@ class Order extends BaseController
         //     $asset_btc = $this->setting->get('asset_btc')->message;
         // }
 
-        $trade_balance = $deposit->message;
+        $trade_balance = ($deposit->message /4);
         $order = $this->limit_order('BUY', $trade_balance, $data->limit);      
 
         $mdata = [

@@ -90,46 +90,45 @@ class Mdl_deposit extends Model
             //             ), 0) , 0) -- trade
             //                 AS amount";
 
-            // $sql = "SELECT
-            //             SUM(trade_balance) AS amount
-            //         FROM (
-            //             SELECT
-            //                 m.id AS member_id,
-            //                 FLOOR((
-            //                     COALESCE((
-            //                         SELECT -SUM(master_wallet)
-            //                         FROM wallet
-            //                         WHERE member_id = m.id
-            //                     ), 0)
-            //                     - COALESCE((
-            //                         SELECT SUM(CASE WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt END)
-            //                         FROM member_sinyal ms
-            //                         JOIN sinyal s ON s.id = ms.sinyal_id
-            //                         WHERE ms.member_id = m.id AND s.status != 'canceled'
-            //                     ), 0)
-            //                     + COALESCE((
-            //                         SELECT SUM(CASE WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt END)
-            //                         FROM member_sinyal ms
-            //                         JOIN sinyal s ON s.id = ms.sinyal_id
-            //                         WHERE ms.member_id = m.id AND s.status = 'filled'
-            //                     ), 0)
-            //                     + COALESCE((
-            //                         SELECT SUM(amount)
-            //                         FROM withdraw
-            //                         WHERE member_id = m.id AND jenis = 'trade'
-            //                     ), 0)
-            //                     - COALESCE((
-            //                         SELECT SUM(amount)
-            //                         FROM withdraw
-            //                         WHERE member_id = m.id AND jenis = 'balance' AND withdraw_type = 'usdt'
-            //                     ), 0)
-            //                 ) * 100) / 100 AS trade_balance
-            //             FROM
-            //                 member m
-            //             HAVING
-            //                 trade_balance >= 10
-            //         ) AS subquery";
-            $sql = "SELECT sum(position) FROM member WHERE is_delete=0 AND status='active'";
+            $sql = "SELECT
+                        SUM(trade_balance) AS amount
+                    FROM (
+                        SELECT
+                            m.id AS member_id,
+                            FLOOR((
+                                COALESCE((
+                                    SELECT -SUM(master_wallet)
+                                    FROM wallet
+                                    WHERE member_id = m.id
+                                ), 0)
+                                - COALESCE((
+                                    SELECT SUM(CASE WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt END)
+                                    FROM member_sinyal ms
+                                    JOIN sinyal s ON s.id = ms.sinyal_id
+                                    WHERE ms.member_id = m.id AND s.status != 'canceled'
+                                ), 0)
+                                + COALESCE((
+                                    SELECT SUM(CASE WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt END)
+                                    FROM member_sinyal ms
+                                    JOIN sinyal s ON s.id = ms.sinyal_id
+                                    WHERE ms.member_id = m.id AND s.status = 'filled'
+                                ), 0)
+                                + COALESCE((
+                                    SELECT SUM(amount)
+                                    FROM withdraw
+                                    WHERE member_id = m.id AND jenis = 'trade'
+                                ), 0)
+                                - COALESCE((
+                                    SELECT SUM(amount)
+                                    FROM withdraw
+                                    WHERE member_id = m.id AND jenis = 'balance' AND withdraw_type = 'usdt'
+                                ), 0)
+                            ) * 100) / 100 AS trade_balance
+                        FROM
+                            member m
+                        HAVING
+                            trade_balance >= 10
+                    ) AS subquery";
             $query = $this->db->query($sql)->getRow();
 
             return (object) [
@@ -262,73 +261,6 @@ class Mdl_deposit extends Model
             ];
         }
     }
-    
-    public function rebalanceMemberPosition()
-    {
-        try {
-            // Step 1: Get trade balance
-            $result = $this->getMember_tradeBalance();
-    
-            if ($result->code !== 200) {
-                return (object)[
-                    'code' => 500,
-                    'message' => 'Failed to retrieve trade balances.'
-                ];
-            }
-    
-            $totalNewPosition = 0; // Step 2: Running sum of new positions
-    
-            // Step 3: Loop through each member
-            foreach ($result->message as $member) {
-                $memberId = $member->member_id;
-    
-                // Check if member has open trade
-                $openTrade = $this->db->select("SELECT s.type
-                            FROM member_sinyal ms
-                            JOIN sinyal s ON s.id = ms.sinyal_id
-                            WHERE ms.member_id = ?
-                              AND s.status IN ('pending', 'filled')
-                              AND s.type LIKE 'Buy%'
-                              AND NOT EXISTS (
-                                  SELECT 1
-                                  FROM sinyal s2
-                                  WHERE s2.type LIKE 'Sell%'
-                                    AND s2.pair_id = s.pair_id
-                                    AND s2.status = 'filled'
-                              )
-                            LIMIT 1", [$memberId]);
-    
-                // Skip if there is an open trade
-                if (!empty($openTrade)) {
-                    continue;
-                }
-    
-                // Proceed with rebalance
-                $tradeBalance = (float)$member->trade_balance;
-                $newPosition = $tradeBalance / 4;
-    
-                // Accumulate total
-                $totalNewPosition += $newPosition;
-    
-                // Update `position` field in DB
-                $this->db->query("UPDATE member SET position = ? WHERE id = ?", [$newPosition, $memberId]);
-            }
-    
-            // Step 4: Return total new position
-            return (object)[
-                'code' => 200,
-                'message' => $totalNewPosition,
-            ];
-        } catch (\Exception $e) {
-            return (object)[
-                'code' => 500,
-                'message' => 'Error in rebalance process. ' . $e->getMessage()
-            ];
-        }
-    }
-
-
-
 
     public function getBalance_byIdMember($id_member) {
         try {
@@ -437,7 +369,7 @@ class Mdl_deposit extends Model
             // $sql = $commission->query_commission();
             $sql = '';
 
-            $sql .= "-- UNION ALL
+            $sql .= "
                     SELECT
                         md.created_at as date,
                         md.amount AS commission,
