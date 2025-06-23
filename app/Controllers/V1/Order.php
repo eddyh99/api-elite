@@ -103,6 +103,7 @@ class Order extends BaseController
         // }
 
         $trade_balance = $deposit->message;
+        // dd($trade_balance);
         $order = $this->limit_order('BUY', $trade_balance, $data->limit);      
 
         $mdata = [

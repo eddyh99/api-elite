@@ -129,7 +129,7 @@ class Mdl_deposit extends Model
             //             HAVING
             //                 trade_balance >= 10
             //         ) AS subquery";
-            $sql = "SELECT sum(position) FROM member WHERE is_delete=0 AND status='active'";
+            $sql = "SELECT sum(position) as amount FROM member WHERE is_delete=0 AND status='active'";
             $query = $this->db->query($sql)->getRow();
 
             return (object) [
@@ -277,42 +277,50 @@ class Mdl_deposit extends Model
             }
     
             $totalNewPosition = 0; // Step 2: Running sum of new positions
-    
-            // Step 3: Loop through each member
+
+            // step 3 update
             foreach ($result->message as $member) {
-                $memberId = $member->member_id;
-    
-                // Check if member has open trade
-                $openTrade = $this->db->select("SELECT s.type
-                            FROM member_sinyal ms
-                            JOIN sinyal s ON s.id = ms.sinyal_id
-                            WHERE ms.member_id = ?
-                              AND s.status IN ('pending', 'filled')
-                              AND s.type LIKE 'Buy%'
-                              AND NOT EXISTS (
-                                  SELECT 1
-                                  FROM sinyal s2
-                                  WHERE s2.type LIKE 'Sell%'
-                                    AND s2.pair_id = s.pair_id
-                                    AND s2.status = 'filled'
-                              )
-                            LIMIT 1", [$memberId]);
-    
-                // Skip if there is an open trade
-                if (!empty($openTrade)) {
-                    continue;
-                }
-    
-                // Proceed with rebalance
-                $tradeBalance = (float)$member->trade_balance;
-                $newPosition = $tradeBalance / 4;
-    
-                // Accumulate total
-                $totalNewPosition += $newPosition;
-    
-                // Update `position` field in DB
-                $this->db->query("UPDATE member SET position = ? WHERE id = ?", [$newPosition, $memberId]);
+            $sql = "SELECT COUNT(*) as open_count
+                    FROM member_sinyal ms
+                    JOIN sinyal s ON s.id = ms.sinyal_id
+                    WHERE ms.member_id = ?
+                      AND s.status IN ('pending', 'filled')
+                      AND s.type LIKE 'Buy%'
+                      AND NOT EXISTS (
+                          SELECT 1
+                          FROM sinyal s2
+                          WHERE s2.type LIKE 'Sell%'
+                            AND s2.pair_id = s.pair_id
+                            AND s2.status = 'filled'
+                      )";
+            $result = $this->db->query($sql, [$member->member_id])->getRowArray();
+            $openCount = (int)($result['open_count'] ?? 0);
+
+            // Determine divisor based on openCount
+            $divisor = 0;
+            if ($openCount === 1) {
+                $divisor = 3;
+            } elseif ($openCount === 2) {
+                $divisor = 2;
+            } elseif ($openCount === 3) {
+                $divisor = 1;
+            } elseif ($openCount === 0) {
+                $divisor = 4;
             }
+
+            $tradeBalance = (float)$member->trade_balance;
+            // $newPosition = $tradeBalance / 4; //if buy a
+    
+            if ($divisor > 0) {
+                $newPosition = $tradeBalance / $divisor;
+                // Update position
+                $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newPosition, $member->member_id]);
+            }
+
+            // Accumulate total
+            $totalNewPosition += $newPosition;
+        }
+
     
             // Step 4: Return total new position
             return (object)[

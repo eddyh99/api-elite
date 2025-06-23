@@ -82,7 +82,8 @@ class Updateorder extends BaseController
             if ($status->side === 'BUY' && $status->order['status'] == 'filled') {
 
                 $deposit  = $this->deposit->getTotal_tradeBalance();
-                $trade_balance = ( ($deposit->message + $cost) /4);
+                // $trade_balance = ( ($deposit->message + $cost) /4);
+                $trade_balance = $deposit->message;
                 $asset_btc = $this->setting->get('asset_btc')->message;
                 log_message('info', 'TRADE BALANCE ORI: ' . json_encode($deposit->message));
 
@@ -187,37 +188,37 @@ class Updateorder extends BaseController
             $client_wallet = ($profit - ($profit * $cost)) /2;
             $master_wallet = $profit - $client_wallet;
 
-            $sql = "SELECT COUNT(*) as open_count
-                    FROM member_sinyal ms
-                    JOIN sinyal s ON s.id = ms.sinyal_id
-                    WHERE ms.member_id = ?
-                      AND s.status IN ('pending', 'filled')
-                      AND s.type LIKE 'Buy%'
-                      AND NOT EXISTS (
-                          SELECT 1
-                          FROM sinyal s2
-                          WHERE s2.type LIKE 'Sell%'
-                            AND s2.pair_id = s.pair_id
-                            AND s2.status = 'filled'
-                      )";
-            $result = $this->db->query($sql, [$m->member_id])->getRowArray();
-            $openCount = (int)($result['open_count'] ?? 0);
+            // $sql = "SELECT COUNT(*) as open_count
+            //         FROM member_sinyal ms
+            //         JOIN sinyal s ON s.id = ms.sinyal_id
+            //         WHERE ms.member_id = ?
+            //           AND s.status IN ('pending', 'filled')
+            //           AND s.type LIKE 'Buy%'
+            //           AND NOT EXISTS (
+            //               SELECT 1
+            //               FROM sinyal s2
+            //               WHERE s2.type LIKE 'Sell%'
+            //                 AND s2.pair_id = s.pair_id
+            //                 AND s2.status = 'filled'
+            //           )";
+            // $result = $this->db->query($sql, [$m->member_id])->getRowArray();
+            // $openCount = (int)($result['open_count'] ?? 0);
 
-            // Determine divisor based on openCount
-            $divisor = 0;
-            if ($openCount === 2) {
-                $divisor = 3;
-            } elseif ($openCount === 3) {
-                $divisor = 2;
-            } elseif ($openCount === 4) {
-                $divisor = 1;
-            }
+            // // Determine divisor based on openCount
+            // $divisor = 0;
+            // if ($openCount === 2) {
+            //     $divisor = 3;
+            // } elseif ($openCount === 3) {
+            //     $divisor = 2;
+            // } elseif ($openCount === 4) {
+            //     $divisor = 1;
+            // }
 
-            if ($divisor > 0) {
-                $newAmount = $amount / $divisor;
-                // Update position
-                $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newAmount, $memberId]);
-            }
+            // if ($divisor > 0) {
+            //     $newAmount = $amount / $divisor;
+            //     // Update position
+            //     $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newAmount, $memberId]);
+            // }
             
             $member_signal[] = [
                 'member_id'    => $m->member_id,
@@ -244,21 +245,22 @@ class Updateorder extends BaseController
                     'amount' => round($commission, 2),
                     'order_id' => $order_id
                 ];
-                $profits[] = [
-                    'member_id' => $m->member_id,
-                    'master_wallet' => $master,
-                    'client_wallet' => $client,
-                    'order_id' => $order_id
-                ];
-            }else{
-                $profits[] = [
-                    'member_id' => $m->member_id,
-                    'master_wallet' => $master+$m_commission,
-                    'client_wallet' => $client,
-                    'order_id' => $order_id
-                ];
-
+                // $profits[] = [
+                //     'member_id' => $m->member_id,
+                //     'master_wallet' => $master,
+                //     'client_wallet' => $client,
+                //     'order_id' => $order_id
+                // ];
             }
+            // else{
+            //     $profits[] = [
+            //         'member_id' => $m->member_id,
+            //         'master_wallet' => $master+$m_commission,
+            //         'client_wallet' => $client,
+            //         'order_id' => $order_id
+            //     ];
+
+            // }
             $profits[] = $profit_data;
         }
     
