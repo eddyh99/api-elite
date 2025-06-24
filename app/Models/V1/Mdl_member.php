@@ -676,14 +676,18 @@ class Mdl_member extends Model
     {
         try {
             $sql = "SELECT
-                        *,
-                    '-' as subscription
+                        mb.*, komisi
                     FROM
-                        member
+                        member mb LEFT JOIN (
+        				SELECT member_id, sum(commission) as komisi 
+        					FROM member_deposit md 
+        				WHERE status='complete' GROUP BY member_id
+        			) dp
+                    ON mb.id=dp.member_id
                     WHERE
-                        id_referral = ?
-                        AND is_delete = 0
-                        AND status IN ('active', 'referral')";
+                        mb.id_referral = ?
+                        AND mb.is_delete = 0
+                        AND mb.status IN ('active', 'referral')";
             $query = $this->db->query($sql, [$id_member])->getResult();
 
             if (!$query) {
@@ -706,7 +710,6 @@ class Mdl_member extends Model
             'data'    => $query
         ];
     }
-
 
     public function get_referral_member()
     {

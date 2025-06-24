@@ -184,9 +184,8 @@ class Updateorder extends BaseController
 
     
             $cost = $this->setting->get('cost_trade')->message ?? 0.01;
-            // profit 
-            $client_wallet = ($profit - ($profit * $cost)) /2;
-            $master_wallet = $profit - $client_wallet;
+            // Net profit 
+            $netProfit  = $profit - ($cost * $profit);
 
             // $sql = "SELECT COUNT(*) as open_count
             //         FROM member_sinyal ms
@@ -228,21 +227,13 @@ class Updateorder extends BaseController
             ];
             
             // Split the net profit equally between master and client wallets
-            $profit_data = [
-                'member_id' => $m->member_id,
-                'master_wallet' => round($master_wallet, 2),
-                'client_wallet' => round($client_wallet, 2),
-                'order_id' => $order_id
-            ];
     
             // If the member has an upline
             if (!is_null($m->upline)) {
-                $commission = $master_wallet * 0.1;
-                $profit_data['master_wallet'] = round($master_wallet - $commission, 2);
                 $commissions[] = [
                     'member_id' => $m->upline,
                     'downline_id' => $m->member_id,
-                    'amount' => round($commission, 2),
+                    'amount' => round($m_commission, 4),
                     'order_id' => $order_id
                 ];
                 // $profits[] = [

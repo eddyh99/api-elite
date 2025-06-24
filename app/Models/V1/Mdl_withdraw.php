@@ -72,25 +72,25 @@ class Mdl_withdraw extends Model
             $query = $this->insertBatch($mdata);
     
             if (!$query) {
-                return (object)[
+                return (object) [
                     'code'    => 400,
                     'message' => 'Withdrawal request failed.'
                 ];
             }
     
-            return (object)[
-                'code'    => 201,
-                'message' => 'Withdrawal request submitted successfully.'
-            ];
-    
         } catch (\Exception $e) {
-            return (object)[
+            return (object) [
                 'code'    => 500,
-                'message' => 'Withdrawal request failed. Please try again later. ' . $e->getMessage()
+                'message' => 'Withdrawal request failed. Please try again later.' .$e
             ];
         }
-    }
 
+            
+        return (object) [
+            'code'    => 201,
+            'message' => 'Withdrawal request submitted successfully.'
+        ];
+    }
 
     public function list_withdraw() {
         try {

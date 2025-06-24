@@ -488,7 +488,7 @@ class Mdl_deposit extends Model
             // $sql = $commission->query_commission();
             $sql = '';
 
-            $sql .= "-- UNION ALL
+            $sql .= "
                     SELECT
                         md.created_at as date,
                         md.amount AS commission,
