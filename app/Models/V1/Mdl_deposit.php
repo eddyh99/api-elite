@@ -174,7 +174,7 @@ class Mdl_deposit extends Model
             //         HAVING trade_balance > 0";
             $sql = "SELECT
                     m.id as member_id,
-                    m.position,
+                    (m.position_a + m.position_b + m.position_c + m.position_d) AS position,
                     m.position_a,
                     m.position_b,
                     m.position_c,
@@ -355,11 +355,9 @@ class Mdl_deposit extends Model
                     array_push($member_ids, $member->member_id); 
                     $member_positions[] = [
                         'id'                  => $member->member_id,
-                        'position'            => $member->position + $newPosition,
                         $side_position[$side] => $newPosition
                     ];
                     // $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
-                    // $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newPosition, $member->member_id]);
                 } else {
                     //check $newPosition >= prev position
                     $lastPosition = $result['last_position'];
@@ -367,11 +365,9 @@ class Mdl_deposit extends Model
                         array_push($member_ids, $member->member_id); 
                         $member_positions[] = [
                             'id'                  => $member->member_id,
-                            'position'            => $member->position + $newPosition,
                             $side_position[$side] => $newPosition
                         ];
                         // $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
-                        // $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newPosition, $member->member_id]);
                     } else {
                         $newPosition = 0;
                     }
