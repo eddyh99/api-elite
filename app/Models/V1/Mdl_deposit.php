@@ -174,6 +174,7 @@ class Mdl_deposit extends Model
             //         HAVING trade_balance > 0";
             $sql = "SELECT
                     m.id as member_id,
+                    m.position,
                     m.position_a,
                     m.position_b,
                     m.position_c,
@@ -286,6 +287,7 @@ class Mdl_deposit extends Model
     
             $totalNewPosition = 0; // Step 2: Running sum of new positions
             $member_ids = [];
+            $member_positions = [];
             $side_position = [
                 'BUY A' => 'position_a',
                 'BUY B' => 'position_b',
@@ -348,18 +350,28 @@ class Mdl_deposit extends Model
             if ($divisor > 0 && $tradeBalance >= 10) {
                 $newPosition = $tradeBalance / $divisor;
     
-                if($openCount === 0) { //if buy a
+                if($openCount === 0) { //if first buy
                     // Update position
                     array_push($member_ids, $member->member_id); 
-                    $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
-                    $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newPosition, $member->member_id]);
+                    $member_positions[] = [
+                        'id'                  => $member->member_id,
+                        'position'            => $member->position + $newPosition,
+                        $side_position[$side] => $newPosition
+                    ];
+                    // $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
+                    // $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newPosition, $member->member_id]);
                 } else {
                     //check $newPosition >= prev position
                     $lastPosition = $result['last_position'];
                     if($newPosition >= $member->$lastPosition) {
-                        $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
-                        $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newPosition, $member->member_id]);
                         array_push($member_ids, $member->member_id); 
+                        $member_positions[] = [
+                            'id'                  => $member->member_id,
+                            'position'            => $member->position + $newPosition,
+                            $side_position[$side] => $newPosition
+                        ];
+                        // $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
+                        // $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newPosition, $member->member_id]);
                     } else {
                         $newPosition = 0;
                     }
@@ -376,7 +388,8 @@ class Mdl_deposit extends Model
             return (object)[
                 'code' => 200,
                 'message' => $totalNewPosition,
-                'member_ids' => $member_ids
+                'member_ids' => $member_ids,
+                'member_positions' => $member_positions
             ];
         } catch (\Exception $e) {
             return (object)[

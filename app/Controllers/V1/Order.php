@@ -127,7 +127,8 @@ class Order extends BaseController
         if (!isset($order->orderId) || !isset($order->origQty)) {
             $result['text'] = 'Order Failed.';
             return $this->respond(error_msg(400, "order", '01', $result), 400);
-        } 
+        }
+        $this->member->update_data($deposit->member_positions);
         
         // $cost = floor(($order->origQty * $data->limit) * 100) / 100;
 
