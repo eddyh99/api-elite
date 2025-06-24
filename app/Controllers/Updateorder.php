@@ -260,10 +260,11 @@ class Updateorder extends BaseController
             //         'order_id' => $order_id
             //     ];
 
-            }
+            // }
 
             $profits[] = $profit_data;
         }
+        
     
         // Return the final profit and commission distributions
         return ['profits' => $profits, 'commissions' => $commissions, 'member_signal' => $member_signal];
