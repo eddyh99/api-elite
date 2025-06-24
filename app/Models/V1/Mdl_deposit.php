@@ -293,32 +293,40 @@ class Mdl_deposit extends Model
                 'BUY D' => 'position_d'
             ];
 
-            $last_position = [
-                'BUY B' => 'position_a',
-                'BUY C' => 'position_b',
-                'BUY D' => 'position_c'
-            ];
-
             // step 3 update
             foreach ($result->message as $member) {
             $sql = "SELECT
-                        COUNT(*) as open_count
+                        open_count,
+                        CASE
+                            open_count
+                            WHEN 1 THEN 'position_a'
+                            WHEN 2 THEN 'position_b'
+                            WHEN 3 THEN 'position_c'
+                            WHEN 4 THEN 'position_d'
+                            ELSE CONCAT('position_', open_count)
+                        END AS last_position
                     FROM
-                        member_sinyal ms
-                        JOIN sinyal s ON s.id = ms.sinyal_id
-                    WHERE
-                        ms.member_id = ?
-                        AND s.status IN ('pending', 'filled')
-                        AND s.type LIKE 'Buy%'
-                        AND NOT EXISTS (
+                        (
                             SELECT
-                                1
+                                COUNT(*) AS open_count
                             FROM
-                                sinyal s2
+                                member_sinyal ms
+                                JOIN sinyal s ON s.id = ms.sinyal_id
                             WHERE
-                                s2.type LIKE 'Sell%'
-                                AND s2.pair_id = s.pair_id
-                                AND s2.status = 'filled')";
+                                ms.member_id = ?
+                                AND s.status IN ('pending', 'filled')
+                                AND s.type LIKE 'Buy%'
+                                AND NOT EXISTS (
+                                    SELECT
+                                        1
+                                    FROM
+                                        sinyal s2
+                                    WHERE
+                                        s2.type LIKE 'Sell%'
+                                        AND s2.pair_id = s.pair_id
+                                        AND s2.status = 'filled'
+                                )
+                    ) AS sub";
             $result = $this->db->query($sql, [$member->member_id])->getRowArray();
             $openCount = (int)($result['open_count'] ?? 0);
 
@@ -347,7 +355,7 @@ class Mdl_deposit extends Model
                     $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newPosition, $member->member_id]);
                 } else {
                     //check $newPosition >= prev position
-                    $lastPosition = $last_position[$side];
+                    $lastPosition = $result['last_position'];
                     if($newPosition >= $member->$lastPosition) {
                         $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
                         $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newPosition, $member->member_id]);
