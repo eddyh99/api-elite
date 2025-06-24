@@ -245,6 +245,20 @@ class Updateorder extends BaseController
                     'amount' => round($commission, 2),
                     'order_id' => $order_id
                 ];
+                // $profits[] = [
+                //     'member_id' => $m->member_id,
+                //     'master_wallet' => $master,
+                //     'client_wallet' => $client,
+                //     'order_id' => $order_id
+                // ];
+            }
+            // else{
+            //     $profits[] = [
+            //         'member_id' => $m->member_id,
+            //         'master_wallet' => $master+$m_commission,
+            //         'client_wallet' => $client,
+            //         'order_id' => $order_id
+            //     ];
 
             }
 
