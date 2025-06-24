@@ -327,6 +327,7 @@ class Mdl_signal extends Model
             $sql = "SELECT
                         sinyal.id,
                         sinyal.pair_id,
+                        sinyal.type,
                         sinyal.order_id
                     FROM
                         sinyal

@@ -248,6 +248,26 @@ class Mdl_member extends Model
         }
     }
 
+    public function update_data($mdata)
+    {
+        try {
+            $member = $this->db->table("member");
+            $member->updateBatch($mdata, 'id');
+    
+            return (object) [
+                'success'  => true,
+                'message' => 'User data updated'
+            ];
+        } catch (\Exception $e) {
+            return (object) [
+                'success'  => false,
+                'code'    => $e->getCode(),
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ];
+        }
+    }
+    
+
 
     private function generate_token($id)
     {

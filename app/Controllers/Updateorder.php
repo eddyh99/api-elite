@@ -19,6 +19,7 @@ class Updateorder extends BaseController
         $this->commission  = model('App\Models\V1\Mdl_commission');
         $this->wallet  = model('App\Models\V1\Mdl_wallet');
         $this->member_signal  = model('App\Models\V1\Mdl_member_signal');
+        $this->member  = model('App\Models\V1\Mdl_member');
         $this->setting  = model('App\Models\V1\Mdl_settings');
     }
 
@@ -58,6 +59,7 @@ class Updateorder extends BaseController
         $profits = [];
         $commissions = [];
         $member_signal = [];
+        $member = [];
 
         foreach($orders as $order) {
             $status = $this->updateOrder($order->order_id);
@@ -66,10 +68,11 @@ class Updateorder extends BaseController
             $cost = $status->cummulativeQuoteQty;
             $total_usdt = ($cost - $status->commission);
             if ($status->side === 'SELL' && $status->order['status'] == 'filled') {
-                $takeProfitData = $this->take_profits($status->origQty, $cost, $order->order_id, $order->id, $order->pair_id);
+                $takeProfitData = $this->take_profits($status->origQty, $cost, $order->order_id, $order->id, $order->pair_id, $order->type);
                 $profits = array_merge($profits, $takeProfitData['profits']);
                 $commissions = array_merge($commissions, $takeProfitData['commissions']);
                 $member_signal = array_merge($member_signal, $takeProfitData['member_signal']);
+                $this->mergeById($member, $takeProfitData['member']);
 
                 // isi pair_id buy!
                 $mdata['pair_id'][] = [
@@ -114,6 +117,11 @@ class Updateorder extends BaseController
         if (!empty($member_signal)) {
             $this->member_signal->addOrUpdate($member_signal);
             log_message('info', 'MEMBER SIGNAL: ' . json_encode($member_signal));
+        }
+
+        // set position 0
+        if (!empty($member)) {
+            $this->member->update_data($member);
         }
 
         $result = $this->signal->updateStatus_byOrder($mdata);
@@ -162,7 +170,7 @@ class Updateorder extends BaseController
         return $result;
     }
 
-    private function take_profits($total_btc, $sell_amount, $order_id, $signal_id, $pair_id)
+    private function take_profits($total_btc, $sell_amount, $order_id, $signal_id, $pair_id, $type)
     {
         // Retrieve buy orders based on the selected pair
         $signal_buy = $this->signal->get_orders($pair_id);
@@ -175,6 +183,13 @@ class Updateorder extends BaseController
         $profits = [];
         $commissions = [];
         $member_signal = [];
+        $member = [];
+        $side_position = [
+            'Sell A' => 'position_a',
+            'Sell B' => 'position_b',
+            'Sell C' => 'position_c',
+            'Sell D' => 'position_d'
+        ];
     
         
         foreach ($signal_buy->message as $m) {
@@ -187,44 +202,16 @@ class Updateorder extends BaseController
             $client_wallet = ($profit - ($profit * $cost)) /2;
             $master_wallet = $profit - $client_wallet;
             
-
-            // $sql = "SELECT COUNT(*) as open_count
-            //         FROM member_sinyal ms
-            //         JOIN sinyal s ON s.id = ms.sinyal_id
-            //         WHERE ms.member_id = ?
-            //           AND s.status IN ('pending', 'filled')
-            //           AND s.type LIKE 'Buy%'
-            //           AND NOT EXISTS (
-            //               SELECT 1
-            //               FROM sinyal s2
-            //               WHERE s2.type LIKE 'Sell%'
-            //                 AND s2.pair_id = s.pair_id
-            //                 AND s2.status = 'filled'
-            //           )";
-            // $result = $this->db->query($sql, [$m->member_id])->getRowArray();
-            // $openCount = (int)($result['open_count'] ?? 0);
-
-            // // Determine divisor based on openCount
-            // $divisor = 0;
-            // if ($openCount === 2) {
-            //     $divisor = 3;
-            // } elseif ($openCount === 3) {
-            //     $divisor = 2;
-            // } elseif ($openCount === 4) {
-            //     $divisor = 1;
-            // }
-
-            // if ($divisor > 0) {
-            //     $newAmount = $amount / $divisor;
-            //     // Update position
-            //     $this->db->query("UPDATE member SET position = position + ? WHERE id = ?", [$newAmount, $memberId]);
-            // }
-            
             $member_signal[] = [
                 'member_id'    => $m->member_id,
                 'amount_btc'   => $m->amount_btc,
                 'amount_usdt'  => $amount_usdt,
                 'sinyal_id'    => $signal_id
+            ];
+
+            $member[] = [
+                    'id' => $m->member_id,
+                    $side_position[$type] => 0
             ];
             
             // Split the net profit equally between master and client wallets
@@ -245,29 +232,15 @@ class Updateorder extends BaseController
                     'amount' => round($commission, 2),
                     'order_id' => $order_id
                 ];
-                // $profits[] = [
-                //     'member_id' => $m->member_id,
-                //     'master_wallet' => $master,
-                //     'client_wallet' => $client,
-                //     'order_id' => $order_id
-                // ];
-            }
-            // else{
-            //     $profits[] = [
-            //         'member_id' => $m->member_id,
-            //         'master_wallet' => $master+$m_commission,
-            //         'client_wallet' => $client,
-            //         'order_id' => $order_id
-            //     ];
 
-            // }
+            }
 
             $profits[] = $profit_data;
         }
         
     
         // Return the final profit and commission distributions
-        return ['profits' => $profits, 'commissions' => $commissions, 'member_signal' => $member_signal];
+        return ['member' => $member,'profits' => $profits, 'commissions' => $commissions, 'member_signal' => $member_signal];
     }
     
     private function updateOrdersAll($type, $signal) {
@@ -368,5 +341,19 @@ class Updateorder extends BaseController
     //     }
     //     return $mdata;
     // }
+
+    private function mergeById(&$target, $source) {
+        foreach ($source as $row) {
+            $id = $row['id'];
+            if (!isset($target[$id])) {
+                $target[$id] = ['id' => $id];
+            }
+            foreach ($row as $key => $val) {
+                if ($key !== 'id') {
+                    $target[$id][$key] = $val;
+                }
+            }
+        }
+    }    
     
 }
