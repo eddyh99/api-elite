@@ -306,7 +306,7 @@ class Updateorder extends BaseController
 
         $mdata = [];
         foreach ($member->message as $m) {
-            $btc     = ( $m->amount_usdt / $m->total_usdt ) * $amount_btc;
+            $btc     = ( ($m->amount_usdt -15) / $m->total_usdt ) * $amount_btc;
             $mdata[] = [
                 'member_id' => $m->member_id,
                 'amount_btc' => convertBTC($btc, 6),
