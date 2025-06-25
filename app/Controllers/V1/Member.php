@@ -281,5 +281,16 @@ class Member extends BaseController
         $result = $this->member->get_activemember();
         return $this->respond(error_msg($result->code, "member", null, $result->message), $result->code);
     }
+    
+    public function getList_transaction() {
+        $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
+        $result = $this->member->list_transaction($member_id);
+
+        if (@$result->code != 200) {
+			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
+		}
+
+        return $this->respond(error_msg(200, "member", null, $result->message), 200);
+    }
 
 }

@@ -280,7 +280,7 @@ class Updateorder extends BaseController
     private function getBtc_member($asset_btc, $signal_id, $type)
     {
 
-        function convertBTC($number, $precision = 6)
+        function convertBTC($number, $precision = 5)
         {
             $factor = pow(10, $precision);
             return floor($number * $factor) / $factor;
@@ -313,7 +313,7 @@ class Updateorder extends BaseController
             // log_message('info', 'AMOUNT BTC: ' . json_encode($amount_btc));
             $mdata[] = [
                 'member_id' => $m->member_id,
-                'amount_btc' => convertBTC($btc, 6),
+                'amount_btc' => convertBTC($btc, 5),
                 'amount_usdt' => $m->amount_usdt,
                 'sinyal_id' => $signal_id
             ];
