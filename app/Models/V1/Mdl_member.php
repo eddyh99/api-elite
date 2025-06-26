@@ -957,6 +957,70 @@ class Mdl_member extends Model
         ];
     }
 
+    public function history_trades()
+    {
+        try {
+            $sql = " SELECT
+                        s.status,
+                        s.entry_price,
+                        s.created_at AS date,
+                        SUM(
+                            CASE
+                                WHEN s.status = 'pending' THEN 0
+                                ELSE ms.amount_btc
+                            END
+                        ) AS amount_btc,
+                        SUM(ms.amount_usdt) as amount_usdt,
+                        SUBSTRING_INDEX(s.type, ' ', 1) AS position
+                    FROM
+                        sinyal s
+                        INNER JOIN member_sinyal ms ON ms.sinyal_id = s.id
+                    WHERE
+                        s.status != 'canceled'
+                    GROUP BY
+                        s.id
+                    UNION ALL-- order pending/canceled
+                    SELECT
+                        s.status,
+                        s.entry_price,
+                        s.created_at AS date,
+                        CASE
+                            WHEN SUBSTRING_INDEX(s.type, ' ', 1) = 'Buy' THEN 0
+                            ELSE ms.amount_btc
+                        END AS amount_btc,
+                        CASE
+                            WHEN SUBSTRING_INDEX(s.type, ' ', 1) = 'Sell' THEN 0
+                            ELSE ms.amount_usdt
+                        END AS amount_usdt,
+                        SUBSTRING_INDEX(s.type, ' ', 1) AS position
+                    FROM
+                        sinyal s
+                        INNER JOIN member_sinyal ms ON ms.sinyal_id = s.pair_id
+                    WHERE
+                        s.status = 'pending'
+                    GROUP BY
+                        s.id";
+            $query = $this->db->query($sql)->getResult();
+
+            if (!$query) {
+                return (object) [
+                    'code' => 200,
+                    'message' => []
+                ];
+            }
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.'
+            ];
+        }
+
+        return (object) [
+            'code' => 200,
+            'message' => $query
+        ];
+    }
+
     public function getTotal_balance() {
         try {
 
@@ -965,7 +1029,8 @@ class Mdl_member extends Model
                     SUM(t1.trade_balance) AS trade_usdt,
                     0 AS fund_btc,
                     ROUND(SUM(t1.trade_btc), 6) AS trade_btc,
-                    ROUND(t2.commission, 2) AS commission
+                    ROUND(t2.commission, 2) AS commission,
+                    ROUND(t3.total_profit, 2) AS total_profit
                 FROM
                     (
                         SELECT
@@ -1066,7 +1131,19 @@ class Mdl_member extends Model
                             FROM member_commission ms
                             JOIN member m ON m.id = ms.downline_id
                         ) AS commission_data
-                    ) AS t2;";
+                    ) AS t2,
+                    (
+                        SELECT
+                            ROUND(SUM(ms_sell.amount_usdt - ms_buy.amount_usdt), 2) AS total_profit
+                        FROM
+                            sinyal s_sell
+                        JOIN member_sinyal ms_sell ON ms_sell.sinyal_id = s_sell.id
+                        JOIN sinyal s_buy ON s_buy.pair_id = s_sell.pair_id AND s_buy.type LIKE 'Buy%'
+                        JOIN member_sinyal ms_buy ON ms_buy.sinyal_id = s_buy.id AND ms_buy.member_id = ms_sell.member_id
+                        WHERE
+                            s_sell.type LIKE 'Sell%'
+                            AND s_sell.status = 'filled'
+                    ) AS t3";
             $query = $this->db->query($sql)->getRow();
 
             return (object) [

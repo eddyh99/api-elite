@@ -90,7 +90,11 @@ class Member extends BaseController
 
     public function getHistory_trade() {
         $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
-        $result = $this->member->history_trade($member_id);
+        if($member_id) {
+            $result = $this->member->history_trade($member_id);
+        } else {
+            $result = $this->member->history_trades();
+        }
 
         if (@$result->code != 200) {
 			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
