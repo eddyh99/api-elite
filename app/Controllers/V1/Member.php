@@ -307,4 +307,10 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "member", null, $result), 200);
     }
 
+    public function getList_comission2(){
+        $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
+        $result = $this->commission->get_commission_byId($member_id);
+        return $this->respond(error_msg(200, "member", null, $result), 200);
+    }
+
 }
