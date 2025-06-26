@@ -957,6 +957,70 @@ class Mdl_member extends Model
         ];
     }
 
+    public function history_trades()
+    {
+        try {
+            $sql = " SELECT
+                        s.status,
+                        s.entry_price,
+                        s.created_at AS date,
+                        SUM(
+                            CASE
+                                WHEN s.status = 'pending' THEN 0
+                                ELSE ms.amount_btc
+                            END
+                        ) AS amount_btc,
+                        SUM(ms.amount_usdt) as amount_usdt,
+                        SUBSTRING_INDEX(s.type, ' ', 1) AS position
+                    FROM
+                        sinyal s
+                        INNER JOIN member_sinyal ms ON ms.sinyal_id = s.id
+                    WHERE
+                        s.status != 'canceled'
+                    GROUP BY
+                        s.id
+                    UNION ALL-- order pending/canceled
+                    SELECT
+                        s.status,
+                        s.entry_price,
+                        s.created_at AS date,
+                        CASE
+                            WHEN SUBSTRING_INDEX(s.type, ' ', 1) = 'Buy' THEN 0
+                            ELSE ms.amount_btc
+                        END AS amount_btc,
+                        CASE
+                            WHEN SUBSTRING_INDEX(s.type, ' ', 1) = 'Sell' THEN 0
+                            ELSE ms.amount_usdt
+                        END AS amount_usdt,
+                        SUBSTRING_INDEX(s.type, ' ', 1) AS position
+                    FROM
+                        sinyal s
+                        INNER JOIN member_sinyal ms ON ms.sinyal_id = s.pair_id
+                    WHERE
+                        s.status = 'pending'
+                    GROUP BY
+                        s.id";
+            $query = $this->db->query($sql)->getResult();
+
+            if (!$query) {
+                return (object) [
+                    'code' => 200,
+                    'message' => []
+                ];
+            }
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.'
+            ];
+        }
+
+        return (object) [
+            'code' => 200,
+            'message' => $query
+        ];
+    }
+
     public function getTotal_balance() {
         try {
 
