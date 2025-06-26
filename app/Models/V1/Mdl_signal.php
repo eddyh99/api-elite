@@ -664,8 +664,8 @@ class Mdl_signal extends Model
                         (
                             SELECT ROUND(SUM(amount), 2) FROM member_commission
                         ) AS ref_comm,
-                        (
-                            SELECT ROUND(SUM(master_wallet), 2) FROM wallet
+                         (
+                            SELECT ROUND(SUM( CASE WHEN m.id_referral IS NULL THEN w.master_wallet - (0.1 * w.client_wallet) ELSE w.master_wallet END ),2) AS total_adjusted_master_wallet FROM wallet w JOIN member m ON w.member_id = m.id
                         ) AS master_profit
                     FROM sinyal s_sell
                     JOIN member_sinyal ms_sell ON ms_sell.sinyal_id = s_sell.id
