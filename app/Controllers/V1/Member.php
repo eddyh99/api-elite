@@ -288,7 +288,7 @@ class Member extends BaseController
     
     public function getList_transaction() {
         $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
-        if($member_id) {
+        if(!empty($member_id)) {
             $result = $this->member->list_transaction($member_id);
         } else {
             $result = $this->member->list_transactions();
