@@ -899,7 +899,10 @@ class Mdl_member extends Model
         try {
             $sql = "-- order filled
                         SELECT
-                            s.status,
+                            CASE 
+                                WHEN SUBSTRING_INDEX(s.type, ' ', 1) = 'buy' THEN NULL
+                                ELSE w.client_wallet
+                            END AS profit,
                             s.entry_price,
                             s.created_at AS date,
                             CASE
@@ -908,17 +911,16 @@ class Mdl_member extends Model
                             END AS amount_btc,
                             ms.amount_usdt,
                             SUBSTRING_INDEX(s.type, ' ', 1) AS position
-                        FROM
-                            sinyal s
-                            INNER JOIN member_sinyal ms ON ms.sinyal_id = s.id
-                        WHERE
-                            ms.member_id = ?
+                        FROM sinyal s
+                        INNER JOIN member_sinyal ms ON ms.sinyal_id = s.id
+                        LEFT JOIN wallet w ON w.member_id = ms.member_id AND w.order_id = s.order_id
+                        WHERE ms.member_id = ? AND s.status = 'filled'
 
                         UNION ALL
 
-                        -- order pending/canceled
+                        -- order pending
                         SELECT
-                            s.status,
+                            NULL as profit,
                             s.entry_price,
                             s.created_at AS date,
                             CASE 
