@@ -55,6 +55,11 @@ class Mdl_wallet extends Model
                                 WHERE member_id = ?
                             ), 0)
                             - COALESCE((
+                              SELECT SUM(amount) 
+                              FROM member_commission
+                              WHERE downline_id=?
+                            ),0)
+                            - COALESCE((
                                 SELECT SUM(
                                     CASE
                                         WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt
@@ -121,7 +126,7 @@ class Mdl_wallet extends Model
                         ), 0
                       )
                       AS btc;"; 
-            $query = $this->db->query($sql, [$id_member, $id_member,$id_member, $id_member,$id_member, $id_member, $id_member, $id_member])->getRow();
+            $query = $this->db->query($sql, [$id_member, $id_member,$id_member, $id_member,$id_member, $id_member, $id_member, $id_member, $id_member])->getRow();
 
             return (object) [
                 'code' => 200,
@@ -131,7 +136,7 @@ class Mdl_wallet extends Model
         } catch (\Exception $e) {
             return (object) [
                 'code' => 500,
-                'message' => 'An error occurred.'
+                'message' => $e->getMessage()//'An error occurred.'
             ];
         }
     }
