@@ -736,19 +736,27 @@ class Mdl_signal extends Model
                 ),
                 wallet_profits AS (
                     SELECT
-                        order_id,
-                        SUM(master_wallet) AS master_profit,
-                        SUM(client_wallet) AS client_profit
-                    FROM wallet
-                    GROUP BY order_id
+                        w.order_id,
+                        SUM(
+                            CASE
+                                WHEN m.id_referral IS NULL THEN w.master_wallet - (0.1 * w.client_wallet)
+                                ELSE w.master_wallet
+                            END
+                        ) AS master_profit,
+                        SUM(w.client_wallet) AS client_profit
+                    FROM wallet w
+                    JOIN member m ON w.member_id = m.id
+                    GROUP BY w.order_id
                 ),
                 commission_totals AS (
                     SELECT
-                        order_id,
-                        SUM(amount) AS total_commission
-                    FROM member_commission
-                    GROUP BY order_id
+                        w.order_id,
+                        SUM(w.client_wallet*0.1) AS total_commission
+                    FROM wallet w
+                    JOIN member m ON w.member_id = m.id
+                    GROUP BY w.order_id
                 )
+                
                 SELECT
                     p.buy_id,
                     p.buy_order_id,
@@ -766,7 +774,7 @@ class Mdl_signal extends Model
                 LEFT JOIN member_amounts msell ON msell.sinyal_id = p.sell_id
                 LEFT JOIN wallet_profits w ON w.order_id = p.sell_order_id
                 LEFT JOIN commission_totals c ON c.order_id = p.sell_order_id;
-";
+                ";
             
             $query = $this->db->query($sql)->getResult();
 
