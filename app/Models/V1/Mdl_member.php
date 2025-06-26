@@ -108,6 +108,30 @@ class Mdl_member extends Model
                                 AND withdraw_type = 'usdt'
                             ), 0)
                         ) * 100) / 100 AS trade,
+                        -- commission
+                        (
+                            SELECT SUM(commission) 
+                            FROM (
+                                SELECT md.commission AS commission
+                                FROM member_deposit md
+                                WHERE md.status = 'complete' AND md.member_id = m.id
+                        
+                                UNION ALL
+                        
+                                SELECT -w.amount AS commission
+                                FROM withdraw w
+                                WHERE w.member_id = m.id
+                                  AND w.status <> 'rejected'
+                                  AND w.withdraw_type = 'usdt' 
+                                  AND w.jenis = 'comission'
+                        
+                                UNION ALL
+                        
+                                SELECT ms.amount AS commission
+                                FROM member_commission ms
+                                WHERE ms.downline_id = m.id
+                            ) AS commission_data
+                        ) AS commission,
 
                         -- Jumlah referral aktif
                         COALESCE(COUNT(r.id), 0) AS referral
