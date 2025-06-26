@@ -961,79 +961,71 @@ class Mdl_member extends Model
         try {
 
             $sql = "SELECT
-                        ROUND(SUM(fund_balance), 2) AS fund_usdt,
-                        ROUND(SUM(trade_balance), 2) AS trade_usdt,
-                        0 as fund_btc,
-                        ROUND(SUM(trade_btc), 6) AS trade_btc
-                    FROM (
-                        SELECT
-                            m.id AS member_id,
-                                -- USDT balance: deposits + balance withdraws - real withdraws/trades
-                                COALESCE(
-                            (
-                                        SELECT
-                                            SUM(amount)
-                                        FROM
-                                            member_deposit
-                                        WHERE
-                                            status = 'complete'
-                                            AND member_id = m.id
-                                    ),
-                                    0
-                                ) + COALESCE(
-                            (
-                                        SELECT
-                                            SUM(amount)
-                                        FROM
-                                            withdraw
-                                        WHERE
-                                            member_id = m.id
-                                            AND (
-                                                jenis = 'balance'
-                                                or jenis = 'comission'
-                                            )
-                                            AND withdraw_type = 'usdt'
-                                    ),
-                                    0
-                                ) - COALESCE(
-                            (
-                                        SELECT
-                                            SUM(amount)
-                                        FROM
-                                            withdraw
-                                        WHERE
-                                            member_id = m.id
-                                            AND (
-                                                (
-                                                    jenis = 'withdraw'
-                                                    AND status <> 'rejected'
-                                                    AND (
-                                                        withdraw_type = 'usdt'
-                                                        or withdraw_type = 'usdc'
-                                                    )
-                                                )
-                                                OR (
-                                                    jenis = 'trade'
-                                                    AND withdraw_type = 'usdt'
-                                                )
-                                            )
-                                    ),
-                                    0
-                                ) AS fund_balance,
-                            FLOOR((
+                        ROUND(SUM(t1.fund_balance), 2) AS fund_usdt,
+                        ROUND(SUM(t1.trade_balance), 2) AS trade_usdt,
+                        0 AS fund_btc,
+                        ROUND(SUM(t1.trade_btc), 6) AS trade_btc,
+                        ROUND(SUM(t2.commission), 2) AS commission
+                    FROM
+                        (
+                            SELECT
+                                m.id AS member_id,
+                                -- fund_balance calculation
                                 COALESCE((
-                                    SELECT -SUM(master_wallet)
-                                    FROM wallet
-                                    WHERE member_id = m.id
-                                ), 0)
-                                - COALESCE((
-                                    SELECT SUM(CASE WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt END)
-                                    FROM member_sinyal ms
-                                    JOIN sinyal s ON s.id = ms.sinyal_id
-                                    WHERE ms.member_id = m.id AND s.status != 'canceled'
+                                    SELECT SUM(amount)
+                                    FROM member_deposit
+                                    WHERE status = 'complete' AND member_id = m.id
                                 ), 0)
                                 + COALESCE((
-                                    SELECT SUM(CASE WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt END)
+                                    SELECT SUM(amount)
+                                    FROM withdraw
+                                    WHERE member_id = m.id
+                                    AND (jenis = 'balance' OR jenis = 'comission')
+                                    AND withdraw_type = 'usdt'
+                                ), 0)
+                                - COALESCE((
+                                    SELECT SUM(amount)
+                                    FROM withdraw
+                                    WHERE member_id = m.id
+                                    AND (
+                                        (jenis = 'withdraw' AND status <> 'rejected' AND (withdraw_type = 'usdt' OR withdraw_type = 'usdc'))
+                                        OR (jenis = 'trade' AND withdraw_type = 'usdt')
+                                    )
+                                ), 0) AS fund_balance,
+                    
+                                -- trade_balance calculation
+                                FLOOR((
+                                    COALESCE((SELECT -SUM(master_wallet) FROM wallet WHERE member_id = m.id), 0)
+                                    - COALESCE((
+                                        SELECT SUM(CASE WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt END)
+                                        FROM member_sinyal ms
+                                        JOIN sinyal s ON s.id = ms.sinyal_id
+                                        WHERE ms.member_id = m.id AND s.status != 'canceled'
+                                    ), 0)
+                                    + COALESCE((
+                                        SELECT SUM(CASE WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt END)
+                                        FROM member_sinyal ms
+                                        JOIN sinyal s ON s.id = ms.sinyal_id
+                                        WHERE ms.member_id = m.id AND s.status = 'filled'
+                                    ), 0)
+                                    + COALESCE((
+                                        SELECT SUM(amount)
+                                        FROM withdraw
+                                        WHERE member_id = m.id AND jenis = 'trade'
+                                    ), 0)
+                                    - COALESCE((
+                                        SELECT SUM(amount)
+                                        FROM withdraw
+                                        WHERE member_id = m.id AND jenis = 'balance' AND withdraw_type = 'usdt'
+                                    ), 0)
+                                ) * 100) / 100 AS trade_balance,
+                    
+                                -- trade_btc calculation
+                                COALESCE((
+                                    SELECT SUM(CASE
+                                        WHEN s.type LIKE 'Buy%' THEN ms.amount_btc
+                                        WHEN s.type LIKE 'Sell%' THEN -ms.amount_btc
+                                        ELSE 0 END)
                                     FROM member_sinyal ms
                                     JOIN sinyal s ON s.id = ms.sinyal_id
                                     WHERE ms.member_id = m.id AND s.status = 'filled'
@@ -1041,49 +1033,41 @@ class Mdl_member extends Model
                                 + COALESCE((
                                     SELECT SUM(amount)
                                     FROM withdraw
-                                    WHERE member_id = m.id AND jenis = 'trade'
+                                    WHERE member_id = m.id AND jenis = 'trade' AND withdraw_type = 'btc'
                                 ), 0)
                                 - COALESCE((
                                     SELECT SUM(amount)
                                     FROM withdraw
-                                    WHERE member_id = m.id AND jenis = 'balance' AND withdraw_type = 'usdt'
-                                ), 0)
-                            ) * 100) / 100 AS trade_balance,
-                            -- BTC trade
-                            COALESCE(
-                        (SELECT SUM(
-                           CASE
-                             WHEN s.type LIKE 'Buy%'  THEN ms.amount_btc
-                             WHEN s.type LIKE 'Sell%' THEN -ms.amount_btc
-                             ELSE 0
-                           END
-                         )
-                         FROM member_sinyal ms
-                         JOIN sinyal s  ON s.id = ms.sinyal_id
-                         WHERE ms.member_id = m.id
-                         AND s.status='filled'
-                        ), 0
-                      )
-                      + COALESCE(
-                        (SELECT SUM(x.amount)
-                         FROM withdraw x
-                         WHERE x.member_id     = m.id
-                           AND x.jenis         = 'trade'
-                           AND x.withdraw_type = 'btc'
-                        ), 0
-                      )
-                      - COALESCE(
-                        (SELECT SUM(y.amount)
-                         FROM withdraw y
-                         WHERE y.member_id     = m.id
-                           AND y.jenis         = 'balance'
-                           AND y.withdraw_type = 'btc'
-                        ), 0
-                      )
-                      AS trade_btc
-                        FROM
-                            member m
-                    ) AS subquery";
+                                    WHERE member_id = m.id AND jenis = 'balance' AND withdraw_type = 'btc'
+                                ), 0) AS trade_btc
+                            FROM member m
+                        ) AS t1,
+                        (
+                            -- Commission summary
+                            SELECT SUM(commission) AS commission
+                            FROM (
+                                SELECT 
+                                    md.commission AS commission
+                                FROM member_deposit md
+                                JOIN member m ON md.member_id = m.id
+                                WHERE md.status = 'complete'
+                    
+                                UNION ALL
+                    
+                                SELECT 
+                                    -w.amount AS commission
+                                FROM withdraw w
+                                WHERE w.status <> 'rejected'
+                                  AND w.withdraw_type = 'usdt' AND w.jenis = 'comission'
+                    
+                                UNION ALL
+                    
+                                SELECT 
+                                    ms.amount AS commission
+                                FROM member_commission ms
+                                JOIN member m ON m.id = ms.downline_id
+                            ) AS commission_data
+                        ) AS t2;";
             $query = $this->db->query($sql)->getRow();
 
             return (object) [
