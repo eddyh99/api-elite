@@ -965,7 +965,8 @@ class Mdl_member extends Model
                     SUM(t1.trade_balance) AS trade_usdt,
                     0 AS fund_btc,
                     ROUND(SUM(t1.trade_btc), 6) AS trade_btc,
-                    ROUND(t2.commission, 2) AS commission
+                    ROUND(t2.commission, 2) AS commission,
+                    ROUND(t3.total_profit, 2) AS total_profit
                 FROM
                     (
                         SELECT
@@ -1066,7 +1067,19 @@ class Mdl_member extends Model
                             FROM member_commission ms
                             JOIN member m ON m.id = ms.downline_id
                         ) AS commission_data
-                    ) AS t2;";
+                    ) AS t2,
+                    (
+                        SELECT
+                            ROUND(SUM(ms_sell.amount_usdt - ms_buy.amount_usdt), 2) AS total_profit
+                        FROM
+                            sinyal s_sell
+                        JOIN member_sinyal ms_sell ON ms_sell.sinyal_id = s_sell.id
+                        JOIN sinyal s_buy ON s_buy.pair_id = s_sell.pair_id AND s_buy.type LIKE 'Buy%'
+                        JOIN member_sinyal ms_buy ON ms_buy.sinyal_id = s_buy.id AND ms_buy.member_id = ms_sell.member_id
+                        WHERE
+                            s_sell.type LIKE 'Sell%'
+                            AND s_sell.status = 'filled'
+                    ) AS t3";
             $query = $this->db->query($sql)->getRow();
 
             return (object) [
