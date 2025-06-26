@@ -194,4 +194,13 @@ class Mdl_commission extends Model
     {
         return $this->getSql_commission();
     }
+    
+    public function list_commission($id){
+        $sql="SELECT CONCAT('Trade Commission FROM ',m.email) as description, amount as komisi
+                FROM `member_commission` mc 
+                INNER JOIN member m ON mc.downline_id=m.id 
+            WHERE mc.member_id=?";
+        $query=$this->db->query($sql,$id);
+        return $query->getResult();
+    }
 }
