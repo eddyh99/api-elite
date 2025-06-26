@@ -224,7 +224,7 @@ class Updateorder extends BaseController
 
             // If the member has an upline
             if (!is_null($m->upline)) {
-                $commission = $master_wallet * 0.1;
+                $commission = $client_wallet * 0.1;
                 $profit_data['master_wallet'] = round($master_wallet - $commission, 2);
                 $commissions[] = [
                     'member_id' => $m->upline,
