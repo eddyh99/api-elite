@@ -1257,4 +1257,97 @@ class Mdl_member extends Model
             ];
         }
     }
+
+    public function list_transactions(){
+        try {
+
+            $sql = "WITH buy_signals AS ( 
+                    SELECT
+                        s.id AS buy_id,
+                        s.order_id AS buy_order_id,
+                        s.pair_id,
+                        s.entry_price AS buy_price,
+                        s.created_at AS buy_time
+                    FROM sinyal s
+                    WHERE s.type LIKE 'Buy%' AND s.status = 'filled' AND s.is_deleted = 'no'
+                ),
+                sell_signals AS (
+                    SELECT
+                        s.id AS sell_id,
+                        s.order_id AS sell_order_id,
+                        s.pair_id,
+                        s.entry_price AS sell_price,
+                        s.created_at AS sell_time
+                    FROM sinyal s
+                    WHERE s.type LIKE 'Sell%' AND s.status = 'filled' AND s.is_deleted = 'no'
+                ),
+                paired_signals AS (
+                    SELECT
+                        b.buy_id,
+                        b.buy_order_id,
+                        b.pair_id,
+                        b.buy_price,
+                        s.sell_id,
+                        s.sell_price,
+                        s.sell_time,
+                        s.sell_order_id
+                    FROM buy_signals b
+                    LEFT JOIN sell_signals s
+                        ON s.pair_id = b.pair_id AND s.sell_time > b.buy_time
+                ),
+                member_amounts AS (
+                    SELECT
+                        sinyal_id,
+                        SUM(amount_btc) AS total_btc,
+                        SUM(amount_usdt) AS total_usdt
+                    FROM member_sinyal
+                    GROUP BY sinyal_id
+                ),
+                wallet_profits AS (
+                    SELECT
+                        order_id,
+                        SUM(master_wallet) AS master_profit,
+                        SUM(client_wallet) AS client_profit
+                    FROM wallet
+                    GROUP BY order_id
+                ),
+                commission_totals AS (
+                    SELECT
+                        order_id,
+                        SUM(amount) AS total_commission
+                    FROM member_commission
+                    GROUP BY order_id
+                )
+                SELECT
+                    p.buy_id,
+                    p.buy_order_id,
+                    p.pair_id,
+                    p.buy_price,
+                    p.sell_price,
+                    m.total_btc AS buy_total_btc,
+                    m.total_usdt AS buy_total_usdt,
+                    msell.total_usdt AS sell_total_usdt,
+                    w.master_profit,
+                    SUM(w.client_profit) as client_profit,
+                    c.total_commission
+                FROM paired_signals p
+                LEFT JOIN member_amounts m ON m.sinyal_id = p.buy_id
+                LEFT JOIN member_amounts msell ON msell.sinyal_id = p.sell_id
+                LEFT JOIN wallet_profits w ON w.order_id = p.sell_order_id
+                LEFT JOIN commission_totals c ON c.order_id = p.sell_order_id
+                GROUP BY p.buy_id, p.sell_id;";
+            $query = $this->db->query($sql)->getResult();
+
+            return (object) [
+                'code' => 200,
+                'message' => $query
+            ];
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.' .$e
+            ];
+        }
+    }
 }
