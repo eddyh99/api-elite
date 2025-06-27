@@ -1061,10 +1061,23 @@ class Mdl_member extends Model
                     0 AS fund_btc,
                     ROUND(SUM(t1.trade_btc), 6) AS trade_btc,
                     ROUND(t2.commission, 2) AS commission,
-                    (
-                            SELECT ROUND(SUM(master_wallet),2) AS total_adjusted_master_wallet FROM wallet
-                        ) AS master_profit,
-                    ROUND(t3.total_profit, 2) AS total_profit
+                    ROUND((
+                        SELECT 
+                            SUM(
+                                CASE 
+                                    WHEN m.id_referral IS NULL THEN w.master_wallet - (0.1 * w.client_wallet)
+                                    ELSE w.master_wallet
+                                END
+                            )
+                        FROM wallet w
+                        JOIN member m ON w.member_id = m.id
+                    ), 2) AS master_profit,
+
+                    ROUND(t3.total_profit, 2) AS total_profit,
+                    ROUND((
+                        SELECT 
+                            SUM(master_wallet) FROM wallet w
+                    ),2) as master_balance                    
                 FROM
                     (
                         SELECT
