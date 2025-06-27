@@ -511,7 +511,7 @@ class Mdl_deposit extends Model
                         md.amount AS commission,
                         md.amount,
                         CONCAT('deposit') AS description,
-                        'deposit' as type,
+                        'deposit usdt' as type,
                         md.status
                     FROM
                         member_deposit md

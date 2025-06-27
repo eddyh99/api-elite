@@ -288,8 +288,7 @@ class Mdl_withdraw extends Model
                         CONCAT(w.jenis,' ',withdraw_type) AS description,
                         w.wallet_address,
                         w.status,
-                        w.jenis,
-                        'withdraw' as type
+                        CONCAT('withdraw', ' ' ,w.withdraw_type) as type
                     FROM 
                         withdraw w
                     WHERE 
