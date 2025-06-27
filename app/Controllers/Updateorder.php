@@ -21,6 +21,7 @@ class Updateorder extends BaseController
         $this->member_signal  = model('App\Models\V1\Mdl_member_signal');
         $this->member  = model('App\Models\V1\Mdl_member');
         $this->setting  = model('App\Models\V1\Mdl_settings');
+        $this->withdraw     = model('App\Models\V1\Mdl_withdraw');
     }
 
     public function getIndex()
@@ -58,6 +59,7 @@ class Updateorder extends BaseController
         $mdata = [];
         $profits = [];
         $commissions = [];
+        $withdraw_trade = [];
         $member_signal = [];
         $member = [];
 
@@ -72,6 +74,7 @@ class Updateorder extends BaseController
                 $profits = array_merge($profits, $takeProfitData['profits']);
                 $commissions = array_merge($commissions, $takeProfitData['commissions']);
                 $member_signal = array_merge($member_signal, $takeProfitData['member_signal']);
+                $withdraw_trade = array_merge($withdraw_trade, $takeProfitData['withdraw_trade']);
                 $this->mergeById($member, $takeProfitData['member']);
 
                 // isi pair_id buy!
@@ -111,6 +114,10 @@ class Updateorder extends BaseController
         if (!empty($commissions)) {
             $this->commission->add_balances($commissions);
             log_message('info', 'MEMBER COMMISSION: ' . json_encode($commissions));
+
+            // trasnfer to trade
+            $this->withdraw->insert_withdraw($withdraw_trade);
+            log_message('info', 'WD COMISSION: ' . json_encode($withdraw_trade));
         }
 
         // add member signal (sell)
@@ -184,6 +191,7 @@ class Updateorder extends BaseController
         $commissions = [];
         $member_signal = [];
         $member = [];
+        $withdraw_trade = [];
         $side_position = [
             'Sell A' => 'position_a',
             'Sell B' => 'position_b',
@@ -232,6 +240,21 @@ class Updateorder extends BaseController
                     'amount' => round($commission, 2),
                     'order_id' => $order_id
                 ];
+
+                // wd trade
+                $withdraw_trade[] = [
+                    'member_id' => $m->upline,
+                    'withdraw_type' => 'usdt',
+                    'amount' => round($commission, 2),
+                    'jenis' => 'comission'
+                ];
+
+                $withdraw_trade[] = [
+                    'member_id' => $m->upline,
+                    'withdraw_type' => 'usdt',
+                    'amount' => round($commission, 2),
+                    'jenis' => 'trade'
+                ];
             }
 
             $profits[] = $profit_data;
@@ -239,7 +262,7 @@ class Updateorder extends BaseController
 
 
         // Return the final profit and commission distributions
-        return ['member' => $member, 'profits' => $profits, 'commissions' => $commissions, 'member_signal' => $member_signal];
+        return ['member' => $member, 'profits' => $profits, 'commissions' => $commissions, 'member_signal' => $member_signal, 'withdraw_trade' => $withdraw_trade];
     }
 
     private function updateOrdersAll($type, $signal)
