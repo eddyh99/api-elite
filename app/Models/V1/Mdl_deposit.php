@@ -509,7 +509,9 @@ class Mdl_deposit extends Model
                     SELECT
                         md.created_at as date,
                         md.amount AS commission,
+                        md.amount,
                         CONCAT('deposit') AS description,
+                        'deposit' as type,
                         md.status
                     FROM
                         member_deposit md
