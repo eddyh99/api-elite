@@ -537,5 +537,30 @@ class Mdl_deposit extends Model
             "message" => $query
         );
     }   
+
+    public function getDeposit_byInvoice($inv) {
+        try {
+            $sql = "SELECT
+                        md.*,
+                        m.id_referral
+                    FROM
+                        member_deposit md
+                        INNER JOIN member m ON m.id = md.member_id
+                    where
+                        md.invoice = ?"; 
+            $query = $this->db->query($sql, [$inv])->getRow();
+
+            return (object) [
+                'code' => 200,
+                'message' => $query
+            ];
+
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.' .$e
+            ];
+        }
+    }
     
 }

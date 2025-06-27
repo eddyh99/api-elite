@@ -36,26 +36,6 @@ class Payment extends BaseController
 			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
 		}
 
-        // wd ke trade
-        if ($member->id_referral) {
-            $comission = [
-                [
-                    'member_id' => $member->id_referral,
-                    'withdraw_type' => 'usdt',
-                    'amount' => trim($data->amount) * $referral,
-                    'jenis' => 'comission'
-                ],
-                [
-                    'member_id' => $member->id_referral,
-                    'withdraw_type' => 'usdt',
-                    'amount' => trim($data->amount) * $referral,
-                    'jenis' => 'trade'
-                ],
-            ];
-
-            $this->withdraw->insert_withdraw($comission);
-        }
-
         return $this->respond(error_msg(201, "member", null, $mdata["invoice"]), 201);
     }
 
@@ -71,6 +51,27 @@ class Payment extends BaseController
         if ($result->code !== 201) {
 			return $this->respond(error_msg($result->code, "subs", '01', $result->message), $result->code);
 		}
+
+        $deposit = $this->deposit->getDeposit_byInvoice($data->invoice)->message;
+        // wd ke trade
+        if ($deposit->id_referral) {
+            $comission = [
+                [
+                    'member_id' => $deposit->id_referral,
+                    'withdraw_type' => 'usdt',
+                    'amount' => $deposit->commission,
+                    'jenis' => 'comission'
+                ],
+                [
+                    'member_id' => $deposit->id_referral,
+                    'withdraw_type' => 'usdt',
+                    'amount' => $deposit->commission,
+                    'jenis' => 'trade'
+                ],
+            ];
+
+            $this->withdraw->insert_withdraw($comission);
+        }
 
         return $this->respond(error_msg(201, "subs", "01", $result->message), 201);
     }
