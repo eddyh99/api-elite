@@ -36,6 +36,26 @@ class Payment extends BaseController
 			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
 		}
 
+        // wd ke trade
+        if ($member->id_referral) {
+            $comission = [
+                [
+                    'member_id' => $member->id_referral,
+                    'withdraw_type' => 'usdt',
+                    'amount' => trim($data->amount) * $referral,
+                    'jenis' => 'comission'
+                ],
+                [
+                    'member_id' => $member->id_referral,
+                    'withdraw_type' => 'usdt',
+                    'amount' => trim($data->amount) * $referral,
+                    'jenis' => 'trade'
+                ],
+            ];
+
+            $this->withdraw->insert_withdraw($comission);
+        }
+
         return $this->respond(error_msg(201, "member", null, $mdata["invoice"]), 201);
     }
 
