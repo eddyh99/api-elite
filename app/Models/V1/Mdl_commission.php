@@ -144,7 +144,7 @@ class Mdl_commission extends Model
     return "SELECT 
             md.created_at as date,
             md.commission AS commission,
-            CONCAT('referral commission from ', m.email) AS description,
+            CONCAT('deposit commission from ', m.email) AS description,
             NULL AS status
         FROM 
             member_deposit md
