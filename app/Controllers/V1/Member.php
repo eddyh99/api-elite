@@ -32,6 +32,11 @@ class Member extends BaseController
         return $this->respond(error_msg($result->code, "member", null, $result->message), $result->code);
     }
 
+    public function getMaster_trade(){
+        $result = $this->deposit->masterPosition();
+        return $this->respond(error_msg(200, "member", null, $result), 200);
+    }
+    
     public function getGet_totalbalance()
     {
         $result = $this->member->getTotal_balance();
@@ -288,12 +293,12 @@ class Member extends BaseController
     
     public function getList_transaction() {
         $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
-        if(!empty($member_id)) {
+//        if(!empty($member_id)) {
             $result = $this->member->list_transaction($member_id);
-        } else {
+/*        } else {
             $result = $this->member->list_transactions();
         }
-
+*/
         if (@$result->code != 200) {
 			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
 		}

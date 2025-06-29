@@ -89,6 +89,7 @@ class Order extends BaseController
 
         $deposit  = $this->deposit->rebalanceMemberPosition($data->type);
 
+
         if (@$deposit->code != 200) {
             return $this->respond(error_msg(400, "signal", '01', $deposit->message), 400);
         }

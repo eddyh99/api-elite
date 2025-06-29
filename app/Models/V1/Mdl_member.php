@@ -1301,7 +1301,7 @@ class Mdl_member extends Model
         }
     }
 
-    public function list_transactions(){
+/*    public function list_transactions(){
         try {
 
             $sql = "WITH buy_signals AS ( 
@@ -1393,4 +1393,4 @@ class Mdl_member extends Model
             ];
         }
     }
-}
+*/}

@@ -272,19 +272,150 @@ class Mdl_deposit extends Model
         }
     }
     
+    public function masterPosition(){
+        $sql="SELECT
+                    m.id as member_id,
+                    (m.position_a + m.position_b + m.position_c + m.position_d) AS position,
+                    m.position_a,
+                    m.position_b,
+                    m.position_c,
+                    m.position_d,
+                    FLOOR(
+                        (
+                            COALESCE(
+                                (
+                                    SELECT
+                                        SUM(master_wallet)
+                                    FROM
+                                        wallet
+                                ),
+                                0
+                            ) + 
+                            COALESCE(
+                                (
+                                    SELECT
+                                        SUM(client_wallet)
+                                    FROM
+                                        wallet
+                                    WHERE member_id=m.id
+                                ),
+                                0
+                            )
+                            - COALESCE(
+                                (
+                                    SELECT
+                                        SUM(
+                                            CASE
+                                                WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt
+                                            END
+                                        )
+                                    FROM
+                                        member_sinyal ms
+                                        JOIN sinyal s ON s.id = ms.sinyal_id
+                                    WHERE
+                                        ms.member_id = m.id
+                                        AND s.status != 'canceled'
+                                ),
+                                0
+                            ) + COALESCE(
+                                (
+                                    SELECT
+                                        SUM(
+                                            CASE
+                                                WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt
+                                            END
+                                        )
+                                    FROM
+                                        member_sinyal ms
+                                        JOIN sinyal s ON s.id = ms.sinyal_id
+                                    WHERE
+                                        ms.member_id = m.id
+                                        AND s.status = 'filled'
+                                ),
+                                0
+                            ) + COALESCE(
+                                (
+                                    SELECT
+                                        SUM(amount)
+                                    FROM
+                                        withdraw
+                                    WHERE
+                                        member_id = m.id
+                                        AND jenis = 'trade'
+                                ),
+                                0
+                            ) - COALESCE(
+                                (
+                                    SELECT
+                                        SUM(amount)
+                                    FROM
+                                        withdraw
+                                    WHERE
+                                        member_id = m.id
+                                        AND jenis = 'balance'
+                                        AND withdraw_type = 'usdt'
+                                ),
+                                0
+                            )
+                        ) * 100
+                    ) / 100 AS trade_balance,
+                    COALESCE(
+                        (SELECT SUM(
+                           CASE
+                             WHEN s.type LIKE 'Buy%'  THEN ms.amount_btc
+                             WHEN s.type LIKE 'Sell%' THEN -ms.amount_btc
+                             ELSE 0
+                           END
+                         )
+                         FROM member_sinyal ms
+                         JOIN sinyal s  ON s.id = ms.sinyal_id
+                         WHERE ms.member_id = m.id
+                         AND s.status='filled'
+                        ), 0
+                      )
+                      + COALESCE(
+                        (SELECT SUM(x.amount)
+                         FROM withdraw x
+                         WHERE x.member_id     = m.id
+                           AND x.jenis         = 'trade'
+                           AND x.withdraw_type = 'btc'
+                        ), 0
+                      )
+                      - COALESCE(
+                        (SELECT SUM(y.amount)
+                         FROM withdraw y
+                         WHERE y.member_id     = m.id
+                           AND y.jenis         = 'balance'
+                           AND y.withdraw_type = 'btc'
+                        ), 0
+                      ) AS trade_btc
+                FROM
+                    member m
+                WHERE m.role='superadmin';";
+                $query=$this->db->query($sql);
+                return $query->getRow();
+    }
+    
     public function rebalanceMemberPosition($side)
     {
         try {
-            // Step 1: Get trade balance
+            // Step 1: Get trade balance member
             $result = $this->getMember_tradeBalance();
-    
+            $master = $this->masterPosition();
+            foreach ($result->message as &$member) {
+                if ($member->member_id == "1") {
+                    $member->trade_balance = $master->trade_balance;
+                    break; // Optional: exit loop after update
+                }
+            }
+
             if ($result->code !== 200) {
                 return (object)[
                     'code' => 500,
                     'message' => 'Failed to retrieve trade balances.'
                 ];
             }
-    
+
             $totalNewPosition = 0; // Step 2: Running sum of new positions
             $member_ids = [];
             $member_positions = [];
