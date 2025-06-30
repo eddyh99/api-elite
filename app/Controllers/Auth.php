@@ -77,7 +77,7 @@ class Auth extends BaseController
 			if (!$refmember->exist) {
 				return $this->respond(error_msg(400, "auth", '01', $refmember->message), 400);
 			}
-			$mdata["id_referral"] = $refmember->id;
+			$mdata["id_referral"] = $data->refcode != 'm4573r' ? $refmember->id : null;
 		}
 
 		$mdata['otp'] = rand(1000, 9999);
