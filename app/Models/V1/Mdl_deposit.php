@@ -696,4 +696,18 @@ class Mdl_deposit extends Model
         }
     }
     
+    public function deposit_admin($mdata){
+        $deposit=$this->db->table("member_deposit");
+         if (!$deposit->insert($mdata)){
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.'
+            ];
+         }
+        return (object) [
+            'code' => 200,
+            'message' => 'Successfully Added'
+        ];
+    }
+    
 }

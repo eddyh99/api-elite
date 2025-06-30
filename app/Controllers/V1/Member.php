@@ -317,5 +317,25 @@ class Member extends BaseController
         $result = $this->commission->get_commission_byId($member_id);
         return $this->respond(error_msg(200, "member", null, $result), 200);
     }
+    
+    public function postAdmin_deposit(){
+        $amount = filter_var($this->request->getVar('amount'), FILTER_SANITIZE_NUMBER_INT);
+        $mdata=array(
+                "invoice"   => "INV".time(),
+                "member_id" => 1,
+                "amount"    => $amount,
+                "commission" => 0,
+                "created_at" => date("Y-m-d H:i:s"),
+                "status"     => 'complete'
+            );
+        
+        $result = $this->deposit->deposit_admin($mdata);
+        if (@$result->code != 200) {
+			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
+		}
 
+        return $this->respond(error_msg(201, "member", null, $result->message), 201);
+        
+        
+    }
 }
