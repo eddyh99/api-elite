@@ -140,6 +140,18 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "member", null, $mdata), 200);
     }
 
+    public function getReferral_mastersummary()
+    {
+        $referral = $this->withdraw->get_downline();
+
+        $mdata = [
+            'referral' => $referral->data->downline,
+            'commission' => 0,
+        ];
+
+        return $this->respond(error_msg(200, "member", null, $mdata), 200);
+    }
+
 
     public function postDestroy()
     {
@@ -197,6 +209,16 @@ class Member extends BaseController
     public function getList_downline() {
         $id_member = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
         $result = $this->member->get_downline_byId($id_member);
+
+        if (@$result->code != 200) {
+            return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
+        }
+
+        return $this->respond(error_msg(200, "member", null, $result->data), 200);
+    }
+
+    public function getList_masterdownline() {
+        $result = $this->member->get_downline_byId();
 
         if (@$result->code != 200) {
             return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
@@ -334,8 +356,9 @@ class Member extends BaseController
 			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
 		}
 
-        return $this->respond(error_msg(201, "member", null, $result->message), 201);
-        
-        
+    public function getList_mastercomission(){
+        $result = $this->commission->get_commission_byId();
+        return $this->respond(error_msg(200, "member", null, $result), 200);
     }
+
 }
