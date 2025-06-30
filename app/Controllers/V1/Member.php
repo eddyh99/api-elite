@@ -356,6 +356,9 @@ class Member extends BaseController
 			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
 		}
 
+        return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
+    }
+
     public function getList_mastercomission(){
         $result = $this->commission->get_commission_byId();
         return $this->respond(error_msg(200, "member", null, $result), 200);
