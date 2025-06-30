@@ -54,16 +54,16 @@ class Payment extends BaseController
 
         $deposit = $this->deposit->getDeposit_byInvoice($data->invoice)->message;
         // wd ke trade
-        if ($deposit->id_referral) {
+        // if ($deposit->id_referral) {
             $comission = [
                 [
-                    'member_id' => $deposit->id_referral,
+                    'member_id' => $deposit->id_referral ?? 1,
                     'withdraw_type' => 'usdt',
                     'amount' => $deposit->commission,
                     'jenis' => 'comission'
                 ],
                 [
-                    'member_id' => $deposit->id_referral,
+                    'member_id' => $deposit->id_referral ?? 1,
                     'withdraw_type' => 'usdt',
                     'amount' => $deposit->commission,
                     'jenis' => 'trade'
@@ -71,7 +71,7 @@ class Payment extends BaseController
             ];
 
             $this->withdraw->insert_withdraw($comission);
-        }
+        // }
 
         return $this->respond(error_msg(201, "subs", "01", $result->message), 201);
     }
