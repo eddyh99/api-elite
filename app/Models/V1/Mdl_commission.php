@@ -111,12 +111,25 @@ class Mdl_commission extends Model
         ];
     }
 
-    public function get_commission_byId($id_member)
+    public function get_commission_byId($id_member = NULL)
     {
         try {
 
-            $sql = $this->getSql_commission();
-            $query = $this->db->query($sql, [$id_member,$id_member, $id_member])->getResult();
+            if($id_member === NULL) {
+                $sql = "SELECT
+                            w.created_at as date,
+                            w.client_wallet * 0.1 AS commission,
+                            CONCAT('trade commission from ', m.email) AS description
+                        FROM
+                            wallet w
+                            INNER JOIN member m ON m.id = w.member_id
+                        WHERE
+                            m.id_referral IS Null";
+                $query = $this->db->query($sql)->getResult();
+            } else {
+                $sql = $this->getSql_commission();
+                $query = $this->db->query($sql, [$id_member,$id_member, $id_member])->getResult();
+            }
 
             if (!$query) {
                 return (object) [

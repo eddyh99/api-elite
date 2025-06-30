@@ -721,10 +721,27 @@ class Mdl_member extends Model
         ];
     }
 
-    public function get_downline_byId($id_member)
+    public function get_downline_byId($id_member = NULL)
     {
         try {
-            $sql = "SELECT
+            if($id_member === NULL) {
+                $sql = "SELECT
+                        mb.*, komisi
+                    FROM
+                        member mb LEFT JOIN (
+        				SELECT member_id, sum(commission) as komisi 
+        					FROM member_deposit md 
+        				WHERE status='complete' GROUP BY member_id
+        			) dp
+                    ON mb.id=dp.member_id
+                    WHERE
+                        mb.id_referral IS NULL
+                        AND mb.is_delete = 0
+                        AND mb.role IN ('member', 'referral')
+                        AND mb.status IN ('active', 'referral')";
+                $query = $this->db->query($sql, [$id_member])->getResult();
+            } else {
+                $sql = "SELECT
                         mb.*, komisi
                     FROM
                         member mb LEFT JOIN (
@@ -738,6 +755,7 @@ class Mdl_member extends Model
                         AND mb.is_delete = 0
                         AND mb.status IN ('active', 'referral')";
             $query = $this->db->query($sql, [$id_member])->getResult();
+            }
 
             if (!$query) {
                 return (object) [

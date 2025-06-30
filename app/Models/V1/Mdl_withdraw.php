@@ -204,18 +204,31 @@ class Mdl_withdraw extends Model
     //     ];
     // }
 
-    public function get_downline($member_id)
+    public function get_downline($member_id = NULL)
     {
         try {
-            $sql = "SELECT
-                        COALESCE(COUNT(1), 0) AS downline
-                    FROM
-                        member
-                    WHERE id_referral = ?
-                    AND status IN ('active', 'referral')
-                    AND is_delete = FALSE";
-
-            $query = $this->db->query($sql, [$member_id])->getRow();
+            if ($member_id === NULL) {
+                $sql = "SELECT
+                            COALESCE(COUNT(1), 0) AS downline
+                        FROM
+                            member
+                        WHERE id_referral IS NULL
+                        AND status IN ('active', 'referral')
+                        AND role IN ('member', 'referral')
+                        AND is_delete = FALSE";
+    
+                $query = $this->db->query($sql)->getRow();
+            } else {
+                $sql = "SELECT
+                            COALESCE(COUNT(1), 0) AS downline
+                        FROM
+                            member
+                        WHERE id_referral = ?
+                        AND status IN ('active', 'referral')
+                        AND is_delete = FALSE";
+    
+                $query = $this->db->query($sql, [$member_id])->getRow();
+            }
 
             if (!$query) {
                 return (object) [
