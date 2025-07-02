@@ -260,6 +260,10 @@ class Mdl_deposit extends Model
                         ) * 100
                     ) / 100
                     ELSE -- else superadmin
+
+                    -- rumus trade balance:
+                    -- master wallet - komisi upline - signal buy + signal sell + wd jenis trade - wd jenis balance
+                    
                         (
                             COALESCE(
                                 (
@@ -487,7 +491,7 @@ class Mdl_deposit extends Model
         try {
             // Step 1: Get trade balance member
             $result = $this->getMember_tradeBalance();
-            // $master = $this->masterPosition();
+            $master = $this->masterPosition();
 
             // count open signal
             $sql = "SELECT COUNT(*) AS open_count
@@ -508,12 +512,12 @@ class Mdl_deposit extends Model
                     )";
             $signal = $this->db->query($sql)->getRowArray();
             $openCount = (int)($signal['open_count'] ?? 0);
-            // foreach ($result->message as &$member) {
-            //     if ($member->member_id == "1") {
-            //         $member->trade_balance = $master->trade_balance;
-            //         break; // Optional: exit loop after update
-            //     }
-            // }
+            foreach ($result->message as &$member) {
+                if ($member->member_id == "1") {
+                    $member->trade_balance = $master->trade_balance;
+                    break; // Optional: exit loop after update
+                }
+            }
 
             if ($result->code !== 200) {
                 return (object)[
