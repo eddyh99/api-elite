@@ -403,6 +403,26 @@ class Mdl_deposit extends Model
             // Step 1: Get trade balance member
             $result = $this->getMember_tradeBalance();
             $master = $this->masterPosition();
+
+            // count open signal
+            $sql = "SELECT COUNT(*) AS open_count
+                    FROM sinyal b
+                    WHERE b.type LIKE 'Buy %'
+                    AND b.status IN ('pending', 'filled')
+                    AND b.is_deleted = 'no'
+                    AND (
+                        b.pair_id IS NULL OR
+                        NOT EXISTS (
+                        SELECT 1
+                        FROM sinyal s
+                        WHERE s.type LIKE 'Sell %'
+                            AND s.status IN ('pending', 'filled')
+                            AND s.is_deleted = 'no'
+                            AND s.pair_id = b.pair_id
+                        )
+                    )";
+            $signal = $this->db->query($sql)->getRowArray();
+            $openCount = (int)($signal['open_count'] ?? 0);
             foreach ($result->message as &$member) {
                 if ($member->member_id == "1") {
                     $member->trade_balance = $master->trade_balance;
@@ -429,40 +449,42 @@ class Mdl_deposit extends Model
 
             // step 3 update
             foreach ($result->message as $member) {
-            $sql = "SELECT
-                        open_count,
-                        CASE
-                            open_count
-                            WHEN 1 THEN 'position_a'
-                            WHEN 2 THEN 'position_b'
-                            WHEN 3 THEN 'position_c'
-                            WHEN 4 THEN 'position_d'
-                            ELSE CONCAT('position_', open_count)
-                        END AS last_position
-                    FROM
-                        (
-                            SELECT
-                                COUNT(*) AS open_count
-                            FROM
-                                member_sinyal ms
-                                JOIN sinyal s ON s.id = ms.sinyal_id
-                            WHERE
-                                ms.member_id = ?
-                                AND s.status IN ('pending', 'filled')
-                                AND s.type LIKE 'Buy%'
-                                AND NOT EXISTS (
-                                    SELECT
-                                        1
-                                    FROM
-                                        sinyal s2
-                                    WHERE
-                                        s2.type LIKE 'Sell%'
-                                        AND s2.pair_id = s.pair_id
-                                        AND s2.status = 'filled'
-                                )
-                    ) AS sub";
-            $result = $this->db->query($sql, [$member->member_id])->getRowArray();
-            $openCount = (int)($result['open_count'] ?? 0);
+
+            // old query 
+            // $sql = "SELECT
+            //             open_count,
+            //             CASE
+            //                 open_count
+            //                 WHEN 1 THEN 'position_a'
+            //                 WHEN 2 THEN 'position_b'
+            //                 WHEN 3 THEN 'position_c'
+            //                 WHEN 4 THEN 'position_d'
+            //                 ELSE CONCAT('position_', open_count)
+            //             END AS last_position
+            //         FROM
+            //             (
+            //                 SELECT
+            //                     COUNT(*) AS open_count
+            //                 FROM
+            //                     member_sinyal ms
+            //                     JOIN sinyal s ON s.id = ms.sinyal_id
+            //                 WHERE
+            //                     ms.member_id = ?
+            //                     AND s.status IN ('pending', 'filled')
+            //                     AND s.type LIKE 'Buy%'
+            //                     AND NOT EXISTS (
+            //                         SELECT
+            //                             1
+            //                         FROM
+            //                             sinyal s2
+            //                         WHERE
+            //                             s2.type LIKE 'Sell%'
+            //                             AND s2.pair_id = s.pair_id
+            //                             AND s2.status = 'filled'
+            //                     )
+            //         ) AS sub";
+            // $result = $this->db->query($sql, [$member->member_id])->getRowArray();
+            // $openCount = (int)($result['open_count'] ?? 0);
 
             // Determine divisor based on openCount
             $divisor = 0;
@@ -481,30 +503,35 @@ class Mdl_deposit extends Model
     
             if ($divisor > 0 && $tradeBalance >= 10) {
                 $newPosition = $tradeBalance / $divisor;
+                array_push($member_ids, $member->member_id); 
+                $member_positions[] = [
+                    'id'                  => $member->member_id,
+                    $side_position[$side] => $newPosition
+                ];
     
-                if($openCount === 0) { //if first buy
-                    // Update position
-                    array_push($member_ids, $member->member_id); 
-                    $member_positions[] = [
-                        'id'                  => $member->member_id,
-                        $side_position[$side] => $newPosition
-                    ];
-                    // $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
-                } else {
-                    //check $newPosition >= prev position
-                    $lastPosition = $result['last_position'];
-                    if($this->rounded_tens($newPosition) >= $this->rounded_tens( $member->$lastPosition)) {
-                        array_push($member_ids, $member->member_id); 
-                        $member_positions[] = [
-                            'id'                  => $member->member_id,
-                            $side_position[$side] => $newPosition
-                        ];
-                        // $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
-                    } else {
-                        $newPosition = 0;
-                    }
+                // if($openCount === 0) { //if first buy
+                //     // Update position
+                //     array_push($member_ids, $member->member_id); 
+                //     $member_positions[] = [
+                //         'id'                  => $member->member_id,
+                //         $side_position[$side] => $newPosition
+                //     ];
+                //     // $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
+                // } else {
+                //     //check $newPosition >= prev position
+                //     $lastPosition = $result['last_position'];
+                //     if($this->rounded_tens($newPosition) >= $this->rounded_tens( $member->$lastPosition)) {
+                //         array_push($member_ids, $member->member_id); 
+                //         $member_positions[] = [
+                //             'id'                  => $member->member_id,
+                //             $side_position[$side] => $newPosition
+                //         ];
+                //         // $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
+                //     } else {
+                //         $newPosition = 0;
+                //     }
 
-                }
+                // }
             }
 
             // Accumulate total
