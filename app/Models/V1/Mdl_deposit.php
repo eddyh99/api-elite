@@ -398,6 +398,7 @@ class Mdl_deposit extends Model
     
     public function rebalanceMemberPosition($side)
     {
+
         try {
             // Step 1: Get trade balance member
             $result = $this->getMember_tradeBalance();
@@ -492,7 +493,7 @@ class Mdl_deposit extends Model
                 } else {
                     //check $newPosition >= prev position
                     $lastPosition = $result['last_position'];
-                    if($newPosition >= $member->$lastPosition) {
+                    if($this->rounded_tens($newPosition) >= $this->rounded_tens( $member->$lastPosition)) {
                         array_push($member_ids, $member->member_id); 
                         $member_positions[] = [
                             'id'                  => $member->member_id,
@@ -526,6 +527,9 @@ class Mdl_deposit extends Model
         }
     }
 
+    private function rounded_tens($num) {
+        return floor($num / 10) * 10;
+    }  
 
 
 
