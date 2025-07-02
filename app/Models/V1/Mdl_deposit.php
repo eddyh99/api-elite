@@ -261,9 +261,16 @@ class Mdl_deposit extends Model
                     ) / 100
                     ELSE -- else superadmin
 
-                    -- rumus trade balance:
-                    -- master wallet - komisi upline - signal buy + signal sell + wd jenis trade - wd jenis balance
-                    
+                    -- Rumus trade balance:
+                    -- 
+                    -- trade_balance =
+                    --     - (master_wallet) ke wallet pnglobal
+                    --     - (komisi untuk upline ke tabel member_commission)
+                    --     - (total dana pada sinyal BUY yang statusnya aktif/non-canceled)
+                    --     + (total dana dari sinyal SELL yang statusnya filled/sudah terealisasi)
+                    --     + (withdraw dengan jenis = 'trade')  -- transfer dari fund
+                    --     - (withdraw dengan jenis = 'balance' dan withdraw_type = 'usdt')  -- transfer ke fund
+
                         (
                             COALESCE(
                                 (
