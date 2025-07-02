@@ -1206,6 +1206,90 @@ class Mdl_member extends Model
                             ), 0) AS fund_balance,
                 
                             -- trade_balance calculation
+                            -- superadmin
+                            CASE WHEN m.role = 'superadmin' and m.id = 1 THEN
+                            FLOOR(
+                                (
+                                    COALESCE(
+                                        (
+                                            SELECT
+                                                SUM(master_wallet)
+                                            FROM
+                                                wallet
+                                        ),
+                                        0
+                                    ) + 
+                                    COALESCE(
+                                        (
+                                            SELECT
+                                                SUM(client_wallet)
+                                            FROM
+                                                wallet
+                                            WHERE member_id=m.id
+                                        ),
+                                        0
+                                    )
+                                    - COALESCE(
+                                        (
+                                            SELECT
+                                                SUM(
+                                                    CASE
+                                                        WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt
+                                                    END
+                                                )
+                                            FROM
+                                                member_sinyal ms
+                                                JOIN sinyal s ON s.id = ms.sinyal_id
+                                            WHERE
+                                                ms.member_id = m.id
+                                                AND s.status != 'canceled'
+                                        ),
+                                        0
+                                    ) + COALESCE(
+                                        (
+                                            SELECT
+                                                SUM(
+                                                    CASE
+                                                        WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt
+                                                    END
+                                                )
+                                            FROM
+                                                member_sinyal ms
+                                                JOIN sinyal s ON s.id = ms.sinyal_id
+                                            WHERE
+                                                ms.member_id = m.id
+                                                AND s.status = 'filled'
+                                        ),
+                                        0
+                                    ) + COALESCE(
+                                        (
+                                            SELECT
+                                                SUM(amount)
+                                            FROM
+                                                withdraw
+                                            WHERE
+                                                member_id = m.id
+                                                AND jenis = 'trade'
+                                        ),
+                                        0
+                                    ) - COALESCE(
+                                        (
+                                            SELECT
+                                                SUM(amount)
+                                            FROM
+                                                withdraw
+                                            WHERE
+                                                member_id = m.id
+                                                AND jenis = 'balance'
+                                                AND withdraw_type = 'usdt'
+                                        ),
+                                        0
+                                    )
+                                ) * 100
+                            ) / 100
+                            
+                            ELSE
+                            -- else superadmin
                             COALESCE((SELECT -SUM(master_wallet) FROM wallet WHERE member_id = m.id), 0)
                             - COALESCE((SELECT SUM(amount) FROM member_commission WHERE member_id = m.id), 0)
                             - COALESCE((
@@ -1229,7 +1313,7 @@ class Mdl_member extends Model
                                     SELECT SUM(amount)
                                     FROM withdraw
                                     WHERE member_id = m.id AND jenis = 'balance' AND withdraw_type = 'usdt'
-                            ), 0) AS trade_balance,
+                            ), 0) END AS trade_balance,
                 
                             -- trade_btc calculation
                             COALESCE((
