@@ -179,87 +179,6 @@ class Mdl_deposit extends Model
                     m.position_b,
                     m.position_c,
                     m.position_d,
-                    CASE WHEN m.role = 'superadmin' and m.id = 1 THEN
-                    FLOOR(
-                        (
-                            COALESCE(
-                                (
-                                    SELECT
-                                        SUM(master_wallet)
-                                    FROM
-                                        wallet
-                                ),
-                                0
-                            ) + 
-                            COALESCE(
-                                (
-                                    SELECT
-                                        SUM(client_wallet)
-                                    FROM
-                                        wallet
-                                    WHERE member_id=m.id
-                                ),
-                                0
-                            )
-                            - COALESCE(
-                                (
-                                    SELECT
-                                        SUM(
-                                            CASE
-                                                WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt
-                                            END
-                                        )
-                                    FROM
-                                        member_sinyal ms
-                                        JOIN sinyal s ON s.id = ms.sinyal_id
-                                    WHERE
-                                        ms.member_id = m.id
-                                        AND s.status != 'canceled'
-                                ),
-                                0
-                            ) + COALESCE(
-                                (
-                                    SELECT
-                                        SUM(
-                                            CASE
-                                                WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt
-                                            END
-                                        )
-                                    FROM
-                                        member_sinyal ms
-                                        JOIN sinyal s ON s.id = ms.sinyal_id
-                                    WHERE
-                                        ms.member_id = m.id
-                                        AND s.status = 'filled'
-                                ),
-                                0
-                            ) + COALESCE(
-                                (
-                                    SELECT
-                                        SUM(amount)
-                                    FROM
-                                        withdraw
-                                    WHERE
-                                        member_id = m.id
-                                        AND jenis = 'trade'
-                                ),
-                                0
-                            ) - COALESCE(
-                                (
-                                    SELECT
-                                        SUM(amount)
-                                    FROM
-                                        withdraw
-                                    WHERE
-                                        member_id = m.id
-                                        AND jenis = 'balance'
-                                        AND withdraw_type = 'usdt'
-                                ),
-                                0
-                            )
-                        ) * 100
-                    ) / 100
-                    ELSE -- else superadmin
 
                     -- Rumus trade balance:
                     -- 
@@ -344,7 +263,7 @@ class Mdl_deposit extends Model
                                 ),
                                 0
                             )
-                        ) END AS trade_balance
+                        ) AS trade_balance
                 FROM
                     member m";
 
