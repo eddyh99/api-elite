@@ -204,9 +204,12 @@ class Updateorder extends BaseController
             // Calculate profit (difference between sell and buy)
             $totalbtc = $total_btc ?: $m->total_btc;
             $sellamount = $sell_amount ?? ($totalbtc * $entry_price);
-            $amount_usdt = ($m->amount_btc / $totalbtc) * ($sellamount * 0.01);
+            $amount_usdt = ($m->amount_btc / $totalbtc) * ($sellamount - ($sellamount * 0.001));
             $profit = $amount_usdt - $m->amount_usdt; //margin
             log_message('info', 'PROFIT MEMBER ID: ' . $m->member_id . ' | PROFIT: ' . number_format((float)$profit, 8, '.', ''));
+            log_message('info', 'BTC ' . json_encode($totalbtc));
+            log_message('info', 'SELL AMOUNT ' . json_encode($sellamount));
+            
 
 
             $cost = $this->setting->get('cost_trade')->message ?? 0.01;
@@ -420,41 +423,41 @@ class Updateorder extends BaseController
     }
 
         // Update Profits
-        if (!empty($profits)) {
-            $this->wallet->add_profits($profits);
-            log_message('info', 'MEMBER PROFIT: ' . json_encode($profits));
-        }
+        // if (!empty($profits)) {
+        //     $this->wallet->add_profits($profits);
+        //     log_message('info', 'MEMBER PROFIT: ' . json_encode($profits));
+        // }
 
-        // Update Commission
-        if (!empty($commissions)) {
-            $this->commission->add_balances($commissions);
-            log_message('info', 'MEMBER COMMISSION: ' . json_encode($commissions));
+        // // Update Commission
+        // if (!empty($commissions)) {
+        //     $this->commission->add_balances($commissions);
+        //     log_message('info', 'MEMBER COMMISSION: ' . json_encode($commissions));
 
-            // trasnfer to trade
-            $this->withdraw->insert_withdraw($withdraw_trade);
-            log_message('info', 'WD COMISSION: ' . json_encode($withdraw_trade));
-        }
+        //     // trasnfer to trade
+        //     $this->withdraw->insert_withdraw($withdraw_trade);
+        //     log_message('info', 'WD COMISSION: ' . json_encode($withdraw_trade));
+        // }
 
-        // add member signal (sell)
-        if (!empty($member_signal)) {
-            $this->member_signal->addOrUpdate($member_signal);
-            log_message('info', 'MEMBER SIGNAL: ' . json_encode($member_signal));
-        }
+        // // add member signal (sell)
+        // if (!empty($member_signal)) {
+        //     $this->member_signal->addOrUpdate($member_signal);
+        //     log_message('info', 'MEMBER SIGNAL: ' . json_encode($member_signal));
+        // }
 
-        // set position 0
-        if (!empty($member)) {
-            $this->member->update_data($member);
-        }
+        // // set position 0
+        // if (!empty($member)) {
+        //     $this->member->update_data($member);
+        // }
 
-        $mdata = [
-            'order' => ['order_id' => $sell->order_id],
-            'pair_id' => [
-                'pair_id' => $buy_id,
-                'id'      => $buy_id
-            ]
-        ];
+        // $mdata = [
+        //     'order' => ['order_id' => $sell->order_id],
+        //     'pair_id' => [
+        //         'pair_id' => $buy_id,
+        //         'id'      => $buy_id
+        //     ]
+        // ];
 
-        $result = $this->signal->updateStatus_byOrder($mdata);
+        // $result = $this->signal->updateStatus_byOrder($mdata);
 
     return $this->response->setJSON([
         'status' => 200,
