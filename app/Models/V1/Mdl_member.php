@@ -1430,6 +1430,7 @@ class Mdl_member extends Model
                 member_amounts AS (
                     SELECT
                         sinyal_id,
+                        amount_btc,
                         SUM(amount_btc) AS total_btc,
                         SUM(amount_usdt) AS total_usdt
                     FROM member_sinyal
@@ -1454,6 +1455,7 @@ class Mdl_member extends Model
                     GROUP BY order_id
                 )
                 SELECT
+                m.amount_btc,
                     p.buy_id,
                     p.buy_order_id,
                     p.pair_id,
