@@ -204,8 +204,9 @@ class Updateorder extends BaseController
             // Calculate profit (difference between sell and buy)
             $totalbtc = $total_btc ?: $m->total_btc;
             $sellamount = $sell_amount ?? ($totalbtc * $entry_price);
-            $amount_usdt = ($m->amount_btc / $totalbtc) * $sellamount;
+            $amount_usdt = ($m->amount_btc / $totalbtc) * ($sellamount * 0.01);
             $profit = $amount_usdt - $m->amount_usdt; //margin
+            log_message('info', 'PROFIT MEMBER ID: ' . $m->member_id . ' | PROFIT: ' . number_format((float)$profit, 8, '.', ''));
 
 
             $cost = $this->setting->get('cost_trade')->message ?? 0.01;
@@ -397,6 +398,12 @@ class Updateorder extends BaseController
     }
 
     $sell = $signal_sell->message;
+    if ($sell->status == 'filled') {
+        return $this->response->setJSON([
+            'status' => 400,
+            'message' => 'already filled.'
+        ]);
+    }
 
     $takeProfitData = $this->take_profits(null, null, $filled_price, $sell->order_id, $sell_id, $buy_id, $sell->type);
     try {
@@ -408,7 +415,7 @@ class Updateorder extends BaseController
     } catch (\Throwable $th) {
         return $this->response->setJSON([
             'status' => 400,
-            'message' => 'Already filled.'
+            'message' => 'an error occurred.'
         ]);
     }
 
