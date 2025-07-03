@@ -413,7 +413,7 @@ class Order extends BaseController
         $id_signal = filter_var($this->request->getVar('id_signal'), FILTER_SANITIZE_NUMBER_INT);
     
         // Fetch the signal order detail
-        $order = $this->signal->get_order($id_signal);
+        $order = $this->signal->get_order($id_signal, true);
     
         // If the signal order is not valid or not in pending status
         if ($order->code != 200) {

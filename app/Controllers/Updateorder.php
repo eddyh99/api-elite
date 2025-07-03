@@ -70,7 +70,7 @@ class Updateorder extends BaseController
             $cost = $status->cummulativeQuoteQty;
             $total_usdt = ($cost - $status->commission);
             if ($status->side === 'SELL' && $status->order['status'] == 'filled') {
-                $takeProfitData = $this->take_profits($status->origQty, $cost, $order->order_id, $order->id, $order->pair_id, $order->type);
+                $takeProfitData = $this->take_profits($status->origQty, $cost, null, $order->order_id, $order->id, $order->pair_id, $order->type);
                 $profits = array_merge($profits, $takeProfitData['profits']);
                 $commissions = array_merge($commissions, $takeProfitData['commissions']);
                 $member_signal = array_merge($member_signal, $takeProfitData['member_signal']);
@@ -177,7 +177,7 @@ class Updateorder extends BaseController
         return $result;
     }
 
-    private function take_profits($total_btc, $sell_amount, $order_id, $signal_id, $pair_id, $type)
+    private function take_profits($total_btc = null, $sell_amount = null, $entry_price = null, $order_id, $signal_id, $pair_id, $type)
     {
         // Retrieve buy orders based on the selected pair
         $signal_buy = $this->signal->get_orders($pair_id);
@@ -202,7 +202,9 @@ class Updateorder extends BaseController
 
         foreach ($signal_buy->message as $m) {
             // Calculate profit (difference between sell and buy)
-            $amount_usdt = ($m->amount_btc / $total_btc) * $sell_amount;
+            $totalbtc = $total_btc ?: $m->total_btc;
+            $sellamount = $sell_amount ?? ($totalbtc * $entry_price);
+            $amount_usdt = ($m->amount_btc / $totalbtc) * $sellamount;
             $profit = $amount_usdt - $m->amount_usdt; //margin
 
 
@@ -358,4 +360,45 @@ class Updateorder extends BaseController
             }
         }
     }
+
+
+    public function getFilled_sell()
+{
+    $validationRules = [
+        'buy_id' => 'required|numeric',
+        'filled_price' => 'required|numeric',
+        'sell_id' => 'required|numeric'
+    ];
+
+    if (!$this->validate($validationRules)) {
+        return $this->response->setJSON([
+            'status' => 400,
+            'message' => $this->validator->getErrors()
+        ]);
+    }
+
+    $buy_id = $this->request->getVar('buy_id');
+    $filled_price = $this->request->getVar('filled_price');
+    $sell_id = $this->request->getVar('sell_id');
+
+    $signal_sell = $this->signal->get_order($sell_id);
+
+    // If the response is not successful
+    if ($signal_sell->code !== 200) {
+        return $this->response->setJSON([
+            'status' => $signal_sell->code,
+            'message' => $signal_sell->message
+        ]);
+    }
+
+    $sell = $signal_sell->message;
+
+    $takeProfitData = $this->take_profits(null, null, $filled_price, $sell->order_id, $sell_id, $buy_id, $sell->type);
+    return $this->response->setJSON([
+        'status' => 200,
+        'message' => 'success',
+        'data' => $takeProfitData
+    ]);
+}
+
 }
