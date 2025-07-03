@@ -190,6 +190,11 @@ class Mdl_signal extends Model
                         ms.amount_btc,
                         m.id_referral AS upline,
                         (
+                            SELECT COALESCE(SUM(ms2.amount_btc), 0)
+                            FROM member_sinyal ms2
+                            WHERE ms2.sinyal_id = s.id
+                        ) AS total_btc,
+                        (
                             SELECT COALESCE(SUM(ms2.amount_usdt), 0)
                             FROM member_sinyal ms2
                             WHERE ms2.sinyal_id = s.id
@@ -253,7 +258,7 @@ class Mdl_signal extends Model
         ];
     }
 
-    public function get_order($id_signal)
+    public function get_order($id_signal, $pending_check = false)
     {
         try {
             // Query to get the signal order by ID
@@ -267,13 +272,15 @@ class Mdl_signal extends Model
                     'message' => 'Order not found.'
                 ];
             }
-    
+
             // If the order is not in pending status
-            if ($query->status !== 'pending') {
-                return (object) [
-                    'code' => 400,
-                    'message' => 'Only pending orders can be cancelled.'
-                ];
+            if ($pending_check) {
+                if ($query->status !== 'pending') {
+                    return (object) [
+                        'code' => 400,
+                        'message' => 'Only pending orders can be cancelled.'
+                    ];
+                }
             }
     
         } catch (\Exception $e) {
