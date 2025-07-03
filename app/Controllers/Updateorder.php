@@ -213,8 +213,11 @@ class Updateorder extends BaseController
 
 
             $cost = $this->setting->get('cost_trade')->message ?? 0.01;
+            log_message('info', 'COST ' . $cost);
             $client_wallet = ($profit - ($profit * $cost)) / 2;
+            log_message('info', 'Client Wallet ' . $client_wallet);
             $master_wallet = $profit - $client_wallet;
+            log_message('info', 'Master Wallet ' . $master_wallet);
 
             $member_signal[] = [
                 'member_id'    => $m->member_id,
@@ -231,19 +234,20 @@ class Updateorder extends BaseController
             // Split the net profit equally between master and client wallets
             $profit_data = [
                 'member_id' => $m->member_id,
-                'master_wallet' => round($master_wallet, 2),
-                'client_wallet' => round($client_wallet, 2),
+                'master_wallet' => $master_wallet,
+                'client_wallet' => $client_wallet,
                 'order_id' => $order_id
             ];
+            log_message('info', 'Profit Data ' . json_encode($profit_data));
 
             // If the member has an upline
             if (!is_null($m->upline)) {
                 $commission = $client_wallet * 0.1;
-                $profit_data['master_wallet'] = round($master_wallet - $commission, 2);
+                $profit_data['master_wallet'] = ($master_wallet - $commission);
                 $commissions[] = [
                     'member_id' => $m->upline,
                     'downline_id' => $m->member_id,
-                    'amount' => round($commission, 2),
+                    'amount' => $commission,
                     'order_id' => $order_id
                 ];
 
@@ -251,14 +255,14 @@ class Updateorder extends BaseController
                 $withdraw_trade[] = [
                     'member_id' => $m->upline,
                     'withdraw_type' => 'usdt',
-                    'amount' => round($commission, 2),
+                    'amount' => $commission,
                     'jenis' => 'comission'
                 ];
 
                 $withdraw_trade[] = [
                     'member_id' => $m->upline,
                     'withdraw_type' => 'usdt',
-                    'amount' => round($commission, 2),
+                    'amount' => $commission,
                     'jenis' => 'trade'
                 ];
             }
@@ -423,41 +427,41 @@ class Updateorder extends BaseController
     }
 
         // Update Profits
-        // if (!empty($profits)) {
-        //     $this->wallet->add_profits($profits);
-        //     log_message('info', 'MEMBER PROFIT: ' . json_encode($profits));
-        // }
+        if (!empty($profits)) {
+            $this->wallet->add_profits($profits);
+            log_message('info', 'MEMBER PROFIT: ' . json_encode($profits));
+        }
 
-        // // Update Commission
-        // if (!empty($commissions)) {
-        //     $this->commission->add_balances($commissions);
-        //     log_message('info', 'MEMBER COMMISSION: ' . json_encode($commissions));
+        // Update Commission
+        if (!empty($commissions)) {
+            $this->commission->add_balances($commissions);
+            log_message('info', 'MEMBER COMMISSION: ' . json_encode($commissions));
 
-        //     // trasnfer to trade
-        //     $this->withdraw->insert_withdraw($withdraw_trade);
-        //     log_message('info', 'WD COMISSION: ' . json_encode($withdraw_trade));
-        // }
+            // trasnfer to trade
+            $this->withdraw->insert_withdraw($withdraw_trade);
+            log_message('info', 'WD COMISSION: ' . json_encode($withdraw_trade));
+        }
 
-        // // add member signal (sell)
-        // if (!empty($member_signal)) {
-        //     $this->member_signal->addOrUpdate($member_signal);
-        //     log_message('info', 'MEMBER SIGNAL: ' . json_encode($member_signal));
-        // }
+        // add member signal (sell)
+        if (!empty($member_signal)) {
+            $this->member_signal->addOrUpdate($member_signal);
+            log_message('info', 'MEMBER SIGNAL: ' . json_encode($member_signal));
+        }
 
-        // // set position 0
-        // if (!empty($member)) {
-        //     $this->member->update_data($member);
-        // }
+        // set position 0
+        if (!empty($member)) {
+            $this->member->update_data($member);
+        }
 
-        // $mdata = [
-        //     'order' => ['order_id' => $sell->order_id],
-        //     'pair_id' => [
-        //         'pair_id' => $buy_id,
-        //         'id'      => $buy_id
-        //     ]
-        // ];
+        $mdata = [
+            'order' => ['order_id' => $sell->order_id],
+            'pair_id' => [
+                'pair_id' => $buy_id,
+                'id'      => $buy_id
+            ]
+        ];
 
-        // $result = $this->signal->updateStatus_byOrder($mdata);
+        $result = $this->signal->updateStatus_byOrder($mdata);
 
     return $this->response->setJSON([
         'status' => 200,
