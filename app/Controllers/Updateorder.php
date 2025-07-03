@@ -399,11 +399,18 @@ class Updateorder extends BaseController
     $sell = $signal_sell->message;
 
     $takeProfitData = $this->take_profits(null, null, $filled_price, $sell->order_id, $sell_id, $buy_id, $sell->type);
-    $profits = array_merge($profits, $takeProfitData['profits']);
-    $commissions = array_merge($commissions, $takeProfitData['commissions']);
-    $member_signal = array_merge($member_signal, $takeProfitData['member_signal']);
-    $withdraw_trade = array_merge($withdraw_trade, $takeProfitData['withdraw_trade']);
-    $this->mergeById($member, $takeProfitData['member']);
+    try {
+        $profits = array_merge($profits, $takeProfitData['profits']);
+        $commissions = array_merge($commissions, $takeProfitData['commissions']);
+        $member_signal = array_merge($member_signal, $takeProfitData['member_signal']);
+        $withdraw_trade = array_merge($withdraw_trade, $takeProfitData['withdraw_trade']);
+        $this->mergeById($member, $takeProfitData['member']);
+    } catch (\Throwable $th) {
+        return $this->response->setJSON([
+            'status' => 400,
+            'message' => 'Already filled.'
+        ]);
+    }
 
         // Update Profits
         if (!empty($profits)) {
