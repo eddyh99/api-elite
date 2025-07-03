@@ -380,6 +380,11 @@ class Updateorder extends BaseController
     $buy_id = $this->request->getVar('buy_id');
     $filled_price = $this->request->getVar('filled_price');
     $sell_id = $this->request->getVar('sell_id');
+    $profits = [];
+    $commissions = [];
+    $withdraw_trade = [];
+    $member_signal = [];
+    $member = [];
 
     $signal_sell = $this->signal->get_order($sell_id);
 
@@ -394,6 +399,49 @@ class Updateorder extends BaseController
     $sell = $signal_sell->message;
 
     $takeProfitData = $this->take_profits(null, null, $filled_price, $sell->order_id, $sell_id, $buy_id, $sell->type);
+    $profits = array_merge($profits, $takeProfitData['profits']);
+    $commissions = array_merge($commissions, $takeProfitData['commissions']);
+    $member_signal = array_merge($member_signal, $takeProfitData['member_signal']);
+    $withdraw_trade = array_merge($withdraw_trade, $takeProfitData['withdraw_trade']);
+    $this->mergeById($member, $takeProfitData['member']);
+
+        // Update Profits
+        if (!empty($profits)) {
+            $this->wallet->add_profits($profits);
+            log_message('info', 'MEMBER PROFIT: ' . json_encode($profits));
+        }
+
+        // Update Commission
+        if (!empty($commissions)) {
+            $this->commission->add_balances($commissions);
+            log_message('info', 'MEMBER COMMISSION: ' . json_encode($commissions));
+
+            // trasnfer to trade
+            $this->withdraw->insert_withdraw($withdraw_trade);
+            log_message('info', 'WD COMISSION: ' . json_encode($withdraw_trade));
+        }
+
+        // add member signal (sell)
+        if (!empty($member_signal)) {
+            $this->member_signal->addOrUpdate($member_signal);
+            log_message('info', 'MEMBER SIGNAL: ' . json_encode($member_signal));
+        }
+
+        // set position 0
+        if (!empty($member)) {
+            $this->member->update_data($member);
+        }
+
+        $mdata = [
+            'order' => ['order_id' => $sell->order_id],
+            'pair_id' => [
+                'pair_id' => $buy_id,
+                'id'      => $buy_id
+            ]
+        ];
+
+        $result = $this->signal->updateStatus_byOrder($mdata);
+
     return $this->response->setJSON([
         'status' => 200,
         'message' => 'success',
