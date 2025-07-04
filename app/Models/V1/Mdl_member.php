@@ -1395,6 +1395,7 @@ class Mdl_member extends Model
 
             $sql = "WITH buy_signals AS ( 
                     SELECT
+                        s.type as buy_type,
                         s.id AS buy_id,
                         s.order_id AS buy_order_id,
                         s.pair_id,
@@ -1418,6 +1419,7 @@ class Mdl_member extends Model
                         b.buy_id,
                         b.buy_order_id,
                         b.pair_id,
+                        b.buy_type,
                         b.buy_price,
                         s.sell_id,
                         s.sell_price,
@@ -1431,6 +1433,7 @@ class Mdl_member extends Model
                     SELECT
                         sinyal_id,
                         amount_btc,
+                        amount_usdt,
                         SUM(amount_btc) AS total_btc,
                         SUM(amount_usdt) AS total_usdt
                     FROM member_sinyal
@@ -1456,11 +1459,13 @@ class Mdl_member extends Model
                 )
                 SELECT
                 m.amount_btc,
+                m.amount_usdt,
                     p.buy_id,
                     p.buy_order_id,
                     p.pair_id,
                     p.buy_price,
                     p.sell_price,
+                    p.buy_type as buy_type,
                     m.total_btc AS buy_total_btc,
                     m.total_usdt AS buy_total_usdt,
                     msell.total_usdt AS sell_total_usdt,
