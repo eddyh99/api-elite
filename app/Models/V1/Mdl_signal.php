@@ -705,6 +705,7 @@ class Mdl_signal extends Model
             $sql="WITH buy_signals AS ( 
                     SELECT
                         s.id AS buy_id,
+                        s.type as buy_type,
                         s.order_id AS buy_order_id,
                         s.pair_id,
                         s.entry_price AS buy_price,
@@ -725,6 +726,7 @@ class Mdl_signal extends Model
                 paired_signals AS (
                     SELECT
                         b.buy_id,
+                        b.buy_type,
                         b.buy_order_id,
                         b.pair_id,
                         b.buy_price,
@@ -773,6 +775,7 @@ class Mdl_signal extends Model
                     p.pair_id,
                     p.buy_price,
                     p.sell_price,
+                    p.buy_type,
                     m.total_btc AS buy_total_btc,
                     m.total_usdt AS buy_total_usdt,
                     msell.total_usdt AS sell_total_usdt,
@@ -783,7 +786,8 @@ class Mdl_signal extends Model
                 LEFT JOIN member_amounts m ON m.sinyal_id = p.buy_id
                 LEFT JOIN member_amounts msell ON msell.sinyal_id = p.sell_id
                 LEFT JOIN wallet_profits w ON w.order_id = p.sell_order_id
-                LEFT JOIN commission_totals c ON c.order_id = p.sell_order_id;
+                LEFT JOIN commission_totals c ON c.order_id = p.sell_order_id
+                ORDER BY p.sell_time ASC
                 ";
             
             $query = $this->db->query($sql)->getResult();
