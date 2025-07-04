@@ -470,4 +470,69 @@ class Updateorder extends BaseController
     ]);
 }
 
+public function getFilled_buy() {
+    $validationRules = [
+        'buy_id' => 'required|numeric',
+        'filled_price' => 'required|numeric',
+        'type_buy' => 'required|in_list[BUY A,BUY B, BUY C, BUY D]',
+    ];
+
+    if (!$this->validate($validationRules)) {
+        return $this->response->setJSON([
+            'status' => 400,
+            'message' => $this->validator->getErrors()
+        ]);
+    }
+
+
+    function rounded($number, $precision = 5)
+    {
+        $factor = pow(10, $precision);
+        return floor($number * $factor) / $factor;
+    }
+
+    $mdata = [];
+    $buy_id = $this->request->getVar('buy_id');
+    $type = $this->request->getVar('type_buy');
+    $filled_price = $this->request->getVar('filled_price');
+    $deposit  = $this->deposit->rebalanceMemberPosition($type);
+    if (@$deposit->code != 200) {
+        return $this->response->setJSON([
+            'status' => 400,
+            'message' => $deposit->message
+        ]);
+    }
+    
+    $totalbtc = ($deposit->message / $filled_price) * (1 - 0.001);
+    $member = $this->member->getby_ids($deposit->member_ids);
+    $side_position = [
+        'BUY A' => 'position_a',
+        'BUY B' => 'position_b',
+        'BUY C' => 'position_c',
+        'BUY D' => 'position_d'
+    ];
+    $position = $side_position[$type];
+    $mdata = [];
+    foreach ($member->message as $m) {
+        $amount_usdt = $m[$position];
+        $btc     = (($amount_usdt) / $deposit->message) * $totalbtc;
+
+        $mdata[] = [
+            'member_id' => $m['id'],
+            'amount_usdt' => $amount_usdt,
+            'amount_btc' => rounded($btc),
+            'sinyal_id' => $buy_id
+        ];
+    }
+
+    if (!empty($mdata)) {
+        $this->member_signal->addOrUpdate($mdata);
+    }
+
+    return $this->response->setJSON([
+        'status' => 200,
+        'message' => 'success',
+        'data' => $mdata
+    ]);
+}
 }
