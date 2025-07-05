@@ -179,6 +179,12 @@ class Updateorder extends BaseController
 
     private function take_profits($total_btc = null, $sell_amount = null, $entry_price = null, $order_id, $signal_id, $pair_id, $type)
     {
+        // helper: truncate decimal-string to $dec places (no rounding, just chop)
+        $bcTruncate = function(string $numStr, int $dec): string {
+            // divide by 1 with scale = $dec → chops extra digits
+            return bcdiv($numStr, '1', $dec);
+        };
+        
         // Retrieve buy orders based on the selected pair
         $signal_buy = $this->signal->get_orders($pair_id);
 
@@ -198,31 +204,37 @@ class Updateorder extends BaseController
             'Sell C' => 'position_c',
             'Sell D' => 'position_d'
         ];
-
+    
+        $costRate = (string) ($this->setting->get('cost_trade')->message ?? '0.01');
+        log_message('info', 'COST ' . $costRate);
 
         foreach ($signal_buy->message as $m) {
-            // Calculate profit (difference between sell and buy)
-            $totalbtc = $total_btc ?: $m->total_btc;
-            $sellamount = $sell_amount ?? ($totalbtc * $entry_price);
-            $amount_usdt = ($m->amount_btc / $totalbtc) * ($sellamount - ($sellamount * 0.001));
-            $profit = $amount_usdt - $m->amount_usdt; //margin
+            // --- 1) gross USD = amount_btc * entry_price (8 dp)
+            $amount_usdt = bcmul((string)$m->amount_btc, (string)$entry_price, 8);            
+            log_message('info', 'BTC ' . json_encode($m->amount_btc));
+            log_message('info', 'Amount USDT ' . json_encode($amount_usdt));
+
+            // --- 2) net after 0.1% fee = gross_usdt * 0.999 (8 dp)
+            $net_amount = bcmul($amount_usdt, '0.999', 8);            
+            log_message('info', 'NET USDT ' . json_encode($net_amount));
+
+            // --- 3) profit margin = net_amount - original_usdt (8 dp)
+            $profit = bcsub($net_amount, (string)$m->amount_usdt, 8);
             log_message('info', 'PROFIT MEMBER ID: ' . $m->member_id . ' | PROFIT: ' . number_format((float)$profit, 8, '.', ''));
-            log_message('info', 'BTC ' . json_encode($totalbtc));
-            log_message('info', 'SELL AMOUNT ' . json_encode($sellamount));
+
+            // --- 4) after cost split = profit * (1 - costRate) / 2 (8 dp)
+            $afterCost      = bcmul($profit, bcsub('1', $costRate, 8), 8);
+            $client_wallet  = bcdiv($afterCost, '2', 8);
             
-
-
-            $cost = $this->setting->get('cost_trade')->message ?? 0.01;
-            log_message('info', 'COST ' . $cost);
-            $client_wallet = ($profit - ($profit * $cost)) / 2;
+            // --- 5) truncate client & master to 2 dp
+            $master_wallet = bcsub($profit, $client_wallet, 8);
             log_message('info', 'Client Wallet ' . $client_wallet);
-            $master_wallet = $profit - $client_wallet;
-            log_message('info', 'Master Wallet ' . $master_wallet);
+            log_message('info', 'Master Wallet No Split' . $master_wallet);
 
             $member_signal[] = [
                 'member_id'    => $m->member_id,
                 'amount_btc'   => $m->amount_btc,
-                'amount_usdt'  => $amount_usdt,
+                'amount_usdt'  => $bcTruncate($net_amount, 2),
                 'sinyal_id'    => $signal_id
             ];
 
@@ -234,20 +246,25 @@ class Updateorder extends BaseController
             // Split the net profit equally between master and client wallets
             $profit_data = [
                 'member_id' => $m->member_id,
-                'master_wallet' => $master_wallet,
-                'client_wallet' => $client_wallet,
+                'master_wallet' => $bcTruncate($master_wallet,2),
+                'client_wallet' => $bcTruncate($client_wallet,2),
                 'order_id' => $order_id
             ];
-            log_message('info', 'Profit Data ' . json_encode($profit_data));
+            log_message('info', 'Profit Data ' . json_encode($profit));
+            log_message('info', 'upline ' . json_encode($m->upline));
 
             // If the member has an upline
             if (!is_null($m->upline)) {
-                $commission = $client_wallet * 0.1;
-                $profit_data['master_wallet'] = ($master_wallet - $commission);
+                $commission = bcmul($client_wallet, '0.1', 8);
+
+                log_message('info', 'Commission ' . json_encode($commission));
+
+                $profit_data['master_wallet'] = $bcTruncate(bcsub($master_wallet, $commission, 8),2);
+                log_message('info', 'New Master Wallet ' . json_encode($profit_data['master_wallet']));
                 $commissions[] = [
                     'member_id' => $m->upline,
                     'downline_id' => $m->member_id,
-                    'amount' => $commission,
+                    'amount' => $bcTruncate($commission,2),
                     'order_id' => $order_id
                 ];
 
@@ -255,19 +272,20 @@ class Updateorder extends BaseController
                 $withdraw_trade[] = [
                     'member_id' => $m->upline,
                     'withdraw_type' => 'usdt',
-                    'amount' => $commission,
+                    'amount' => $bcTruncate($commission,2),
                     'jenis' => 'comission'
                 ];
 
                 $withdraw_trade[] = [
                     'member_id' => $m->upline,
                     'withdraw_type' => 'usdt',
-                    'amount' => $commission,
+                    'amount' => $bcTruncate($commission,2),
                     'jenis' => 'trade'
                 ];
             }
 
             $profits[] = $profit_data;
+            log_message('info', '================ ');
         }
 
 
@@ -425,7 +443,6 @@ class Updateorder extends BaseController
             'message' => 'an error occurred.'
         ]);
     }
-
         // Update Profits
         if (!empty($profits)) {
             $this->wallet->add_profits($profits);
@@ -484,13 +501,6 @@ public function getFilled_buy() {
         ]);
     }
 
-
-    function rounded($number, $precision = 5)
-    {
-        $factor = pow(10, $precision);
-        return floor($number * $factor) / $factor;
-    }
-
     $mdata = [];
     $buy_id = $this->request->getVar('buy_id');
     $type = $this->request->getVar('type_buy');
@@ -503,7 +513,12 @@ public function getFilled_buy() {
         ]);
     }
     
-    $totalbtc = ($deposit->message / $filled_price) * (1 - 0.001);
+    function truncateDecimals($number, $decimals = 2) {
+        $factor = pow(10, $decimals);
+        return floor($number * $factor) / $factor;
+    }
+
+    //$totalbtc = ($deposit->message / $filled_price) * (1 - 0.001);
     $member = $this->member->getby_ids($deposit->member_ids);
     $side_position = [
         'BUY A' => 'position_a',
@@ -515,12 +530,12 @@ public function getFilled_buy() {
     $mdata = [];
     foreach ($member->message as $m) {
         $amount_usdt = $m[$position];
-        $btc     = (($amount_usdt) / $deposit->message) * $totalbtc;
-
+        $btc     = ($amount_usdt / $filled_price) * (1-0.001);
+        
         $mdata[] = [
             'member_id' => $m['id'],
-            'amount_usdt' => $amount_usdt,
-            'amount_btc' => rounded($btc),
+            'amount_usdt' => truncateDecimals($amount_usdt),
+            'amount_btc' => round($btc,8),
             'sinyal_id' => $buy_id
         ];
     }

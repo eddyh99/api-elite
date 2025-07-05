@@ -1476,8 +1476,7 @@ class Mdl_member extends Model
                 LEFT JOIN member_amounts m ON m.sinyal_id = p.buy_id
                 LEFT JOIN member_amounts msell ON msell.sinyal_id = p.sell_id
                 LEFT JOIN wallet_profits w ON w.order_id = p.sell_order_id
-                LEFT JOIN commission_totals c ON c.order_id = p.sell_order_id
-                ORDER BY p.sell_time ASC";
+                LEFT JOIN commission_totals c ON c.order_id = p.sell_order_id";
             $query = $this->db->query($sql,[$id,$id,$id])->getResult();
 
             return (object) [
