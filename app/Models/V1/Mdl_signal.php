@@ -787,7 +787,6 @@ class Mdl_signal extends Model
                 LEFT JOIN member_amounts msell ON msell.sinyal_id = p.sell_id
                 LEFT JOIN wallet_profits w ON w.order_id = p.sell_order_id
                 LEFT JOIN commission_totals c ON c.order_id = p.sell_order_id
-                ORDER BY p.sell_time ASC
                 ";
             
             $query = $this->db->query($sql)->getResult();
