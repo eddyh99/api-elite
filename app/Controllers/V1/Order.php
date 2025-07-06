@@ -266,7 +266,8 @@ class Order extends BaseController
         if (@$signal->message->status != 'filled') {
             return $this->respond(error_msg(400, "signal", '01', 'Order is ' . $signal->message->status), 400);
         }
-
+        
+        $signal->btc = bcdiv($signal->btc, '1', 5);
         $order = $this->limit_order('SELL', $signal->btc, $data->limit);
         
         $mdata = [

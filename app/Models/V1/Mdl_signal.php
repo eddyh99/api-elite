@@ -305,7 +305,8 @@ class Mdl_signal extends Model
             $sql = "SELECT
                         sinyal.id,
                         sinyal.type,
-                        sinyal.order_id
+                        sinyal.order_id,
+                        sinyal.entry_price
                     FROM
                         sinyal
                     WHERE
@@ -335,7 +336,8 @@ class Mdl_signal extends Model
                         sinyal.id,
                         sinyal.pair_id,
                         sinyal.type,
-                        sinyal.order_id
+                        sinyal.order_id,
+                        sinyal.entry_price
                     FROM
                         sinyal
                     WHERE

@@ -62,15 +62,21 @@ class Updateorder extends BaseController
         $withdraw_trade = [];
         $member_signal = [];
         $member = [];
-
+        
+        // $status=(object)array(
+        //         "side" => "SELL",
+        //         "order" => [
+        //                 "status" => "filled"
+        //             ]
+        //     );
         foreach ($orders as $order) {
             $status = $this->updateOrder($order->order_id);
             $mdata['order'][] = $status->order;
 
-            $cost = $status->cummulativeQuoteQty;
-            $total_usdt = ($cost - $status->commission);
+            //$cost = $status->cummulativeQuoteQty;
+            //$total_usdt = ($cost - $status->commission);
             if ($status->side === 'SELL' && $status->order['status'] == 'filled') {
-                $takeProfitData = $this->take_profits($status->origQty, $cost, null, $order->order_id, $order->id, $order->pair_id, $order->type);
+                $takeProfitData = $this->take_profits(null, null, $order->entry_price, $order->order_id, $order->id, $order->pair_id, $order->type);
                 $profits = array_merge($profits, $takeProfitData['profits']);
                 $commissions = array_merge($commissions, $takeProfitData['commissions']);
                 $member_signal = array_merge($member_signal, $takeProfitData['member_signal']);
@@ -90,11 +96,11 @@ class Updateorder extends BaseController
                 // $deposit  = $this->deposit->getTotal_tradeBalance();
                 // $trade_balance = ( ($deposit->message + $cost) /4);
                 // $trade_balance = $deposit->message;
-                $asset_btc = $this->setting->get('asset_btc')->message;
+                //$asset_btc = $this->setting->get('asset_btc')->message;
                 // log_message('info', 'TRADE BALANCE ORI: ' . json_encode($deposit->message));
 
                 // get btc
-                $member_btc = $this->getBtc_member($asset_btc, $order->id, $order->type);
+                $member_btc = $this->getBtc_member($order->id,$order->entry_price);
                 $member_signal = array_merge($member_signal, $member_btc);
 
                 // update order pnglobal
@@ -327,8 +333,8 @@ class Updateorder extends BaseController
         }));
         return $btc[0];
     }
-
-    private function getBtc_member($asset_btc, $signal_id, $type)
+/*
+    private function getBtc_member($signal_id, $type)
     {
 
         function convertBTC($number, $precision = 5)
@@ -367,6 +373,23 @@ class Updateorder extends BaseController
                 'amount_btc' => convertBTC($btc, 5),
                 'amount_usdt' => $m->amount_usdt,
                 'sinyal_id' => $signal_id
+            ];
+        }
+        return $mdata;
+    }*/
+
+    private function getBtc_member($signal_id, $filled_price)
+    {
+        $member = $this->member_signal->getby_sinyal($signal_id);
+        $mdata = [];
+        foreach ($member->message as $m) {
+            $btc     = ($m->amount_usdt / $filled_price) * (1-0.001);
+            
+            $mdata[] = [
+                'member_id'     => $m->member_id,
+                'amount_btc'    => round($btc,8),
+                'amount_usdt'   => $m->amount_usdt,
+                'sinyal_id'     => $signal_id
             ];
         }
         return $mdata;
