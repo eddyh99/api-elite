@@ -48,7 +48,9 @@ class Mdl_signal extends Model
                         buy.type LIKE 'Buy%'
                         AND buy.status != 'canceled'
                         AND buy.pair_id IS NULL
-                        AND buy.is_deleted = 'no'";
+                        AND buy.is_deleted = 'no'
+                    ORDER BY
+                        SUBSTRING(buy.type, 5, 1) ASC";
 
             $query = $this->db->query($sql)->getResult();
 
@@ -668,13 +670,13 @@ class Mdl_signal extends Model
             $sql = "SELECT
                         ROUND(SUM(ms_sell.amount_usdt - ms_buy.amount_usdt), 2) AS total_profit,
                         (
-                            SELECT ROUND(SUM(client_wallet), 2) FROM wallet
+                            SELECT FLOOR(SUM(client_wallet) * 100) / 100 FROM wallet
                         ) AS client_profit,
                         (
                             SELECT ROUND(SUM(amount), 2) FROM member_deposit WHERE status='complete'
                         ) AS member_deposit,
                         (
-                            SELECT ROUND(SUM(client_wallet * 0.1), 2) FROM wallet
+                            SELECT FLOOR(SUM(client_wallet * 0.1) * 100) / 100 FROM wallet
                         ) AS ref_comm,
                         (
                             SELECT ROUND(SUM( CASE WHEN m.id_referral IS NULL THEN w.master_wallet - (0.1 * w.client_wallet) ELSE w.master_wallet END ),2) AS total_adjusted_master_wallet FROM wallet w JOIN member m ON w.member_id = m.id
