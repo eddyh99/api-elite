@@ -511,18 +511,15 @@ class Updateorder extends BaseController
 }
 
 public function getFilled_buy() {
-    $validationRules = [
-        'buy_id' => 'required|numeric',
-        'filled_price' => 'required|numeric',
-        'type_buy' => 'required|in_list[BUY A,BUY B, BUY C, BUY D]',
-    ];
+    // $validationRules = [
+    //     'buy_id' => 'required|numeric',
+    //     'filled_price' => 'required|numeric',
+    //     'type_buy' => 'required|in_list[BUY A,BUY B, BUY C, BUY D]',
+    // ];
 
-    if (!$this->validate($validationRules)) {
-        return $this->response->setJSON([
-            'status' => 400,
-            'message' => $this->validator->getErrors()
-        ]);
-    }
+    // if (!$this->validate($validationRules)) {
+    //     return $this->respond(error_msg(400, "order", null, $this->validator->getErrors()), 400);
+    // }
 
     $mdata = [];
     $buy_id = $this->request->getVar('buy_id');
@@ -530,10 +527,11 @@ public function getFilled_buy() {
     $filled_price = $this->request->getVar('filled_price');
     $deposit  = $this->deposit->rebalanceMemberPosition($type);
     if (@$deposit->code != 200) {
-        return $this->response->setJSON([
-            'status' => 400,
-            'message' => $deposit->message
-        ]);
+        return $this->respond(error_msg(400, "order", null, $deposit->message), 400);
+        // return $this->response->setJSON([
+        //     'status' => 400,
+        //     'message' => $deposit->message
+        // ]);
     }
     
     function truncateDecimals($number, $decimals = 2) {
@@ -565,12 +563,15 @@ public function getFilled_buy() {
 
     if (!empty($mdata)) {
         $this->member_signal->addOrUpdate($mdata);
+        $this->signal->fill_order($buy_id);
+        
     }
+    return $this->respond(error_msg(201, "order", null, "$type filled."), 201);
 
-    return $this->response->setJSON([
-        'status' => 200,
-        'message' => 'success',
-        'data' => $mdata
-    ]);
+    // return $this->response->setJSON([
+    //     'status' => 200,
+    //     'message' => 'success',
+    //     'data' => $mdata
+    // ]);
 }
 }
