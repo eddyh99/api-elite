@@ -413,18 +413,18 @@ class Updateorder extends BaseController
 
     public function getFilled_sell()
 {
-    $validationRules = [
-        'buy_id' => 'required|numeric',
-        'filled_price' => 'required|numeric',
-        'sell_id' => 'required|numeric'
-    ];
+    // $validationRules = [
+    //     'buy_id' => 'required|numeric',
+    //     'filled_price' => 'required|numeric',
+    //     'sell_id' => 'required|numeric'
+    // ];
 
-    if (!$this->validate($validationRules)) {
-        return $this->response->setJSON([
-            'status' => 400,
-            'message' => $this->validator->getErrors()
-        ]);
-    }
+    // if (!$this->validate($validationRules)) {
+    //     return $this->response->setJSON([
+    //         'status' => 400,
+    //         'message' => $this->validator->getErrors()
+    //     ]);
+    // }
 
     $buy_id = $this->request->getVar('buy_id');
     $filled_price = $this->request->getVar('filled_price');
@@ -439,18 +439,20 @@ class Updateorder extends BaseController
 
     // If the response is not successful
     if ($signal_sell->code !== 200) {
-        return $this->response->setJSON([
-            'status' => $signal_sell->code,
-            'message' => $signal_sell->message
-        ]);
+        return $this->respond(error_msg(400, "order", null, $signal_sell->message), 400);
+        // return $this->response->setJSON([
+        //     'status' => $signal_sell->code,
+        //     'message' => $signal_sell->message
+        // ]);
     }
 
     $sell = $signal_sell->message;
     if ($sell->status == 'filled') {
-        return $this->response->setJSON([
-            'status' => 400,
-            'message' => 'already filled.'
-        ]);
+        return $this->respond(error_msg(400, "order", null, "$sell->type already filled."), 400);
+        // return $this->response->setJSON([
+        //     'status' => 400,
+        //     'message' => 'already filled.'
+        // ]);
     }
 
     $takeProfitData = $this->take_profits(null, null, $filled_price, $sell->order_id, $sell_id, $buy_id, $sell->type);
@@ -461,10 +463,11 @@ class Updateorder extends BaseController
         $withdraw_trade = array_merge($withdraw_trade, $takeProfitData['withdraw_trade']);
         $this->mergeById($member, $takeProfitData['member']);
     } catch (\Throwable $th) {
-        return $this->response->setJSON([
-            'status' => 400,
-            'message' => 'an error occurred.'
-        ]);
+        return $this->respond(error_msg(400, "order", null, 'an error occurred.'), 400);
+        // return $this->response->setJSON([
+        //     'status' => 400,
+        //     'message' => 'an error occurred.'
+        // ]);
     }
         // Update Profits
         if (!empty($profits)) {
@@ -494,20 +497,24 @@ class Updateorder extends BaseController
         }
 
         $mdata = [
-            'order' => ['order_id' => $sell->order_id],
-            'pair_id' => [
+            'order' => [[
+                'order_id' => $sell->order_id,
+                'status' => 'filled'
+            ]],
+            'pair_id' => [[
                 'pair_id' => $buy_id,
                 'id'      => $buy_id
-            ]
+            ]]
         ];
 
         $result = $this->signal->updateStatus_byOrder($mdata);
 
-    return $this->response->setJSON([
-        'status' => 200,
-        'message' => 'success',
-        'data' => $takeProfitData
-    ]);
+    return $this->respond(error_msg(200, "order", null,  "$sell->type filled."), 200);
+    // return $this->response->setJSON([
+    //     'status' => 200,
+    //     'message' => 'success',
+    //     'data' => $takeProfitData
+    // ]);
 }
 
 public function getFilled_buy() {
