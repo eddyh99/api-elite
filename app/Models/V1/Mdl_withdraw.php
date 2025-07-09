@@ -19,7 +19,7 @@ class Mdl_withdraw extends Model
     protected $table      = 'withdraw';
     protected $primaryKey = 'id';
 
-    protected $allowedFields = ['member_id', 'withdraw_type', 'amount', 'jenis', 'payment_details', 'wallet_address', 'status', 'admin_notes'];
+    protected $allowedFields = ['member_id', 'withdraw_type', 'amount', 'jenis', 'payment_details', 'wallet_address', 'status', 'admin_notes', 'ref_id'];
 
     protected $returnType = 'object';
     protected $useTimestamps = false;
@@ -88,6 +88,7 @@ class Mdl_withdraw extends Model
             
         return (object) [
             'code'    => 201,
+            'id'      =>  $this->db->insertID(),
             'message' => 'Withdrawal request submitted successfully.'
         ];
     }
