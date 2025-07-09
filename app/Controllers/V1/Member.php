@@ -364,4 +364,22 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "member", null, $result), 200);
     }
 
+    public function postUpdate_refcode()
+    {
+        $data   = $this->request->getJSON();
+        $mdata = [
+            [
+                'id' => $data->idmember,
+                'refcode' => $data->refcode
+            ]
+        ];
+
+        $result = $this->member->update_data($mdata);
+        if (@$result->code != 200) {
+            return $this->respond(error_msg(400, "member", "01", $result->message), 400);
+        }
+
+        return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
+    }
+
 }

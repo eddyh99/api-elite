@@ -24,21 +24,40 @@ class Withdraw extends BaseController
         $data = $this->request->getJSON(true);
         $wallet = $data['wallet_address'] ?? null;
         $details = array_diff_key($data, array_flip(['amount', 'wallet_address', 'member_id', 'type']));
-
-        $mdata = [[
+        $mdata = [];
+        $mdata[] = [
             'member_id' => $data['member_id'],
             'withdraw_type' => $data['type'],
             'amount' => $data['amount'],
             'wallet_address' => $wallet,
             'jenis' => 'withdraw',
-            'payment_details' => json_encode($details)
+            'payment_details' => json_encode($details),
+            'status' => 'pending'
 
-        ]];
+        ];
+
         $result = $this->withdraw->insert_withdraw($mdata);
 
         if (@$result->code != 201) {
 			return $this->respond(error_msg($result->code, "withdraw", "01", $result->message), $result->code);
 		}
+
+        // fee 5 usdt
+        if ($data['type'] == 'btc') {
+            $fee = [
+                [
+                    'member_id' => $data['member_id'],
+                    'withdraw_type' => 'usdt',
+                    'wallet_address' => 'fee',
+                    'amount' => 5,
+                    'jenis' => 'withdraw',
+                    'payment_details' => null,
+                    'status' => 'completed',
+                    'ref_id' => $result->id
+                ]
+            ];
+            $result = $this->withdraw->insert_withdraw($fee);
+        }
 
         return $this->respond(error_msg(201, "withdraw", null, $result->message), 201);
 
@@ -79,6 +98,51 @@ class Withdraw extends BaseController
             'id'        => $data->reqid,
             'data' => [
                 'status' => $data->status,
+                'admin_notes' => $data->notes ?? null,
+            ]
+        ];
+
+        $result = $this->withdraw->update_status($mdata);
+
+        if (@$result->code != 201) {
+            return $this->respond(error_msg($result->code, "withdraw", "01", $result->message), $result->code);
+        }
+
+        // fee usdt for master
+        $fee = [];
+        $fee[] = [
+            'member_id' => 1,
+            'withdraw_type' => 'usdt',
+            'wallet_address' => 'fee',
+            'amount' => $data->fee_usdt ?? 0,
+            'jenis' => 'balance'
+        ];
+        
+        // fee btc for master
+        if (!empty($data->fee_btc)) {
+            $fee[] = [
+                'member_id' => 1,
+                'withdraw_type' => 'btc',
+                'wallet_address' => 'fee',
+                'amount' => $data->fee_btc,
+                'jenis' => 'balance'
+            ];
+        }
+
+        $result = $this->withdraw->insert_withdraw($fee);
+
+        return $this->respond(error_msg(201, "withdraw", null, $result->message), 201);
+    }
+
+    public function postReject_payment()
+    {
+        $data = $this->request->getJSON();
+
+        $mdata = [
+            'member_id' => $data->idmember,
+            'id'        => $data->reqid,
+            'data' => [
+                'status' => 'rejected',
                 'admin_notes' => $data->notes ?? null,
             ]
         ];

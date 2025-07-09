@@ -19,7 +19,7 @@ class Mdl_withdraw extends Model
     protected $table      = 'withdraw';
     protected $primaryKey = 'id';
 
-    protected $allowedFields = ['member_id', 'withdraw_type', 'amount', 'jenis', 'payment_details', 'wallet_address', 'status', 'admin_notes'];
+    protected $allowedFields = ['member_id', 'withdraw_type', 'amount', 'jenis', 'payment_details', 'wallet_address', 'status', 'admin_notes', 'ref_id'];
 
     protected $returnType = 'object';
     protected $useTimestamps = false;
@@ -88,6 +88,7 @@ class Mdl_withdraw extends Model
             
         return (object) [
             'code'    => 201,
+            'id'      =>  $this->db->insertID(),
             'message' => 'Withdrawal request submitted successfully.'
         ];
     }
@@ -148,11 +149,16 @@ class Mdl_withdraw extends Model
                     'message' => 'No withdrawal request found for this user.'
                 ];
             }
+
+            // destroy fee data
+            if($mdata['data']['status'] == 'rejected') {
+                $this->where('ref_id', $mdata['id'])->delete();
+            }
     
         } catch (\Exception $e) {
             return (object) [
                 'code'    => 500,
-                'message' => 'An error occurred while updating withdrawal status. Please try again later.'
+                'message' => $e->getMessage()
             ];
         }
     
@@ -334,7 +340,7 @@ class Mdl_withdraw extends Model
     public function getDetail_withdraw($id)
     {
         try {
-            $sql = "SELECT mb.email, wd.requested_at, wd.withdraw_type, wd.amount, wd.wallet_address, wd.payment_details, wd.status 
+            $sql = "SELECT mb.email, wd.requested_at, wd.member_id, wd.withdraw_type, wd.amount, wd.wallet_address, wd.payment_details, wd.status 
                     FROM withdraw wd 
                         INNER JOIN member mb ON wd.member_id=mb.id 
                     WHERE wd.id=?";
@@ -365,6 +371,7 @@ class Mdl_withdraw extends Model
                 'status'            => $query->status ?? 'pending',
                 "amount"            => $query->amount,
                 "email"             => $query->email,
+                "member_id"         => $query->member_id,
                 "requested_at"      => $query->requested_at
             ]
         ];
