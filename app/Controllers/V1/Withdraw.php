@@ -134,6 +134,28 @@ class Withdraw extends BaseController
         return $this->respond(error_msg(201, "withdraw", null, $result->message), 201);
     }
 
+    public function postReject_payment()
+    {
+        $data = $this->request->getJSON();
+
+        $mdata = [
+            'member_id' => $data->idmember,
+            'id'        => $data->reqid,
+            'data' => [
+                'status' => 'rejected',
+                'admin_notes' => $data->notes ?? null,
+            ]
+        ];
+
+        $result = $this->withdraw->update_status($mdata);
+
+        if (@$result->code != 201) {
+            return $this->respond(error_msg($result->code, "withdraw", "01", $result->message), $result->code);
+        }
+
+        return $this->respond(error_msg(201, "withdraw", null, $result->message), 201);
+    }
+
     public function postAvailable_commission() {
         $data = $this->request->getJSON();
         $result = $this->withdraw->getAvailable_commission($data->member_id);
