@@ -381,6 +381,7 @@ class Mdl_member extends Model
     
             return (object) [
                 'success'  => true,
+                'code' => 200,
                 'message' => 'User data updated'
             ];
         } catch (\Exception $e) {
