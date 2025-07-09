@@ -89,6 +89,16 @@ class Withdraw extends BaseController
             return $this->respond(error_msg($result->code, "withdraw", "01", $result->message), $result->code);
         }
 
+        // fee usdt for master
+        $mdata = [[
+            'member_id' => 1,
+            'withdraw_type' => 'usdt',
+            'amount' => $data->fee ?? 0,
+            'jenis' => 'balance'
+
+        ]];
+        $result = $this->withdraw->insert_withdraw($mdata);
+
         return $this->respond(error_msg(201, "withdraw", null, $result->message), 201);
     }
 
