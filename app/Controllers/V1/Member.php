@@ -370,6 +370,7 @@ class Member extends BaseController
         $mdata = [
             [
                 'id' => $data->idmember,
+                'role'  => 'referral',
                 'refcode' => $data->refcode
             ]
         ];

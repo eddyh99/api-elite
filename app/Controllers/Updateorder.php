@@ -237,12 +237,7 @@ class Updateorder extends BaseController
             log_message('info', 'Client Wallet ' . $client_wallet);
             log_message('info', 'Master Wallet No Split' . $master_wallet);
 
-            $member_signal[] = [
-                'member_id'    => $m->member_id,
-                'amount_btc'   => $m->amount_btc,
-                'amount_usdt'  => $bcTruncate($net_amount, 2),
-                'sinyal_id'    => $signal_id
-            ];
+            $tprofit = $client_wallet + $master_wallet;
 
             $member[] = [
                 'id' => $m->member_id,
@@ -266,12 +261,21 @@ class Updateorder extends BaseController
                 log_message('info', 'Commission ' . json_encode($commission));
 
                 $profit_data['master_wallet'] = $bcTruncate(bcsub($master_wallet, $commission, 8),2);
+                $tprofit = $client_wallet + $commission + $profit_data['master_wallet'];
                 log_message('info', 'New Master Wallet ' . json_encode($profit_data['master_wallet']));
                 $commissions[] = [
                     'member_id' => $m->upline,
                     'downline_id' => $m->member_id,
                     'amount' => $bcTruncate($commission,2),
                     'order_id' => $order_id
+                ];
+
+                // member_signal
+                $member_signal[] = [
+                    'member_id'    => $m->member_id,
+                    'amount_btc'   => $m->amount_btc,
+                    'amount_usdt'  => $m->amount_usdt + $tprofit,
+                    'sinyal_id'    => $signal_id
                 ];
 
                 // wd trade
