@@ -274,7 +274,7 @@ class Updateorder extends BaseController
                 $member_signal[] = [
                     'member_id'    => $m->member_id,
                     'amount_btc'   => $m->amount_btc,
-                    'amount_usdt'  => $tprofit,
+                    'amount_usdt'  => $m->amount_usdt + $tprofit,
                     'sinyal_id'    => $signal_id
                 ];
 
