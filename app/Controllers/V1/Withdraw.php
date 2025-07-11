@@ -109,27 +109,36 @@ class Withdraw extends BaseController
         }
 
         // fee usdt for master
-        $fee = [];
-        $fee[] = [
+        $wd  = [];
+        $fee = [
+            'invoice' => 'INV-' . strtoupper(bin2hex(random_bytes(4))),
+            'member_id' => 1,
+            'amount' => $data->fee_usdt ?? 0,
+            'status' => 'complete'
+        ];
+
+        $wd[] = [
             'member_id' => 1,
             'withdraw_type' => 'usdt',
             'wallet_address' => 'fee',
             'amount' => $data->fee_usdt ?? 0,
-            'jenis' => 'balance'
+            'jenis' => 'trade'
         ];
-        
         // fee btc for master
         if (!empty($data->fee_btc)) {
-            $fee[] = [
+            // wd fund
+            $wd[] = [
                 'member_id' => 1,
                 'withdraw_type' => 'btc',
                 'wallet_address' => 'fee',
                 'amount' => $data->fee_btc,
                 'jenis' => 'balance'
             ];
+            // wd trade
         }
 
-        $result = $this->withdraw->insert_withdraw($fee);
+        $this->deposit->add_balance($fee);
+        $result = $this->withdraw->insert_withdraw($wd);
 
         return $this->respond(error_msg(201, "withdraw", null, $result->message), 201);
     }

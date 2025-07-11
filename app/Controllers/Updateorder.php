@@ -270,14 +270,6 @@ class Updateorder extends BaseController
                     'order_id' => $order_id
                 ];
 
-                // member_signal
-                $member_signal[] = [
-                    'member_id'    => $m->member_id,
-                    'amount_btc'   => $m->amount_btc,
-                    'amount_usdt'  => $m->amount_usdt + $tprofit,
-                    'sinyal_id'    => $signal_id
-                ];
-
                 // wd trade
                 $withdraw_trade[] = [
                     'member_id' => $m->upline,
@@ -297,6 +289,14 @@ class Updateorder extends BaseController
             $profits[] = $profit_data;
             log_message('info', '================ ');
         }
+
+        // member_signal
+        $member_signal[] = [
+            'member_id'    => $m->member_id,
+            'amount_btc'   => $m->amount_btc,
+            'amount_usdt'  => $m->amount_usdt + $tprofit,
+            'sinyal_id'    => $signal_id
+        ];
 
 
         // Return the final profit and commission distributions
