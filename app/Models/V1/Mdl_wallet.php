@@ -153,39 +153,40 @@ class Mdl_wallet extends Model
                                 ),
                                 0
                             )
-                            - COALESCE(
-                                (
-                                    SELECT
-                                        SUM(
-                                            CASE
-                                                WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt
-                                            END
-                                        )
-                                    FROM
-                                        member_sinyal ms
-                                        JOIN sinyal s ON s.id = ms.sinyal_id
-                                    WHERE
-                                        ms.member_id = m.id
-                                        AND s.status != 'canceled'
-                                ),
-                                0
-                            ) + COALESCE(
-                                (
-                                    SELECT
-                                        SUM(
-                                            CASE
-                                                WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt
-                                            END
-                                        )
-                                    FROM
-                                        member_sinyal ms
-                                        JOIN sinyal s ON s.id = ms.sinyal_id
-                                    WHERE
-                                        ms.member_id = m.id
-                                        AND s.status = 'filled'
-                                ),
-                                0
-                            ) + COALESCE(
+                            -- - COALESCE(
+                            --     (
+                            --         SELECT
+                            --             SUM(
+                            --                 CASE
+                            --                     WHEN s.type LIKE 'Buy%' THEN ms.amount_usdt
+                            --                 END
+                            --             )
+                            --         FROM
+                            --             member_sinyal ms
+                            --             JOIN sinyal s ON s.id = ms.sinyal_id
+                            --         WHERE
+                            --             ms.member_id = m.id
+                            --             AND s.status != 'canceled'
+                            --     ),
+                            --     0
+                            -- ) + COALESCE(
+                            --     (
+                            --         SELECT
+                            --             SUM(
+                            --                 CASE
+                            --                     WHEN s.type LIKE 'Sell%' THEN ms.amount_usdt
+                            --                 END
+                            --             )
+                            --         FROM
+                            --             member_sinyal ms
+                            --             JOIN sinyal s ON s.id = ms.sinyal_id
+                            --         WHERE
+                            --             ms.member_id = m.id
+                            --             AND s.status = 'filled'
+                            --     ),
+                            --     0
+                            -- ) 
+                            + COALESCE(
                                 (
                                     SELECT
                                         SUM(amount)
