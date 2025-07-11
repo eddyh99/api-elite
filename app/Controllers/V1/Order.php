@@ -422,29 +422,29 @@ class Order extends BaseController
         }
     
         // Get the Binance order ID from the signal data
-        $id_order = $order->message->order_id;
+        // $id_order = $order->message->order_id;
     
-        if(!is_null($id_order)) {
-            // Prepare Binance API endpoint and parameters
-            $url = BINANCEAPI . "/order";
-            $params = [
-                "symbol" => "BTCUSDT",
-                "orderId" => $id_order
-            ];
+        // if(!is_null($id_order)) {
+        //     // Prepare Binance API endpoint and parameters
+        //     $url = BINANCEAPI . "/order";
+        //     $params = [
+        //         "symbol" => "BTCUSDT",
+        //         "orderId" => $id_order
+        //     ];
         
-            // Call Binance API to cancel the order
-            $response = binanceAPI($url, $params, "DELETE");
+        //     // Call Binance API to cancel the order
+        //     $response = binanceAPI($url, $params, "DELETE");
         
-            // If the API responds with an error code from binance
-            if (isset($response->code)) {
-                return $this->respond(error_msg(400, "binance", $response->code, $response->msg), 400);
-            }
+        //     // If the API responds with an error code from binance
+        //     if (isset($response->code)) {
+        //         return $this->respond(error_msg(400, "binance", $response->code, $response->msg), 400);
+        //     }
         
-            // If the order status is not 'CANCELED', treat it as a failure
-            if ($response->status != 'CANCELED') {
-                return $this->respond(error_msg(400, "binance", null, 'Failed to cancel order'), 400);
-            }
-        }
+        //     // If the order status is not 'CANCELED', treat it as a failure
+        //     if ($response->status != 'CANCELED') {
+        //         return $this->respond(error_msg(400, "binance", null, 'Failed to cancel order'), 400);
+        //     }
+        // }
     
         // Delete the signal
         $result = $this->signal->destroy($id_signal);
