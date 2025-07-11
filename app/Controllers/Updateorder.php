@@ -237,7 +237,7 @@ class Updateorder extends BaseController
             log_message('info', 'Client Wallet ' . $client_wallet);
             log_message('info', 'Master Wallet No Split' . $master_wallet);
 
-            $tprofit = $client_wallet + $master_wallet;
+            $tprofit = $bcTruncate($client_wallet,2) + $bcTruncate($master_wallet,2);
 
             $member[] = [
                 'id' => $m->member_id,
@@ -261,7 +261,7 @@ class Updateorder extends BaseController
                 log_message('info', 'Commission ' . json_encode($commission));
 
                 $profit_data['master_wallet'] = $bcTruncate(bcsub($master_wallet, $commission, 8),2);
-                $tprofit = $client_wallet + $commission + $profit_data['master_wallet'];
+                $tprofit = $bcTruncate($client_wallet,2) + $bcTruncate($commission,2) + $profit_data['master_wallet'];
                 log_message('info', 'New Master Wallet ' . json_encode($profit_data['master_wallet']));
                 $commissions[] = [
                     'member_id' => $m->upline,
@@ -545,11 +545,15 @@ public function getFilled_buy() {
         // ]);
     }
     
-    function truncateDecimals($number, $decimals = 2) {
-        $factor = pow(10, $decimals);
-        return floor($number * $factor) / $factor;
+    $bcTruncate = function(string $numStr, int $dec): string {
+            // divide by 1 with scale = $dec → chops extra digits
+            return bcdiv($numStr, '1', $dec);
+        };
+        
+    function round8($number) {
+        return number_format((float)$number, 8, '.', '');
     }
-
+        
     //$totalbtc = ($deposit->message / $filled_price) * (1 - 0.001);
     $member = $this->member->getby_ids($deposit->member_ids);
     $side_position = [
@@ -561,13 +565,13 @@ public function getFilled_buy() {
     $position = $side_position[$type];
     $mdata = [];
     foreach ($member->message as $m) {
-        $amount_usdt = $m[$position];
+        $amount_usdt = $bcTruncate($m[$position],2);
         $btc     = ($amount_usdt / $filled_price) * (1-0.001);
         
         $mdata[] = [
             'member_id' => $m['id'],
-            'amount_usdt' => truncateDecimals($amount_usdt),
-            'amount_btc' => round($btc,8),
+            'amount_usdt' => $amount_usdt,
+            'amount_btc' => round8($btc),
             'sinyal_id' => $buy_id
         ];
     }
@@ -577,7 +581,7 @@ public function getFilled_buy() {
         $this->signal->fill_order($buy_id);
         
     }
-    return $this->respond(error_msg(201, "order", null, "$type filled."), 201);
+    return $this->respond(error_msg(201, "order", null, json_encode($mdata)), 201);
 
     // return $this->response->setJSON([
     //     'status' => 200,
