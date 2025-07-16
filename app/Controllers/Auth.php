@@ -111,7 +111,7 @@ class Auth extends BaseController
 				]
 			],
 			'password' => [
-				'rules'  => 'required|min_length[8]',
+				'rules'  => 'required',
 				'errors' =>  [
 					'required'      => 'Password is required',
 					'min_length'    => 'Min length password is 8 character'
