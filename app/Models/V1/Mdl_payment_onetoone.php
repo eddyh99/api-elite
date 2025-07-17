@@ -34,8 +34,19 @@ class Mdl_payment_onetoone extends Model
     public function get_all()
     {
         try {
-            // Buat query SQL
-            $query = "SELECT * FROM tb_payment_onetoone";
+            // Query dengan JOIN ke tabel member
+            $query = "
+            SELECT 
+                p.id,
+                m.email,
+                p.status_invoice,
+                p.link_invoice,
+                p.invoice_date,
+                p.created_at,
+                p.updated_at
+            FROM tb_payment_onetoone AS p
+            LEFT JOIN tb_member_onetone AS m ON p.id_member_onetoone = m.id
+        ";
 
             // Jalankan query
             $result = $this->db->query($query);
@@ -62,6 +73,27 @@ class Mdl_payment_onetoone extends Model
             return (object) [
                 'code'    => 500,
                 'message' => 'An error occurred while retrieving payment data.'
+            ];
+        }
+    }
+
+    public function insert_payment($data)
+    {
+        try {
+            if ($this->insert($data) === false) {
+                return (object) [
+                    'code'    => 400,
+                    'message' => $this->errors()
+                ];
+            }
+            return (object) [
+                'code'    => 201,
+                'message' => 'Payment data inserted successfully.'
+            ];
+        } catch (\Exception $e) {
+            return (object) [
+                'code'    => 500,
+                'message' => $e->getMessage()
             ];
         }
     }

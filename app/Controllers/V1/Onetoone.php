@@ -25,9 +25,9 @@ class Onetoone extends BaseController
         return $this->respond($result);
     }
 
-    public function getList_payment()
-    {
-        $result = $this->paymentonetoone->get_all();
+    public function getMemberbyId($id){
+        $result = $this->memberonetoone->get_by_id($id);
+
         return $this->respond($result, $result->code ?? 500);
     }
 
@@ -37,10 +37,11 @@ class Onetoone extends BaseController
         $validation = $this->validation;
         $validation->setRules([
             'email' => [
-                'rules'  => 'required|valid_email',
+                'rules'  => 'required|valid_email|is_unique[tb_member_onetone.email]',
                 'errors' => [
                     'required'    => 'Email is required',
-                    'valid_email' => 'Invalid Email format'
+                    'valid_email' => 'Invalid Email format',
+                    'is_unique'   => 'Email already exists'
                 ]
             ]
         ]);
@@ -55,6 +56,50 @@ class Onetoone extends BaseController
         ];
         $result = $this->memberonetoone->insert_memberonetoone($mdata);
 
+        return $this->respond($result, $result->code ?? 500);
+    }
+
+    public function postDelete_member_onetoone($id = null)
+    {
+
+        // Proses delete
+        $result = $this->memberonetoone->delete_memberonetoone($id);
+
+        return $this->respond($result, $result->code ?? 500);
+    }
+
+
+    public function getList_payment()
+    {
+        $result = $this->paymentonetoone->get_all();
+        return $this->respond($result, $result->code ?? 500);
+    }
+
+    public function postPayment(){
+        $request = $this->request->getJSON();
+
+        $member = $this->memberonetoone->get_by_email($request->email);
+        if (!$member) {
+            return $this->respond([
+                'status' => false,
+                'message' => 'Member with that email not found'
+            ], 404);
+        }
+
+        // return response()->setJSON([
+        //     'status' => true,
+        //     'message' => 'Member found',
+        //     'data' => $member
+        // ]);
+
+        $data = [
+            'id_member_onetoone' => $member['id'],
+            'status_invoice' => $request->status_invoice,
+            'link_invoice'   => $request->link_invoice,
+            'invoice_date'   => $request->invoice_date
+        ];
+
+        $result = $this->paymentonetoone->insert_payment($data);
         return $this->respond($result, $result->code ?? 500);
     }
 }

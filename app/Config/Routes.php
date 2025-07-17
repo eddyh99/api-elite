@@ -19,7 +19,10 @@ $routes->group('non', static function ($routes) {
 
 //api tanpa filter
 $routes->group('apiv1', static function ($routes) {
-    $routes->get('onetoone/member/get_all', 'V1\Onetoone::getIndex');
+    $routes->get('onetoone/member/', 'V1\Onetoone::getIndex');
+    $routes->get('onetoone/member/(:segment)', 'V1\Onetoone::getMemberbyId/$1');
     $routes->post('onetoone/member/add', 'V1\Onetoone::postAdd_member_onetoone');
+    $routes->delete('onetoone/member/delete/(:segment)', 'V1\Onetoone::postDelete_member_onetoone/$1');
     $routes->get('onetoone/list_payment', 'V1\Onetoone::getList_payment');
+    $routes->post('onetoone/payment', 'V1\Onetoone::postPayment');
 });
