@@ -536,15 +536,8 @@ public function getFilled_buy() {
     $buy_id = $this->request->getVar('buy_id');
     $type = $this->request->getVar('type_buy');
     $filled_price = $this->request->getVar('filled_price');
-    $deposit  = $this->deposit->rebalanceMemberPosition($type);
-    if (@$deposit->code != 200) {
-        return $this->respond(error_msg(400, "order", null, $deposit->message), 400);
-        // return $this->response->setJSON([
-        //     'status' => 400,
-        //     'message' => $deposit->message
-        // ]);
-    }
-    
+    $deposit  = $this->member->getMember_sinyal($buy_id);
+
     $bcTruncate = function(string $numStr, int $dec): string {
             // divide by 1 with scale = $dec → chops extra digits
             return bcdiv($numStr, '1', $dec);
@@ -553,23 +546,14 @@ public function getFilled_buy() {
     function round8($number) {
         return number_format((float)$number, 8, '.', '');
     }
-        
-    //$totalbtc = ($deposit->message / $filled_price) * (1 - 0.001);
-    $member = $this->member->getby_ids($deposit->member_ids);
-    $side_position = [
-        'BUY A' => 'position_a',
-        'BUY B' => 'position_b',
-        'BUY C' => 'position_c',
-        'BUY D' => 'position_d'
-    ];
-    $position = $side_position[$type];
+
     $mdata = [];
-    foreach ($member->message as $m) {
-        $amount_usdt = $bcTruncate($m[$position],2);
+    foreach ($deposit->message as $m) {
+        $amount_usdt = $bcTruncate($m->amount_usdt,2);
         $btc     = ($amount_usdt / $filled_price) * (1-0.001);
         
         $mdata[] = [
-            'member_id' => $m['id'],
+            'member_id' => $m->member_id,
             'amount_usdt' => $amount_usdt,
             'amount_btc' => round8($btc),
             'sinyal_id' => $buy_id

@@ -501,7 +501,7 @@ class Mdl_deposit extends Model
             $tradeBalance = $member->trade_balance;
             $newPosition = 0;
     
-            if ($divisor > 0 && $tradeBalance >= 10) {
+            if ($divisor > 0 && ($tradeBalance/$divisor) >= 5) {
                 $newPosition = $tradeBalance / $divisor;
                 array_push($member_ids, $member->member_id); 
                 $member_positions[] = [
@@ -740,5 +740,4 @@ class Mdl_deposit extends Model
             'message' => 'Successfully Added'
         ];
     }
-    
 }

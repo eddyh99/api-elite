@@ -94,11 +94,11 @@ class Order extends BaseController
             return $this->respond(error_msg(400, "signal", '01', $deposit->message), 400);
         }
 
-        if($data->type == 'BUY A') {
-            $btc = $this->getAssets("BTC");
-            $asset_btc = ($btc->free + $btc->locked);
-            $this->setting->store(['asset_btc' => $asset_btc ]);
-        } 
+        // if($data->type == 'BUY A') {
+        //     $btc = $this->getAssets("BTC");
+        //     $asset_btc = ($btc->free + $btc->locked);
+        //     $this->setting->store(['asset_btc' => $asset_btc ]);
+        // } 
         
         // else {
         //     $asset_btc = $this->setting->get('asset_btc')->message;
@@ -441,8 +441,8 @@ class Order extends BaseController
             }
         
             // If the order status is not 'CANCELED', treat it as a failure
-            if ($response->status != 'CANCELED') {
-                log_message('info',"error binance : ".json_encode($response->status));
+            if (@$response->status != 'CANCELED') {
+                log_message('info',"error binance : ".json_encode(@$response->status));
             }
         }
     
