@@ -28,11 +28,35 @@ class Mdl_member_onetoone extends Model
     public function get_all()
     {
         try {
-            // Pastikan database connection diakses melalui db property dari model
-            $builder = $this->builder(); // Ini bawaan CodeIgniter Model
+            $sql = "SELECT 
+                m.id,
+                m.email,
+                m.is_deleted,
+                p.status_invoice AS last_status_invoice,
+                p.link_invoice AS last_link_invoice,
+                p.invoice_date AS last_invoice_date
+            FROM tb_member_onetone m
+            LEFT JOIN (
+                SELECT 
+                    p1.id_member_onetoone, 
+                    p1.status_invoice, 
+                    p1.link_invoice, 
+                    p1.invoice_date
+                FROM tb_payment_onetoone p1
+                INNER JOIN (
+                    SELECT 
+                        id_member_onetoone, 
+                        MAX(invoice_date) AS max_date
+                    FROM tb_payment_onetoone
+                    GROUP BY id_member_onetoone
+                ) p2 
+                ON p1.id_member_onetoone = p2.id_member_onetoone 
+                AND p1.invoice_date = p2.max_date
+            ) p ON m.id = p.id_member_onetoone
+            WHERE m.is_deleted = 0";
 
-            $builder->where('is_deleted', 0);
-            $result = $builder->get()->getResult();
+            // Eksekusi SQL langsung
+            $result = $this->db->query($sql)->getResult();
 
             if (empty($result)) {
                 return (object)[
@@ -49,10 +73,11 @@ class Mdl_member_onetoone extends Model
         } catch (\Exception $e) {
             return (object)[
                 'code'    => 500,
-                'message' => $e->getMessage() // biar tahu letak error-nya saat debugging
+                'message' => $e->getMessage()
             ];
         }
     }
+
 
     public function get_by_id($id)
     {
