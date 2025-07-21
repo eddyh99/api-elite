@@ -17,6 +17,7 @@ class Mdl_payment_onetoone extends Model
         'status_invoice',
         'link_invoice',
         'invoice_date',
+        'invoice_number',
         'created_at',
         'updated_at',
     ];
@@ -28,6 +29,7 @@ class Mdl_payment_onetoone extends Model
     protected $validationRules = [
         'id_member_onetoone' => 'required|integer',
         'status_invoice'     => 'in_list[paid,unpaid]',
+        'invoice_number'     => 'required|max_length[255]|is_unique[tb_payment_onetoone.invoice_number]',
         'link_invoice'       => 'required|max_length[255]',
     ];
 
@@ -96,5 +98,50 @@ class Mdl_payment_onetoone extends Model
                 'message' => $e->getMessage()
             ];
         }
+    }
+
+    public function updateStatusByInvoiceNumber($invoiceNumber, $status)
+    {
+        $query = $this->db->query(
+            "SELECT id FROM tb_payment_onetoone WHERE invoice_number = ?",
+            [$invoiceNumber]
+        );
+
+        $row = $query->getRow();
+
+        // Jika tidak ditemukan
+        if (!$row) {
+            return (object) [
+                'code'    => 404,
+                'status'  => false,
+                'message' => "Invoice with number {$invoiceNumber} not found."
+            ];
+        }
+
+        // Update status_invoice berdasarkan id
+        $this->db->query(
+            "UPDATE tb_payment_onetoone SET status_invoice = ? WHERE id = ?",
+            [$status, $row->id]
+        );
+
+        if ($this->db->affectedRows() > 0) {
+            return (object) [
+                'code'           => 200,
+                'status'         => true,
+                'message'        => 'Invoice status updated successfully',
+            ];
+        } else {
+            return (object) [
+                'code'    => 200,
+                'status'  => true,
+                'message' => 'No change made. Status is already up to date.',
+            ];
+        }
+
+        return (object) [
+            'code'    => 500,
+            'status'  => false,
+            'message' => 'Failed to update invoice status.'
+        ];
     }
 }

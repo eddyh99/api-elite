@@ -96,10 +96,42 @@ class Onetoone extends BaseController
             'id_member_onetoone' => $member['id'],
             'status_invoice' => $request->status_invoice,
             'link_invoice'   => $request->link_invoice,
+            'invoice_number' => $request->invoice_number,
             'invoice_date'   => $request->invoice_date
         ];
 
         $result = $this->paymentonetoone->insert_payment($data);
         return $this->respond($result, $result->code ?? 500);
+    }
+
+    public function putPayment()
+    {
+        $request = $this->request->getJSON();
+        // Simpan ke dalam variabel
+        $invoiceNumber = $request->invoice_number;
+        $statusPayment = strtolower($request->status_payment);
+
+        // Validasi input
+        if (empty($invoiceNumber) || empty($statusPayment)) {
+            return $this->respond([
+                'code'    => 422,
+                'status'  => false,
+                'message' => 'invoice_number dan status_payment must be provided.'
+            ], 422);
+        }
+
+        if (!in_array($statusPayment, ['paid', 'unpaid'])) {
+            return $this->respond([
+                'code'    => 422,
+                'status'  => false,
+                'message' => "status_payment must be either \"paid\" or \"unpaid\"."
+            ], 422);
+        }
+
+        // Update ke database
+        $result = $this->paymentonetoone->updateStatusByInvoiceNumber($invoiceNumber, $statusPayment);
+
+        // Hasil update
+        return $this->respond($result, $result->code);
     }
 }

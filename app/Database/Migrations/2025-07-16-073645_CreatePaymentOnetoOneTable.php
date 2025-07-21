@@ -18,6 +18,10 @@ class CreatePaymentOnetoOneTable extends Migration
                 'type'       => 'INT',
                 'unsigned'   => true,
             ],
+            'invoice_number' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 255,
+            ],
             'status_invoice' => [
                 'type'       => 'ENUM',
                 'constraint' => ['paid', 'unpaid'],
