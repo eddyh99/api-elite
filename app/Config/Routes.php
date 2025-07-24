@@ -25,4 +25,5 @@ $routes->group('apiv1', static function ($routes) {
     $routes->delete('onetoone/member/delete/(:segment)', 'V1\Onetoone::postDelete_member_onetoone/$1');
     $routes->get('onetoone/list_payment', 'V1\Onetoone::getList_payment');
     $routes->post('onetoone/payment', 'V1\Onetoone::postPayment');
+    $routes->put('onetoone/payment', 'V1\Onetoone::putPayment');
 });
