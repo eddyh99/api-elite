@@ -382,5 +382,61 @@ class Member extends BaseController
 
         return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
     }
+    
+    public function postManualtopup(){
+        $data           = $this->request->getJSON();
+        $referral       = $this->setting->get("referral_fee")->message;
+        $mdata = array(
+            "invoice"   => 'INV-' . strtoupper(bin2hex(random_bytes(4))),
+			"member_id" => trim($data->member_id),
+			"amount"    => trim($data->amount),
+			"commission"=> trim($data->amount) * $referral
+		);
+        
+        $result = $this->deposit->add_balance($mdata);
+        if (@$result->code != 201) {
+			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
+		}
+
+        $update = [
+            'invoice'   => $mdata["invoice"],
+            'status'    => "complete"
+        ];
+
+        $result = $this->deposit->update_status($update);
+        if ($result->code !== 201) {
+			return $this->respond(error_msg($result->code, "subs", '01', $result->message), $result->code);
+		}
+
+        $deposit = $this->deposit->getDeposit_byInvoice($mdata["invoice"])->message;
+        // wd ke trade
+        // if ($deposit->id_referral) {
+            $comission = [
+                [
+                    'member_id' => $data->member_id,
+                    'withdraw_type' => 'usdt',
+                    'amount' => $deposit->amount,
+                    'jenis' => 'trade'
+                
+                ],
+                [
+                    'member_id' => $deposit->id_referral ?? 1,
+                    'withdraw_type' => 'usdt',
+                    'amount' => $deposit->commission,
+                    'jenis' => 'comission'
+                ],
+                [
+                    'member_id' => $deposit->id_referral ?? 1,
+                    'withdraw_type' => 'usdt',
+                    'amount' => $deposit->commission,
+                    'jenis' => 'trade'
+                ],
+            ];
+
+            $this->withdraw->insert_withdraw($comission);
+        // }
+
+        return $this->respond(error_msg(200, "success topup", "01", $result->message), 201);		
+    }
 
 }
