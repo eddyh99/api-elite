@@ -206,6 +206,12 @@ class Auth extends BaseController
 		if (!$validation->withRequest($this->request)->run()) {
 			return $this->fail($validation->getErrors());
 		}
+		
+		// check email on database
+		$member = $this->member->getby_email($this->request->getJSON()->email);
+		if (!$member) {
+			return $this->fail("Email not registered");
+		}
 
 		$email = $this->request->getJSON()->email;
 		$mdata = [
