@@ -68,7 +68,7 @@ class Auth extends BaseController
 			"role"		=> trim($data->role),
 			"status"	=> @$data->status ? @$data->status : ($data->role != 'member' ? 'active' : 'new'),
 			"timezone"  => $data->timezone,
-			"refcode"	=> $data->referral ?? null,
+			"refcode"	=> empty($data->referral) ? null : $data->referral,
 			'ip_addr'	=> $data->ip_address
 		);
 
@@ -80,10 +80,9 @@ class Auth extends BaseController
 			$mdata["id_referral"] = $data->referral != 'm4573r' ? $refmember->id : null;
 			$mdata["refcode"] = null;
 		}
-
+		
 		$mdata['otp'] = rand(1000, 9999);
 		$result = $this->member->add($mdata);
-
 		if (!@$result->success) {
 			if ($result->code == 1060 || $result->code == 1062) {
 				$result->message = 'User already registered';
