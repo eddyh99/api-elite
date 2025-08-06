@@ -68,7 +68,7 @@ class Auth extends BaseController
 			"role"		=> trim($data->role),
 			"status"	=> @$data->status ? @$data->status : ($data->role != 'member' ? 'active' : 'new'),
 			"timezone"  => $data->timezone,
-			"refcode"	=> empty($data->referral) ? null : $data->referral,
+			"refcode"	=> $data->referral ?? null,
 			'ip_addr'	=> $data->ip_address
 		);
 
@@ -80,9 +80,10 @@ class Auth extends BaseController
 			$mdata["id_referral"] = $data->referral != 'm4573r' ? $refmember->id : null;
 			$mdata["refcode"] = null;
 		}
-		
+
 		$mdata['otp'] = rand(1000, 9999);
 		$result = $this->member->add($mdata);
+
 		if (!@$result->success) {
 			if ($result->code == 1060 || $result->code == 1062) {
 				$result->message = 'User already registered';
@@ -206,12 +207,6 @@ class Auth extends BaseController
 		if (!$validation->withRequest($this->request)->run()) {
 			return $this->fail($validation->getErrors());
 		}
-		
-		// check email on database
-		$member = $this->member->getby_email($this->request->getJSON()->email);
-		if (!$member) {
-			return $this->fail("Email not registered");
-		}
 
 		$email = $this->request->getJSON()->email;
 		$mdata = [
@@ -221,7 +216,7 @@ class Auth extends BaseController
 
 		$result = $this->member->update_otp($mdata);
 		if ($result->code !== 200) {
-			return $this->respond(error_msg($result->code, "auth", '01', $result->message), $result->code);
+			return $this->respond(error_msg(400, "auth", '01', $result->message), 400);
 		}
 
 		$message = [
