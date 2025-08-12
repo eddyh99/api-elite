@@ -676,6 +676,9 @@ class Mdl_signal extends Model
                             SELECT ROUND(SUM(amount), 2) FROM member_deposit WHERE status='complete'
                         ) AS member_deposit,
                         (
+                            SELECT ROUND(SUM(commission), 2) FROM member_deposit WHERE status='complete'
+                        ) AS deposit_commission,
+                        (
                             SELECT FLOOR(SUM(client_wallet * 0.1) * 100) / 100 FROM wallet
                         ) AS ref_comm,
                         (
