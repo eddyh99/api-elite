@@ -482,6 +482,19 @@ class Order extends BaseController
 
         return $result->message;
     }
+    
+     public function getCancel_signal(){
+        $id_signal = $this->request->getVar('id_signal');
+        $result = $this->signal->destroy($id_signal);
+    
+        if ($result->code != 201) {
+            return $this->respond(error_msg($result->code, "signal", null, $result->message), $result->code);
+        }
+    
+        // Success response
+        return $this->respond(error_msg(200, "signal", null, $result->message), 200);
+        
+    }
 
     //========= for debugging ===========
     public function getSell_all()
@@ -572,4 +585,6 @@ class Order extends BaseController
 
         return $this->respond(error_msg(201, "binance", null, $result->message), 201);
     }
+    
+   
 }

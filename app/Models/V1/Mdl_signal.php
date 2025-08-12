@@ -726,7 +726,8 @@ class Mdl_signal extends Model
                         s.order_id AS sell_order_id,
                         s.pair_id,
                         s.entry_price AS sell_price,
-                        s.created_at AS sell_time
+                        s.created_at AS sell_time,
+                        DATE(s.updated_at) AS closed_sell 
                     FROM sinyal s
                     WHERE s.type LIKE 'Sell%' AND s.status = 'filled' AND s.is_deleted = 'no'
                 ),
@@ -740,7 +741,8 @@ class Mdl_signal extends Model
                         s.sell_id,
                         s.sell_price,
                         s.sell_time,
-                        s.sell_order_id
+                        s.sell_order_id,
+                        s.closed_sell
                     FROM buy_signals b
                     LEFT JOIN sell_signals s
                         ON s.pair_id = b.pair_id AND s.sell_time > b.buy_time
@@ -783,6 +785,7 @@ class Mdl_signal extends Model
                     p.buy_price,
                     p.sell_price,
                     p.buy_type,
+                    p.closed_sell,
                     m.total_btc AS buy_total_btc,
                     m.total_usdt AS buy_total_usdt,
                     msell.total_usdt AS sell_total_usdt,
