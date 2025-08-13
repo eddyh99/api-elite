@@ -390,10 +390,13 @@ class Member extends BaseController
             "invoice"   => 'INV-' . strtoupper(bin2hex(random_bytes(4))),
 			"member_id" => trim($data->member_id),
 			"amount"    => trim($data->amount),
-			"commission"=> trim($data->amount) * $referral
+			"commission"=> trim($data->amount) * $referral,
+			"is_manual" => 1
 		);
         
         $result = $this->deposit->add_balance($mdata);
+        log_message("info",json_encode($result));
+        $ref_id = $result->id;
         if (@$result->code != 201) {
 			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
 		}
@@ -404,6 +407,7 @@ class Member extends BaseController
         ];
 
         $result = $this->deposit->update_status($update);
+        log_message("error",json_encode($result));
         if ($result->code !== 201) {
 			return $this->respond(error_msg($result->code, "subs", '01', $result->message), $result->code);
 		}
@@ -416,20 +420,25 @@ class Member extends BaseController
                     'member_id' => $data->member_id,
                     'withdraw_type' => 'usdt',
                     'amount' => $deposit->amount,
-                    'jenis' => 'trade'
-                
+                    'jenis' => 'trade',
+                    'ref_id' => $ref_id,
+                    'is_topup' => 'yes'
                 ],
                 [
                     'member_id' => $deposit->id_referral ?? 1,
                     'withdraw_type' => 'usdt',
                     'amount' => $deposit->commission,
-                    'jenis' => 'comission'
+                    'jenis' => 'comission',
+                    'ref_id' => $ref_id,
+                    'is_topup' => 'yes'
                 ],
                 [
                     'member_id' => $deposit->id_referral ?? 1,
                     'withdraw_type' => 'usdt',
                     'amount' => $deposit->commission,
-                    'jenis' => 'trade'
+                    'jenis' => 'trade',
+                    'ref_id' => $ref_id,
+                    'is_topup' => 'yes'
                 ],
             ];
 

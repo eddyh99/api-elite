@@ -34,7 +34,8 @@ class Mdl_deposit extends Model
     
             return (object) [
                 'code'    => 201,
-                'message' => 'Success: Deposit has been added.'
+                'message' => 'Success: Deposit has been added.',
+                'id'      => $this->db->insertID()
             ];
         } catch (\Exception $e) {
             return (object) [
@@ -669,6 +670,8 @@ class Mdl_deposit extends Model
 
             $sql .= "
                     SELECT
+                        md.id,
+                        md.is_manual,
                         md.created_at as date,
                         md.amount AS commission,
                         md.amount,

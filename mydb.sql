@@ -1,1017 +1,1359 @@
-/*M!999999\- enable the sandbox mode */ 
--- MariaDB dump 10.19-11.7.2-MariaDB, for Linux (x86_64)
+-- phpMyAdmin SQL Dump
+-- version 5.2.2
+-- https://www.phpmyadmin.net/
 --
--- Host: localhost    Database: elite3
--- ------------------------------------------------------
--- Server version	11.7.2-MariaDB
+-- Host: localhost:3306
+-- Generation Time: Aug 14, 2025 at 07:31 AM
+-- Server version: 8.0.43
+-- PHP Version: 8.4.10
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*M!100616 SET @OLD_NOTE_VERBOSITY=@@NOTE_VERBOSITY, NOTE_VERBOSITY=0 */;
+
+--
+-- Database: `mifmail_aelite`
+--
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `member`
 --
 
-DROP TABLE IF EXISTS `member`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `member` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `email` varchar(255) NOT NULL,
   `passwd` varchar(255) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `refcode` varchar(20) DEFAULT NULL,
-  `id_referral` int(11) DEFAULT NULL,
+  `id_referral` int DEFAULT NULL,
   `status` enum('new','active','disabled','referral') NOT NULL DEFAULT 'new',
   `timezone` varchar(50) NOT NULL,
   `otp` char(4) DEFAULT NULL,
   `role` enum('member','admin','referral','manager','superadmin') NOT NULL DEFAULT 'member',
-  `position_a` decimal(20,4) NOT NULL DEFAULT 0.0000,
-  `position_b` decimal(20,4) NOT NULL DEFAULT 0.0000,
-  `position_c` decimal(20,4) NOT NULL DEFAULT 0.0000,
-  `position_d` decimal(20,4) NOT NULL DEFAULT 0.0000,
+  `position_a` decimal(20,4) NOT NULL DEFAULT '0.0000',
+  `position_b` decimal(20,4) NOT NULL DEFAULT '0.0000',
+  `position_c` decimal(20,4) NOT NULL DEFAULT '0.0000',
+  `position_d` decimal(20,4) NOT NULL DEFAULT '0.0000',
   `ip_addr` varchar(45) DEFAULT NULL,
-  `is_delete` tinyint(1) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `refcode` (`refcode`),
-  KEY `id_referral` (`id_referral`),
-  CONSTRAINT `member_ibfk_1` FOREIGN KEY (`id_referral`) REFERENCES `member` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  `is_delete` tinyint(1) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `member`
 --
 
-LOCK TABLES `member` WRITE;
-/*!40000 ALTER TABLE `member` DISABLE KEYS */;
-INSERT INTO `member` VALUES
-(1,'a@a.a','40bd001563085fc35165329ea1ff5c5ecbdbbeef','2025-05-16 15:34:43','2025-07-09 04:08:37','m4573r',NULL,'active','',NULL,'superadmin',697.9525,0.0000,0.0000,0.0000,NULL,0),
-(2,'dilame3476@deusa7.com','7c222fb2927d828af22f592134e8932480637c0d','2025-05-16 16:02:38','2025-05-16 08:04:08',NULL,NULL,'active','Asia/Makassar',NULL,'member',0.0000,0.0000,0.0000,0.0000,'182.253.116.2',0),
-(3,'hafidelamranijoutey2@gmail.com','eed526cd6d50d073aa2e6366c743a5ef4de4c452','2025-05-18 10:09:19','2025-07-09 04:23:06','123',NULL,'active','Asia/Makassar',NULL,'referral',29.9375,0.0000,0.0000,0.0000,'103.24.150.159',0),
-(4,'samuelegranocchia@gmail.com_2025-05-23','2b8b0868102df8d9bc9bea937c3bd96a5a4e7146','2025-05-19 09:13:04','2025-05-26 02:18:57',NULL,NULL,'new','Europe/Rome','2047','member',0.0000,0.0000,0.0000,0.0000,'62.211.27.92',1),
-(6,'brio21569@gmail.com','a338fc407b2199b042afe64bcdb0d8e419822c29','2025-05-19 09:16:20','2025-07-09 04:08:37',NULL,3,'active','Europe/Rome',NULL,'member',528.4400,0.0000,0.0000,0.0000,'62.211.27.92',0),
-(7,'danieldocooh@gmail.com','40bd001563085fc35165329ea1ff5c5ecbdbbeef','2025-05-19 09:25:24','2025-07-09 04:38:31','r3b3cc4',13,'active','Asia/Shanghai',NULL,'referral',650.2300,0.0000,0.0000,0.0000,'103.175.212.66',0),
-(8,'ssilenziog@gmail.com','78f2d37fb951d3456c35b096ba5511eeaa0f73fe','2025-05-19 10:38:12','2025-07-09 04:08:37',NULL,3,'active','Europe/Rome',NULL,'member',132.1150,0.0000,0.0000,0.0000,'217.202.8.52',0),
-(9,'3a3aj4g4@gmail.com','23de24af77f1d5c4fdacf90ae06cf0c10320709b','2025-05-20 00:53:33','2025-07-09 04:08:37',NULL,13,'active','Asia/Shanghai',NULL,'member',2642.1675,0.0000,0.0000,0.0000,'103.175.212.89',0),
-(10,'lisette.paula8899@gmail.com','7c222fb2927d828af22f592134e8932480637c0d','2025-05-20 05:25:54','2025-07-09 02:41:27','p4ul4',NULL,'active','Asia/Makassar',NULL,'referral',0.0000,0.0000,0.0000,0.0000,'110.139.176.94',0),
-(11,'maci81x@hotmail.it','0d296436b80bc54f847035d231af30e72624530d','2025-05-23 12:20:09','2025-07-09 04:08:37','zzhr34o5',3,'active','Europe/Rome',NULL,'member',264.2175,0.0000,0.0000,0.0000,'213.243.250.56',0),
-(12,'stefano.giovagnoli1234@gmail.com','7f838487959c746237accb0dc2b5848679221fab','2025-05-23 15:11:23','2025-05-23 07:13:06','poi6v814',NULL,'active','Europe/Rome',NULL,'member',0.0000,0.0000,0.0000,0.0000,'128.116.239.58',0),
-(13,'principe.nerini@gmail.com','884d1f5d29ba0927983cf11bf835badbdc5d3472','2025-05-26 01:08:02','2025-07-09 04:08:37','69spoj50',NULL,'active','Asia/Singapore',NULL,'referral',2811.6575,0.0000,0.0000,0.0000,'59.153.130.103',0),
-(14,'aymanezza44@gmail.com_2025-06-21','9ded1e71d9a28c6ac2ad51b229d9df8a4c92b2e8','2025-06-06 09:40:49','2025-06-20 22:52:04',NULL,NULL,'new','Europe/Rome','7953','member',0.0000,0.0000,0.0000,0.0000,'46.149.102.19',1),
-(16,'ezzuzzu100@gmail.com_2025-06-21','9ded1e71d9a28c6ac2ad51b229d9df8a4c92b2e8','2025-06-06 10:10:44','2025-06-20 22:52:15',NULL,NULL,'new','Europe/Rome','3645','member',0.0000,0.0000,0.0000,0.0000,'46.149.102.19',1),
-(17,'hafid.elamrani@icloud.com_2025-06-21','f500ba2a5af141279659c22ccad5a8adce514396','2025-06-06 10:13:36','2025-06-20 22:52:31',NULL,NULL,'new','Asia/Makassar','6541','member',0.0000,0.0000,0.0000,0.0000,'103.24.150.159',1),
-(18,'hafidelamranijoutey@gmail.com_2025-06-21','cb7710a473de9120005f6049137520fbe42b30b6','2025-06-06 10:18:19','2025-06-20 22:52:38',NULL,NULL,'new','Asia/Makassar','8616','member',0.0000,0.0000,0.0000,0.0000,'103.24.150.159',1),
-(20,'pippobaudo376@gmail.com_2025-06-21','9ded1e71d9a28c6ac2ad51b229d9df8a4c92b2e8','2025-06-06 11:01:03','2025-06-20 22:52:46',NULL,NULL,'new','Europe/Rome','2532','member',0.0000,0.0000,0.0000,0.0000,'46.149.102.19',1),
-(31,'fabio.guerra1975@gmail.com','40bd001563085fc35165329ea1ff5c5ecbdbbeef','2025-06-06 12:40:16','2025-07-09 04:08:37',NULL,7,'active','Asia/Makassar',NULL,'member',1310.6000,0.0000,0.0000,0.0000,'110.136.212.108',0),
-(40,'nevertouchme21@gmail.com','fbdef424b8d10220b478b5656aa73913439fcb2f','2025-06-12 08:34:36','2025-07-09 04:08:37',NULL,13,'active','Europe/Madrid',NULL,'member',5233.2925,0.0000,0.0000,0.0000,'81.38.78.146',0),
-(41,'baruhbiton@delightmoney.com','a9dd8ac7aa806116b656e82ceb48549c8b103d9b','2025-06-12 14:35:56','2025-06-12 15:37:24',NULL,13,'active','Europe/Rome',NULL,'member',0.0000,0.0000,0.0000,0.0000,'149.34.244.175',0),
-(43,'dcatacchio@gmail.com','fca0336f1973c2d494b23837a242b237d19fd3b2','2025-06-22 10:25:35','2025-07-09 04:08:37',NULL,3,'active','Europe/Rome','4371','member',261.6750,0.0000,0.0000,0.0000,'93.42.33.25',0),
-(44,'rillino@yahoo.it','c5c2c819e888c0f82c00c5b3092650c58f7b0ebd','2025-06-23 04:01:38','2025-06-22 20:03:03',NULL,NULL,'active','Europe/Rome',NULL,'member',0.0000,0.0000,0.0000,0.0000,'37.159.45.44',0),
-(45,'profitdelights@gmail.com_2025-06-25','67722d5df937c7682aa8b14a63dc150bcc61390c','2025-06-23 04:03:36','2025-06-24 20:57:32',NULL,NULL,'new','Asia/Singapore','7102','member',0.0000,0.0000,0.0000,0.0000,'59.153.130.103',1),
-(47,'armidaneglia27@gmail.com','cb7710a473de9120005f6049137520fbe42b30b6','2025-06-24 13:11:24','2025-06-24 20:57:24',NULL,NULL,'active','Asia/Makassar','2455','member',0.0000,0.0000,0.0000,0.0000,'103.24.150.159',0),
-(49,'eddy_h99@yahoo.com','01b307acba4f54f55aafc33bb06bbbf6ca803e9a','2025-06-27 03:05:23','2025-06-27 03:05:36',NULL,10,'active','Asia/Makassar','8775','member',0.0000,0.0000,0.0000,0.0000,'59.153.129.5',0),
-(50,'ezzuzzu100@gmail.com','9ded1e71d9a28c6ac2ad51b229d9df8a4c92b2e8','2025-06-28 16:41:49','2025-06-29 18:46:03',NULL,NULL,'active','Europe/Rome','3942','member',0.0000,0.0000,0.0000,0.0000,'78.208.191.159',0),
-(52,'kateehafidassistente@gmail.com','9ded1e71d9a28c6ac2ad51b229d9df8a4c92b2e8','2025-06-28 16:43:10','2025-06-29 18:46:22',NULL,NULL,'active','Europe/Rome','1841','member',0.0000,0.0000,0.0000,0.0000,'78.208.191.159',0),
-(53,'falzaranostefano@gmail.com','0c1e62afdf7ca7d3c54c207ef0aec951c69afe16','2025-07-02 13:55:37','2025-07-03 17:03:43',NULL,NULL,'active','Europe/Rome','3231','member',0.0000,0.0000,0.0000,0.0000,'151.37.111.217',0),
-(67,'falzarentsrl@gmail.com','0eb5238845f31e97c470c2a4559ca4f4cc49fc81','2025-07-02 14:13:48','2025-07-02 06:15:02',NULL,NULL,'active','Europe/Rome',NULL,'member',0.0000,0.0000,0.0000,0.0000,'151.37.111.217',0),
-(74,'rupo2010@virgilio.it','765dc782b52c7bbec4dd2c06e791cb1fd170f840','2025-07-06 02:51:40','2025-07-09 04:08:37',NULL,13,'active','Asia/Makassar','6829','member',391.7050,0.0000,0.0000,0.0000,'103.175.212.89',0);
-/*!40000 ALTER TABLE `member` ENABLE KEYS */;
-UNLOCK TABLES;
+INSERT INTO `member` (`id`, `email`, `passwd`, `created_at`, `updated_at`, `refcode`, `id_referral`, `status`, `timezone`, `otp`, `role`, `position_a`, `position_b`, `position_c`, `position_d`, `ip_addr`, `is_delete`) VALUES
+(1, 'a@a.a', '40bd001563085fc35165329ea1ff5c5ecbdbbeef', '2025-05-16 15:34:43', '2025-07-21 00:39:28', 'm4573r', NULL, 'active', '', NULL, 'superadmin', 249.0325, 0.0000, 0.0000, 0.0000, NULL, 0),
+(2, 'dilame3476@deusa7.com', '7c222fb2927d828af22f592134e8932480637c0d', '2025-05-16 16:02:38', '2025-08-01 14:20:56', NULL, 9, 'active', 'Asia/Makassar', NULL, 'member', 0.0000, 0.0000, 0.0000, 0.0000, '182.253.116.2', 0),
+(3, 'hafidelamranijoutey2@gmail.com', 'eed526cd6d50d073aa2e6366c743a5ef4de4c452', '2025-05-18 10:09:19', '2025-07-21 00:39:28', 'h4f1d', NULL, 'active', 'Asia/Makassar', NULL, 'referral', 25.4250, 0.0000, 0.0000, 0.0000, '103.24.150.159', 0),
+(4, 'samuelegranocchia@gmail.com_2025-05-23', '2b8b0868102df8d9bc9bea937c3bd96a5a4e7146', '2025-05-19 09:13:04', '2025-05-26 02:18:57', NULL, NULL, 'new', 'Europe/Rome', '2047', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '62.211.27.92', 1),
+(6, 'brio21569@gmail.com', 'a338fc407b2199b042afe64bcdb0d8e419822c29', '2025-05-19 09:16:20', '2025-07-21 00:39:28', NULL, 3, 'active', 'Europe/Rome', NULL, 'member', 511.9850, 0.0000, 0.0000, 0.0000, '62.211.27.92', 0),
+(7, 'danieldocooh@gmail.com', '5d9a94b24b414bec2225463d03fd04c04f1aa466', '2025-05-19 09:25:24', '2025-07-21 00:39:28', 'r3b3cc4', 13, 'active', 'Asia/Shanghai', NULL, 'referral', 672.7250, 0.0000, 0.0000, 0.0000, '103.175.212.66', 0),
+(8, 'ssilenziog@gmail.com', '78f2d37fb951d3456c35b096ba5511eeaa0f73fe', '2025-05-19 10:38:12', '2025-07-21 00:39:28', NULL, 3, 'active', 'Europe/Rome', NULL, 'member', 127.9950, 0.0000, 0.0000, 0.0000, '217.202.8.52', 0),
+(9, '3a3aj4g4@gmail.com', '23de24af77f1d5c4fdacf90ae06cf0c10320709b', '2025-05-20 00:53:33', '2025-07-21 00:39:28', NULL, 13, 'active', 'Asia/Shanghai', NULL, 'member', 2559.9025, 0.0000, 0.0000, 0.0000, '103.175.212.89', 0),
+(10, 'lisette.paula8899@gmail.com', '2fdc3058c7552c693be213075308ef54d490a6b4', '2025-05-20 05:25:54', '2025-08-05 05:44:19', 'p4ul4', NULL, 'active', 'Asia/Makassar', NULL, 'referral', 0.0000, 0.0000, 0.0000, 0.0000, '110.139.176.94', 0),
+(11, 'maci81x@hotmail.it', '0d296436b80bc54f847035d231af30e72624530d', '2025-05-23 12:20:09', '2025-07-21 00:39:28', 'zzhr34o5', 3, 'active', 'Europe/Rome', NULL, 'member', 255.9900, 0.0000, 0.0000, 0.0000, '213.243.250.56', 0),
+(12, 'stefano.giovagnoli1234@gmail.com', '7f838487959c746237accb0dc2b5848679221fab', '2025-05-23 15:11:23', '2025-05-23 07:13:06', 'poi6v814', NULL, 'active', 'Europe/Rome', NULL, 'member', 0.0000, 0.0000, 0.0000, 0.0000, '128.116.239.58', 0),
+(13, 'principe.nerini@gmail.com', '884d1f5d29ba0927983cf11bf835badbdc5d3472', '2025-05-26 01:08:02', '2025-07-21 00:39:28', '69spoj50', NULL, 'active', 'Asia/Singapore', NULL, 'referral', 2697.1250, 0.0000, 0.0000, 0.0000, '59.153.130.103', 0),
+(14, 'aymanezza44@gmail.com_2025-06-21', '9ded1e71d9a28c6ac2ad51b229d9df8a4c92b2e8', '2025-06-06 09:40:49', '2025-06-20 22:52:04', NULL, NULL, 'new', 'Europe/Rome', '7953', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '46.149.102.19', 1),
+(16, 'ezzuzzu100@gmail.com_2025-06-21', '9ded1e71d9a28c6ac2ad51b229d9df8a4c92b2e8', '2025-06-06 10:10:44', '2025-06-20 22:52:15', NULL, NULL, 'new', 'Europe/Rome', '3645', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '46.149.102.19', 1),
+(17, 'hafid.elamrani@icloud.com_2025-06-21', 'f500ba2a5af141279659c22ccad5a8adce514396', '2025-06-06 10:13:36', '2025-06-20 22:52:31', NULL, NULL, 'new', 'Asia/Makassar', '6541', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '103.24.150.159', 1),
+(18, 'hafidelamranijoutey@gmail.com_2025-06-21', 'cb7710a473de9120005f6049137520fbe42b30b6', '2025-06-06 10:18:19', '2025-06-20 22:52:38', NULL, NULL, 'new', 'Asia/Makassar', '8616', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '103.24.150.159', 1),
+(20, 'pippobaudo376@gmail.com_2025-06-21', '9ded1e71d9a28c6ac2ad51b229d9df8a4c92b2e8', '2025-06-06 11:01:03', '2025-06-20 22:52:46', NULL, NULL, 'new', 'Europe/Rome', '2532', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '46.149.102.19', 1),
+(31, 'fabio.guerra1975@gmail.com', '40bd001563085fc35165329ea1ff5c5ecbdbbeef', '2025-06-06 12:40:16', '2025-07-21 00:39:28', NULL, 7, 'active', 'Asia/Makassar', NULL, 'member', 1269.7850, 0.0000, 0.0000, 0.0000, '110.136.212.108', 0),
+(40, 'nevertouchme21@gmail.com', 'fbdef424b8d10220b478b5656aa73913439fcb2f', '2025-06-12 08:34:36', '2025-07-21 00:39:28', NULL, 13, 'active', 'Europe/Madrid', NULL, 'member', 5070.3525, 0.0000, 0.0000, 0.0000, '81.38.78.146', 0),
+(41, 'baruhbiton@delightmoney.com', 'a9dd8ac7aa806116b656e82ceb48549c8b103d9b', '2025-06-12 14:35:56', '2025-06-12 15:37:24', NULL, 13, 'active', 'Europe/Rome', NULL, 'member', 0.0000, 0.0000, 0.0000, 0.0000, '149.34.244.175', 0),
+(43, 'dcatacchio@gmail.com', 'fca0336f1973c2d494b23837a242b237d19fd3b2', '2025-06-22 10:25:35', '2025-07-21 00:39:28', NULL, 3, 'active', 'Europe/Rome', '4371', 'member', 253.5225, 0.0000, 0.0000, 0.0000, '93.42.33.25', 0),
+(44, 'rillino@yahoo.it', 'c5c2c819e888c0f82c00c5b3092650c58f7b0ebd', '2025-06-23 04:01:38', '2025-06-22 20:03:03', NULL, NULL, 'active', 'Europe/Rome', NULL, 'member', 0.0000, 0.0000, 0.0000, 0.0000, '37.159.45.44', 0),
+(45, 'profitdelights@gmail.com_2025-06-25', '67722d5df937c7682aa8b14a63dc150bcc61390c', '2025-06-23 04:03:36', '2025-06-24 20:57:32', NULL, NULL, 'new', 'Asia/Singapore', '7102', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '59.153.130.103', 1),
+(47, 'armidaneglia27@gmail.com', 'cb7710a473de9120005f6049137520fbe42b30b6', '2025-06-24 13:11:24', '2025-06-24 20:57:24', NULL, NULL, 'active', 'Asia/Makassar', '2455', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '103.24.150.159', 0),
+(49, 'eddy_h99@yahoo.com', '01b307acba4f54f55aafc33bb06bbbf6ca803e9a', '2025-06-27 03:05:23', '2025-06-27 03:05:36', NULL, 10, 'active', 'Asia/Makassar', '8775', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '59.153.129.5', 0),
+(50, 'ezzuzzu100@gmail.com', '9ded1e71d9a28c6ac2ad51b229d9df8a4c92b2e8', '2025-06-28 16:41:49', '2025-06-29 18:46:03', NULL, NULL, 'active', 'Europe/Rome', '3942', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '78.208.191.159', 0),
+(52, 'kateehafidassistente@gmail.com', '9ded1e71d9a28c6ac2ad51b229d9df8a4c92b2e8', '2025-06-28 16:43:10', '2025-06-29 18:46:22', NULL, NULL, 'active', 'Europe/Rome', '1841', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '78.208.191.159', 0),
+(53, 'falzaranostefano@gmail.com', '0c1e62afdf7ca7d3c54c207ef0aec951c69afe16', '2025-07-02 13:55:37', '2025-07-03 17:03:43', NULL, NULL, 'active', 'Europe/Rome', '3231', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '151.37.111.217', 0),
+(67, 'falzarentsrl@gmail.com', '0eb5238845f31e97c470c2a4559ca4f4cc49fc81', '2025-07-02 14:13:48', '2025-07-02 06:15:02', NULL, NULL, 'active', 'Europe/Rome', NULL, 'member', 0.0000, 0.0000, 0.0000, 0.0000, '151.37.111.217', 0),
+(74, 'rupo2010@virgilio.it', '765dc782b52c7bbec4dd2c06e791cb1fd170f840', '2025-07-06 02:51:40', '2025-07-21 00:39:28', NULL, 13, 'active', 'Asia/Makassar', '6829', 'member', 379.5025, 0.0000, 0.0000, 0.0000, '103.175.212.89', 0),
+(78, 'ffgiampa80@gmail.com', '25ae19caecf293e1dc146a038a37d10179fe60fd', '2025-07-07 10:28:09', '2025-07-21 00:39:28', NULL, 7, 'active', 'Europe/Rome', '2184', 'member', 252.3475, 0.0000, 0.0000, 0.0000, '5.179.191.161', 0),
+(79, 'VENTURINIGIULIO@YAHOO.IT', 'ef3d565b35597182721c45b60427882541877219', '2025-07-07 14:37:08', '2025-07-07 06:37:41', NULL, 7, 'active', 'Europe/Rome', NULL, 'member', 0.0000, 0.0000, 0.0000, 0.0000, '151.4.184.163', 0),
+(80, 'ciarchiclaudio74@gmail.com', '31687e7c7c2d16927423a17b4a66c704e8318ea3', '2025-07-12 04:34:40', '2025-07-14 00:23:15', NULL, 7, 'active', 'Europe/Rome', '2791', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '79.43.122.124', 0),
+(83, 'favaror.rf@gmail.com', '579e8f69854dd7d354c6c05e8630b6728eb562b4', '2025-07-13 18:09:34', '2025-07-14 00:23:01', NULL, 3, 'active', 'Europe/Rome', '1254', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '95.75.240.77', 0),
+(87, 'caymanfgllc@gmail.com', '40bd001563085fc35165329ea1ff5c5ecbdbbeef', '2025-05-19 09:25:24', '2025-07-15 04:22:54', 'c41m4n', NULL, 'active', 'Asia/Shanghai', NULL, 'referral', 0.0000, 0.0000, 0.0000, 0.0000, '103.175.212.66', 0),
+(88, 'fiorenzotola@gmail.com', '5cec9763960da93d39d53301bc110ba1031d7d1a', '2025-07-15 11:17:55', '2025-07-15 03:36:12', '', NULL, 'active', 'Europe/Paris', '3894', 'member', 0.0000, 0.0000, 0.0000, 0.0000, '91.80.91.73', 0),
+(93, 'licoto4060@foboxs.com', '7c222fb2927d828af22f592134e8932480637c0d', '2025-08-05 13:45:06', '2025-08-05 05:47:39', NULL, NULL, 'active', 'Asia/Makassar', NULL, 'member', 0.0000, 0.0000, 0.0000, 0.0000, '125.162.156.221', 0),
+(94, 'kepilo4237@foboxs.com', '7c222fb2927d828af22f592134e8932480637c0d', '2025-08-05 13:49:37', '2025-08-05 15:42:47', NULL, NULL, 'active', 'Asia/Makassar', NULL, 'member', 0.0000, 0.0000, 0.0000, 0.0000, '125.162.156.221', 0),
+(95, 'yijine1924@im5z.com', '7c222fb2927d828af22f592134e8932480637c0d', '2025-08-05 15:57:38', '2025-08-05 07:59:14', NULL, 7, 'active', 'Asia/Makassar', NULL, 'member', 0.0000, 0.0000, 0.0000, 0.0000, '125.162.156.221', 0),
+(96, 'x@x.x', '40bd001563085fc35165329ea1ff5c5ecbdbbeef', '2025-08-13 05:30:10', '2025-08-13 05:30:10', NULL, NULL, 'new', '', NULL, 'admin', 0.0000, 0.0000, 0.0000, 0.0000, NULL, 0);
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `member_commission`
 --
 
-DROP TABLE IF EXISTS `member_commission`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `member_commission` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `member_id` int(11) NOT NULL,
-  `downline_id` int(11) NOT NULL,
+  `id` int NOT NULL,
+  `member_id` int NOT NULL,
+  `downline_id` int NOT NULL,
   `amount` decimal(10,2) NOT NULL,
-  `order_id` bigint(20) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `member_id` (`member_id`),
-  KEY `downline_id` (`downline_id`),
-  KEY `member_commission_ibfk_3` (`order_id`),
-  CONSTRAINT `member_commission_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `member_commission_ibfk_2` FOREIGN KEY (`downline_id`) REFERENCES `member` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `member_commission_ibfk_3` FOREIGN KEY (`order_id`) REFERENCES `sinyal` (`order_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  `order_id` bigint DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `member_commission`
 --
 
-LOCK TABLES `member_commission` WRITE;
-/*!40000 ALTER TABLE `member_commission` DISABLE KEYS */;
-INSERT INTO `member_commission` VALUES
-(1,3,6,0.72,1268192,'2025-07-05 04:38:48'),
-(2,13,7,1.20,1268192,'2025-07-05 04:38:48'),
-(3,3,8,0.18,1268192,'2025-07-05 04:38:48'),
-(4,13,9,3.60,1268192,'2025-07-05 04:38:48'),
-(5,3,11,0.36,1268192,'2025-07-05 04:38:48'),
-(6,3,6,0.49,1272951,'2025-07-05 04:48:06'),
-(7,13,7,0.83,1272951,'2025-07-05 04:48:06'),
-(8,3,8,0.12,1272951,'2025-07-05 04:48:06'),
-(9,13,9,2.49,1272951,'2025-07-05 04:48:06'),
-(10,3,11,0.24,1272951,'2025-07-05 04:48:06'),
-(11,3,6,0.26,1277675,'2025-07-05 04:58:58'),
-(12,13,7,0.45,1277675,'2025-07-05 04:58:58'),
-(13,3,8,0.06,1277675,'2025-07-05 04:58:58'),
-(14,13,9,1.30,1277675,'2025-07-05 04:58:58'),
-(15,3,11,0.13,1277675,'2025-07-05 04:58:58'),
-(16,7,31,0.86,1277675,'2025-07-05 04:58:58'),
-(17,3,6,0.46,1294824,'2025-07-05 05:47:37'),
-(18,3,8,0.11,1294824,'2025-07-05 05:47:37'),
-(19,13,9,2.33,1294824,'2025-07-05 05:47:37'),
-(20,3,11,0.23,1294824,'2025-07-05 05:47:37'),
-(21,3,6,0.41,1303635,'2025-07-05 06:08:54'),
-(22,13,7,0.53,1303635,'2025-07-05 06:08:54'),
-(23,3,8,0.10,1303635,'2025-07-05 06:08:54'),
-(24,13,9,2.06,1303635,'2025-07-05 06:08:54'),
-(25,3,11,0.20,1303635,'2025-07-05 06:08:54'),
-(26,7,31,1.02,1303635,'2025-07-05 06:08:54'),
-(27,13,40,4.09,1303635,'2025-07-05 06:08:54'),
-(28,3,43,0.20,1303635,'2025-07-05 06:08:54'),
-(29,3,6,2.22,2788036,'2025-07-08 10:26:12'),
-(30,13,7,2.89,2788036,'2025-07-08 10:26:12'),
-(31,3,8,0.55,2788036,'2025-07-08 10:26:12'),
-(32,13,9,11.10,2788036,'2025-07-08 10:26:12'),
-(33,3,11,1.11,2788036,'2025-07-08 10:26:12'),
-(34,7,31,5.51,2788036,'2025-07-08 10:26:12'),
-(35,13,40,22.00,2788036,'2025-07-08 10:26:12'),
-(36,3,43,1.10,2788036,'2025-07-08 10:26:12'),
-(37,13,74,1.64,2788036,'2025-07-08 10:26:12'),
-(38,3,6,0.52,45654750941,'2025-07-08 10:33:50'),
-(39,13,7,0.68,45654750941,'2025-07-08 10:33:50'),
-(40,3,8,0.13,45654750941,'2025-07-08 10:33:50'),
-(41,13,9,2.62,45654750941,'2025-07-08 10:33:50'),
-(42,3,11,0.26,45654750941,'2025-07-08 10:33:50'),
-(43,7,31,1.30,45654750941,'2025-07-08 10:33:50'),
-(44,13,40,5.19,45654750941,'2025-07-08 10:33:50'),
-(45,3,43,0.25,45654750941,'2025-07-08 10:33:50'),
-(46,13,74,0.38,45654750941,'2025-07-08 10:33:50'),
-(47,3,6,2.25,2826961,'2025-07-08 10:41:13'),
-(48,13,7,2.93,2826961,'2025-07-08 10:41:13'),
-(49,3,8,0.56,2826961,'2025-07-08 10:41:13'),
-(50,13,9,11.26,2826961,'2025-07-08 10:41:13'),
-(51,3,11,1.12,2826961,'2025-07-08 10:41:13'),
-(52,7,31,5.58,2826961,'2025-07-08 10:41:13'),
-(53,13,40,22.30,2826961,'2025-07-08 10:41:13'),
-(54,3,43,1.11,2826961,'2025-07-08 10:41:13'),
-(55,13,74,1.66,2826961,'2025-07-08 10:41:13'),
-(56,3,6,2.25,2826984,'2025-07-08 10:41:15'),
-(57,13,7,2.93,2826984,'2025-07-08 10:41:15'),
-(58,3,8,0.56,2826984,'2025-07-08 10:41:15'),
-(59,13,9,11.26,2826984,'2025-07-08 10:41:15'),
-(60,3,11,1.12,2826984,'2025-07-08 10:41:15'),
-(61,7,31,5.58,2826984,'2025-07-08 10:41:15'),
-(62,13,40,22.30,2826984,'2025-07-08 10:41:15'),
-(63,3,43,1.11,2826984,'2025-07-08 10:41:15'),
-(64,13,74,1.66,2826984,'2025-07-08 10:41:15'),
-(65,3,6,1.75,2827017,'2025-07-08 10:41:16'),
-(66,13,7,2.29,2827017,'2025-07-08 10:41:16'),
-(67,3,8,0.43,2827017,'2025-07-08 10:41:16'),
-(68,13,9,8.79,2827017,'2025-07-08 10:41:16'),
-(69,3,11,0.87,2827017,'2025-07-08 10:41:16'),
-(70,7,31,4.36,2827017,'2025-07-08 10:41:16'),
-(71,13,40,17.41,2827017,'2025-07-08 10:41:16'),
-(72,3,43,0.87,2827017,'2025-07-08 10:41:16'),
-(73,13,74,1.30,2827017,'2025-07-08 10:41:16');
-/*!40000 ALTER TABLE `member_commission` ENABLE KEYS */;
-UNLOCK TABLES;
+INSERT INTO `member_commission` (`id`, `member_id`, `downline_id`, `amount`, `order_id`, `created_at`) VALUES
+(1, 3, 6, 0.72, 1268192, '2025-07-05 04:38:48'),
+(2, 13, 7, 1.20, 1268192, '2025-07-05 04:38:48'),
+(3, 3, 8, 0.18, 1268192, '2025-07-05 04:38:48'),
+(4, 13, 9, 3.60, 1268192, '2025-07-05 04:38:48'),
+(5, 3, 11, 0.36, 1268192, '2025-07-05 04:38:48'),
+(6, 3, 6, 0.49, 1272951, '2025-07-05 04:48:06'),
+(7, 13, 7, 0.83, 1272951, '2025-07-05 04:48:06'),
+(8, 3, 8, 0.12, 1272951, '2025-07-05 04:48:06'),
+(9, 13, 9, 2.49, 1272951, '2025-07-05 04:48:06'),
+(10, 3, 11, 0.24, 1272951, '2025-07-05 04:48:06'),
+(11, 3, 6, 0.26, 1277675, '2025-07-05 04:58:58'),
+(12, 13, 7, 0.45, 1277675, '2025-07-05 04:58:58'),
+(13, 3, 8, 0.06, 1277675, '2025-07-05 04:58:58'),
+(14, 13, 9, 1.30, 1277675, '2025-07-05 04:58:58'),
+(15, 3, 11, 0.13, 1277675, '2025-07-05 04:58:58'),
+(16, 7, 31, 0.86, 1277675, '2025-07-05 04:58:58'),
+(17, 3, 6, 0.46, 1294824, '2025-07-05 05:47:37'),
+(18, 3, 8, 0.11, 1294824, '2025-07-05 05:47:37'),
+(19, 13, 9, 2.33, 1294824, '2025-07-05 05:47:37'),
+(20, 3, 11, 0.23, 1294824, '2025-07-05 05:47:37'),
+(21, 3, 6, 0.41, 1303635, '2025-07-05 06:08:54'),
+(22, 13, 7, 0.53, 1303635, '2025-07-05 06:08:54'),
+(23, 3, 8, 0.10, 1303635, '2025-07-05 06:08:54'),
+(24, 13, 9, 2.06, 1303635, '2025-07-05 06:08:54'),
+(25, 3, 11, 0.20, 1303635, '2025-07-05 06:08:54'),
+(26, 7, 31, 1.02, 1303635, '2025-07-05 06:08:54'),
+(27, 13, 40, 4.09, 1303635, '2025-07-05 06:08:54'),
+(28, 3, 43, 0.20, 1303635, '2025-07-05 06:08:54'),
+(29, 3, 6, 0.52, 45654750941, '2025-07-09 19:41:02'),
+(30, 13, 7, 0.68, 45654750941, '2025-07-09 19:41:02'),
+(31, 3, 8, 0.13, 45654750941, '2025-07-09 19:41:02'),
+(32, 13, 9, 2.62, 45654750941, '2025-07-09 19:41:02'),
+(33, 3, 11, 0.26, 45654750941, '2025-07-09 19:41:02'),
+(34, 7, 31, 1.30, 45654750941, '2025-07-09 19:41:02'),
+(35, 13, 40, 5.19, 45654750941, '2025-07-09 19:41:02'),
+(36, 3, 43, 0.25, 45654750941, '2025-07-09 19:41:02'),
+(37, 13, 74, 0.38, 45654750941, '2025-07-09 19:41:02'),
+(38, 3, 6, 1.19, 4005762, '2025-07-10 23:01:53'),
+(39, 13, 7, 1.56, 4005762, '2025-07-10 23:01:53'),
+(40, 3, 8, 0.29, 4005762, '2025-07-10 23:01:53'),
+(41, 13, 9, 5.97, 4005762, '2025-07-10 23:01:53'),
+(42, 3, 11, 0.59, 4005762, '2025-07-10 23:01:53'),
+(43, 7, 31, 2.96, 4005762, '2025-07-10 23:01:53'),
+(44, 13, 40, 11.82, 4005762, '2025-07-10 23:01:53'),
+(45, 3, 43, 0.59, 4005762, '2025-07-10 23:01:53'),
+(46, 13, 74, 0.88, 4005762, '2025-07-10 23:01:53'),
+(47, 7, 78, 0.58, 4005762, '2025-07-10 23:01:53'),
+(48, 3, 6, 0.27, 45851298969, '2025-07-11 06:54:02'),
+(49, 13, 7, 0.36, 45851298969, '2025-07-11 06:54:02'),
+(50, 3, 8, 0.06, 45851298969, '2025-07-11 06:54:02'),
+(51, 13, 9, 1.37, 45851298969, '2025-07-11 06:54:02'),
+(52, 3, 11, 0.13, 45851298969, '2025-07-11 06:54:02'),
+(53, 7, 31, 0.68, 45851298969, '2025-07-11 06:54:02'),
+(54, 13, 40, 2.72, 45851298969, '2025-07-11 06:54:02'),
+(55, 3, 43, 0.13, 45851298969, '2025-07-11 06:54:02'),
+(56, 13, 74, 0.20, 45851298969, '2025-07-11 06:54:02'),
+(57, 7, 78, 0.13, 45851298969, '2025-07-11 06:54:02'),
+(58, 3, 6, 0.16, 45889181282, '2025-07-11 22:33:09'),
+(59, 13, 7, 0.21, 45889181282, '2025-07-11 22:33:09'),
+(60, 3, 8, 0.04, 45889181282, '2025-07-11 22:33:09'),
+(61, 13, 9, 0.81, 45889181282, '2025-07-11 22:33:09'),
+(62, 3, 11, 0.08, 45889181282, '2025-07-11 22:33:09'),
+(63, 7, 31, 0.40, 45889181282, '2025-07-11 22:33:09'),
+(64, 13, 40, 1.62, 45889181282, '2025-07-11 22:33:09'),
+(65, 3, 43, 0.08, 45889181282, '2025-07-11 22:33:09'),
+(66, 13, 74, 0.12, 45889181282, '2025-07-11 22:33:09'),
+(67, 7, 78, 0.08, 45889181282, '2025-07-11 22:33:09'),
+(68, 3, 6, 0.27, 45926021021, '2025-07-13 14:19:02'),
+(69, 13, 7, 0.35, 45926021021, '2025-07-13 14:19:02'),
+(70, 3, 8, 0.06, 45926021021, '2025-07-13 14:19:02'),
+(71, 13, 9, 1.35, 45926021021, '2025-07-13 14:19:02'),
+(72, 3, 11, 0.13, 45926021021, '2025-07-13 14:19:02'),
+(73, 7, 31, 0.67, 45926021021, '2025-07-13 14:19:02'),
+(74, 13, 40, 2.68, 45926021021, '2025-07-13 14:19:02'),
+(75, 3, 43, 0.13, 45926021021, '2025-07-13 14:19:02'),
+(76, 13, 74, 0.20, 45926021021, '2025-07-13 14:19:02'),
+(77, 7, 78, 0.13, 45926021021, '2025-07-13 14:19:02'),
+(78, 3, 6, 1.22, 46147544936, '2025-07-21 00:39:28'),
+(79, 13, 7, 1.61, 46147544936, '2025-07-21 00:39:28'),
+(80, 3, 8, 0.30, 46147544936, '2025-07-21 00:39:28'),
+(81, 13, 9, 6.14, 46147544936, '2025-07-21 00:39:28'),
+(82, 3, 11, 0.61, 46147544936, '2025-07-21 00:39:28'),
+(83, 7, 31, 3.05, 46147544936, '2025-07-21 00:39:28'),
+(84, 13, 40, 12.18, 46147544936, '2025-07-21 00:39:28'),
+(85, 3, 43, 0.60, 46147544936, '2025-07-21 00:39:28'),
+(86, 13, 74, 0.91, 46147544936, '2025-07-21 00:39:28'),
+(87, 7, 78, 0.60, 46147544936, '2025-07-21 00:39:28');
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `member_deposit`
 --
 
-DROP TABLE IF EXISTS `member_deposit`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `member_deposit` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `invoice` varchar(255) NOT NULL,
-  `member_id` int(11) NOT NULL,
+  `id` int NOT NULL,
+  `invoice` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
+  `member_id` int NOT NULL,
   `amount` decimal(10,2) NOT NULL,
   `commission` decimal(10,2) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `status` enum('pending','complete','failed') NOT NULL DEFAULT 'pending',
-  PRIMARY KEY (`id`),
-  KEY `member_id` (`member_id`),
-  CONSTRAINT `member_deposit_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  `is_manual` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `status` enum('pending','complete','failed') CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'pending'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `member_deposit`
 --
 
-LOCK TABLES `member_deposit` WRITE;
-/*!40000 ALTER TABLE `member_deposit` DISABLE KEYS */;
-INSERT INTO `member_deposit` VALUES
-(1,'INV-F8BFB5CF',2,500.00,0.00,'2025-05-16 16:06:07','pending'),
-(2,'INV-5214A5D5',3,2700.00,0.00,'2025-05-18 10:10:48','pending'),
-(3,'INV-E967A6A0',6,2000.00,40.00,'2025-05-19 09:18:12','complete'),
-(4,'INV-182E29BE',3,500.00,0.00,'2025-05-19 09:19:30','pending'),
-(5,'INV-67DAA062',7,1000.00,0.00,'2025-05-19 09:35:08','pending'),
-(6,'INV-75632121',7,1000.00,0.00,'2025-05-19 09:35:12','pending'),
-(7,'INV-BCC9B83F',7,1000.00,0.00,'2025-05-19 09:35:13','pending'),
-(8,'INV-298C9E8C',7,1000.00,0.00,'2025-05-19 09:35:14','pending'),
-(9,'INV-66ADD1B0',7,1000.00,0.00,'2025-05-19 09:35:15','pending'),
-(10,'INV-BB501E97',7,1000.00,0.00,'2025-05-19 09:35:15','pending'),
-(11,'INV-A901054F',7,1000.00,0.00,'2025-05-19 09:35:16','pending'),
-(12,'INV-F6E714FA',7,1000.00,0.00,'2025-05-19 09:35:17','pending'),
-(13,'INV-F1DCEF06',9,10000.00,0.00,'2025-05-20 00:57:19','pending'),
-(14,'INV-27D07739',9,10000.00,0.00,'2025-05-20 00:57:36','complete'),
-(15,'INV-63FEA1DF',10,500.00,0.00,'2025-05-20 05:36:36','pending'),
-(16,'INV-0E6263B1',9,500.00,0.00,'2025-05-22 08:25:14','pending'),
-(17,'INV-1A50E271',8,500.00,10.00,'2025-05-22 08:29:06','complete'),
-(18,'INV-17A3BF8C',9,500.00,0.00,'2025-05-22 08:34:08','pending'),
-(19,'INV-5FBC14AC',11,1000.00,20.00,'2025-05-23 12:28:55','complete'),
-(30,'INV-7CE3476A',7,2500.00,50.00,'2025-05-27 05:25:10','complete'),
-(31,'INV-7693428E',3,2300.00,46.00,'2025-05-27 08:05:18','pending'),
-(32,'INV-27D07739',13,10000.00,0.00,'2025-05-20 00:57:36','complete'),
-(47,'INV-A7E76787',3,500.00,10.00,'2025-06-10 12:07:43','pending'),
-(48,'INV-C94808E4',31,5000.00,100.00,'2025-06-12 08:22:08','complete'),
-(49,'INV-3F78EE19',3,500.00,10.00,'2025-06-12 12:24:28','pending'),
-(50,'INV-03B28497',3,500.00,10.00,'2025-06-12 12:24:43','pending'),
-(51,'INV-5144010B',41,600.00,12.00,'2025-06-12 15:14:14','pending'),
-(52,'INV-B50CC5E1',41,59500.00,1190.00,'2025-06-12 15:21:22','pending'),
-(53,'INV-88C77C93',44,2400.00,48.00,'2025-06-23 04:03:58','pending'),
-(54,'INV-28E4D4A1',43,1000.00,20.00,'2025-06-23 20:54:12','pending'),
-(55,'INV-137AA9DB',3,500.00,10.00,'2025-06-23 20:57:54','pending'),
-(56,'INV-FDB185C4',3,500.00,10.00,'2025-06-23 20:59:29','pending'),
-(57,'INV-3A8C6E52',3,500.00,10.00,'2025-06-23 20:59:46','pending'),
-(58,'INV-B92CD121',3,500.00,10.00,'2025-06-23 20:59:47','pending'),
-(59,'INV-BF4293E2',43,1000.00,20.00,'2025-06-23 21:18:12','complete'),
-(60,'INV-137D0551',3,500.00,10.00,'2025-06-24 13:34:31','pending'),
-(61,'INV-37A99288',7,1000.00,20.00,'2025-06-25 10:39:17','pending'),
-(62,'INV-D796041F',7,1000.00,20.00,'2025-06-25 10:40:45','pending'),
-(63,'INV-CDFA99F6',40,20000.00,400.00,'2025-06-25 16:55:03','complete'),
-(64,'INV-E11817AD',13,2000.00,40.00,'2025-06-28 06:09:28','pending'),
-(65,'INV-808BEFC5',3,500.00,10.00,'2025-07-02 13:43:48','pending'),
-(66,'INV-100E7624',67,500.00,10.00,'2025-07-02 14:15:25','pending'),
-(71,'INV-3D8210A7',10,500.00,10.00,'2025-07-06 03:10:01','pending'),
-(72,'INV-90CDC461',74,1500.00,30.00,'2025-07-06 03:28:10','complete');
-/*!40000 ALTER TABLE `member_deposit` ENABLE KEYS */;
-UNLOCK TABLES;
+INSERT INTO `member_deposit` (`id`, `invoice`, `member_id`, `amount`, `commission`, `is_manual`, `created_at`, `status`) VALUES
+(1, 'INV-F8BFB5CF', 2, 500.00, 0.00, 0, '2025-05-16 16:06:07', 'pending'),
+(2, 'INV-5214A5D5', 3, 2700.00, 0.00, 0, '2025-05-18 10:10:48', 'pending'),
+(3, 'INV-E967A6A0', 6, 2000.00, 40.00, 0, '2025-05-19 09:18:12', 'complete'),
+(4, 'INV-182E29BE', 3, 500.00, 0.00, 0, '2025-05-19 09:19:30', 'pending'),
+(5, 'INV-67DAA062', 7, 1000.00, 0.00, 0, '2025-05-19 09:35:08', 'pending'),
+(6, 'INV-75632121', 7, 1000.00, 0.00, 0, '2025-05-19 09:35:12', 'pending'),
+(7, 'INV-BCC9B83F', 7, 1000.00, 0.00, 0, '2025-05-19 09:35:13', 'pending'),
+(8, 'INV-298C9E8C', 7, 1000.00, 0.00, 0, '2025-05-19 09:35:14', 'pending'),
+(9, 'INV-66ADD1B0', 7, 1000.00, 0.00, 0, '2025-05-19 09:35:15', 'pending'),
+(10, 'INV-BB501E97', 7, 1000.00, 0.00, 0, '2025-05-19 09:35:15', 'pending'),
+(11, 'INV-A901054F', 7, 1000.00, 0.00, 0, '2025-05-19 09:35:16', 'pending'),
+(12, 'INV-F6E714FA', 7, 1000.00, 0.00, 0, '2025-05-19 09:35:17', 'pending'),
+(13, 'INV-F1DCEF06', 9, 10000.00, 0.00, 0, '2025-05-20 00:57:19', 'pending'),
+(14, 'INV-27D07739', 9, 10000.00, 0.00, 0, '2025-05-20 00:57:36', 'complete'),
+(15, 'INV-63FEA1DF', 10, 500.00, 0.00, 0, '2025-05-20 05:36:36', 'pending'),
+(16, 'INV-0E6263B1', 9, 500.00, 0.00, 0, '2025-05-22 08:25:14', 'pending'),
+(17, 'INV-1A50E271', 8, 500.00, 10.00, 0, '2025-05-22 08:29:06', 'complete'),
+(18, 'INV-17A3BF8C', 9, 500.00, 0.00, 0, '2025-05-22 08:34:08', 'pending'),
+(19, 'INV-5FBC14AC', 11, 1000.00, 20.00, 0, '2025-05-23 12:28:55', 'complete'),
+(30, 'INV-7CE3476A', 7, 2500.00, 50.00, 0, '2025-05-27 05:25:10', 'complete'),
+(31, 'INV-7693428E', 3, 2300.00, 46.00, 0, '2025-05-27 08:05:18', 'pending'),
+(32, 'INV-27D07739', 13, 10000.00, 0.00, 0, '2025-05-20 00:57:36', 'complete'),
+(47, 'INV-A7E76787', 3, 500.00, 10.00, 0, '2025-06-10 12:07:43', 'pending'),
+(48, 'INV-C94808E4', 31, 5000.00, 100.00, 0, '2025-06-12 08:22:08', 'complete'),
+(49, 'INV-3F78EE19', 3, 500.00, 10.00, 0, '2025-06-12 12:24:28', 'pending'),
+(50, 'INV-03B28497', 3, 500.00, 10.00, 0, '2025-06-12 12:24:43', 'pending'),
+(51, 'INV-5144010B', 41, 600.00, 12.00, 0, '2025-06-12 15:14:14', 'pending'),
+(52, 'INV-B50CC5E1', 41, 59500.00, 1190.00, 0, '2025-06-12 15:21:22', 'pending'),
+(53, 'INV-88C77C93', 44, 2400.00, 48.00, 0, '2025-06-23 04:03:58', 'pending'),
+(54, 'INV-28E4D4A1', 43, 1000.00, 20.00, 0, '2025-06-23 20:54:12', 'pending'),
+(55, 'INV-137AA9DB', 3, 500.00, 10.00, 0, '2025-06-23 20:57:54', 'pending'),
+(56, 'INV-FDB185C4', 3, 500.00, 10.00, 0, '2025-06-23 20:59:29', 'pending'),
+(57, 'INV-3A8C6E52', 3, 500.00, 10.00, 0, '2025-06-23 20:59:46', 'pending'),
+(58, 'INV-B92CD121', 3, 500.00, 10.00, 0, '2025-06-23 20:59:47', 'pending'),
+(59, 'INV-BF4293E2', 43, 1000.00, 20.00, 0, '2025-06-23 21:18:12', 'complete'),
+(60, 'INV-137D0551', 3, 500.00, 10.00, 0, '2025-06-24 13:34:31', 'pending'),
+(61, 'INV-37A99288', 7, 1000.00, 20.00, 0, '2025-06-25 10:39:17', 'pending'),
+(62, 'INV-D796041F', 7, 1000.00, 20.00, 0, '2025-06-25 10:40:45', 'pending'),
+(63, 'INV-CDFA99F6', 40, 20000.00, 400.00, 0, '2025-06-25 16:55:03', 'complete'),
+(64, 'INV-E11817AD', 13, 2000.00, 40.00, 0, '2025-06-28 06:09:28', 'pending'),
+(65, 'INV-808BEFC5', 3, 500.00, 10.00, 0, '2025-07-02 13:43:48', 'pending'),
+(66, 'INV-100E7624', 67, 500.00, 10.00, 0, '2025-07-02 14:15:25', 'pending'),
+(71, 'INV-3D8210A7', 10, 500.00, 10.00, 0, '2025-07-06 03:10:01', 'pending'),
+(72, 'INV-90CDC461', 74, 1500.00, 30.00, 0, '2025-07-06 03:28:10', 'complete'),
+(73, 'INV-D796041G', 78, 1000.00, 20.00, 0, '2025-07-07 10:40:45', 'complete'),
+(74, 'INV-290479D8', 10, 1000.00, 20.00, 0, '2025-07-14 09:08:07', 'pending'),
+(75, 'INV-B6B4AFD9', 10, 500.00, 10.00, 0, '2025-07-14 09:08:55', 'pending'),
+(76, 'INV-2B3E307C', 10, 500.00, 10.00, 0, '2025-07-14 09:09:31', 'pending'),
+(77, 'INV-FD77F0D1', 10, 500.00, 10.00, 0, '2025-07-14 09:14:54', 'pending'),
+(80, 'INV-21958BB8', 2, 500.00, 10.00, 0, '2025-08-01 14:32:39', 'complete'),
+(81, 'INV-57EA2367', 9, 1000.00, 20.00, 0, '2025-08-01 14:46:41', 'complete'),
+(82, 'INV-DB73E2BF', 94, 500.00, 10.00, 0, '2025-08-05 15:42:59', 'pending'),
+(85, 'INV-E32D5A09', 9, 500.00, 10.00, 0, '2025-08-13 14:51:10', 'pending'),
+(86, 'INV-FD41FDBE', 9, 100.00, 2.00, 0, '2025-08-13 14:52:52', 'pending'),
+(87, 'INV-52D1559A', 9, 100.00, 2.00, 0, '2025-08-13 14:54:52', 'pending'),
+(88, 'INV-99C669AA', 9, 100.00, 2.00, 0, '2025-08-13 14:55:51', 'pending'),
+(89, 'INV-3ABF9644', 9, 100.00, 2.00, 0, '2025-08-13 15:26:31', 'complete'),
+(90, 'INV-1DF7E4D2', 9, 150.00, 3.00, 1, '2025-08-13 22:56:34', 'complete');
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `member_sinyal`
 --
 
-DROP TABLE IF EXISTS `member_sinyal`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `member_sinyal` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `amount_btc` decimal(16,8) NOT NULL,
   `amount_usdt` decimal(16,2) NOT NULL,
-  `member_id` int(11) DEFAULT NULL,
-  `sinyal_id` int(11) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `member_id` (`member_id`,`sinyal_id`),
-  KEY `fk_member_sinyal_member` (`member_id`),
-  KEY `fk_member_sinyal_sinyal` (`sinyal_id`),
-  CONSTRAINT `fk_member_sinyal_member` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `fk_member_sinyal_sinyal` FOREIGN KEY (`sinyal_id`) REFERENCES `sinyal` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=514 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  `member_id` int DEFAULT NULL,
+  `sinyal_id` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `member_sinyal`
 --
 
-LOCK TABLES `member_sinyal` WRITE;
-/*!40000 ALTER TABLE `member_sinyal` DISABLE KEYS */;
-INSERT INTO `member_sinyal` VALUES
-(1,0.00454711,500.00,6,1,'2025-07-05 04:13:31','2025-07-05 04:13:52'),
-(2,0.00113678,125.00,8,1,'2025-07-05 04:13:31','2025-07-05 04:13:52'),
-(3,0.02273555,2500.00,9,1,'2025-07-05 04:13:31','2025-07-05 04:13:52'),
-(4,0.00227355,250.00,11,1,'2025-07-05 04:13:31','2025-07-05 04:13:52'),
-(9,0.00022022,23.33,3,2,'2025-07-05 04:30:44','2025-07-05 04:31:31'),
-(10,0.00471894,500.00,6,2,'2025-07-05 04:30:44','2025-07-05 04:31:31'),
-(11,0.00786490,833.33,7,2,'2025-07-05 04:30:44','2025-07-05 04:31:31'),
-(12,0.00117974,125.00,8,2,'2025-07-05 04:30:44','2025-07-05 04:31:31'),
-(13,0.02359471,2500.00,9,2,'2025-07-05 04:30:44','2025-07-05 04:31:31'),
-(14,0.00235947,250.00,11,2,'2025-07-05 04:30:44','2025-07-05 04:31:31'),
-(15,0.03161691,3350.00,13,2,'2025-07-05 04:30:44','2025-07-05 04:31:31'),
-(23,0.00022022,24.01,3,3,'2025-07-05 04:38:48','2025-07-05 04:38:48'),
-(24,0.00471894,514.55,6,3,'2025-07-05 04:38:48','2025-07-05 04:38:48'),
-(25,0.00786490,857.59,7,3,'2025-07-05 04:38:48','2025-07-05 04:38:48'),
-(26,0.00117974,128.63,8,3,'2025-07-05 04:38:48','2025-07-05 04:38:48'),
-(27,0.02359471,2572.78,9,3,'2025-07-05 04:38:48','2025-07-05 04:38:48'),
-(28,0.00235947,257.27,11,3,'2025-07-05 04:38:48','2025-07-05 04:38:48'),
-(29,0.03161691,3447.53,13,3,'2025-07-05 04:38:48','2025-07-05 04:38:48'),
-(30,0.00033791,35.12,1,4,'2025-07-05 04:42:38','2025-07-05 04:43:37'),
-(31,0.00022959,23.86,3,4,'2025-07-05 04:42:38','2025-07-05 04:43:37'),
-(32,0.00483291,502.40,6,4,'2025-07-05 04:42:38','2025-07-05 04:43:37'),
-(33,0.00805488,837.33,7,4,'2025-07-05 04:42:38','2025-07-05 04:43:37'),
-(34,0.00120823,125.60,8,4,'2025-07-05 04:42:38','2025-07-05 04:43:37'),
-(35,0.02416464,2512.01,9,4,'2025-07-05 04:42:38','2025-07-05 04:43:37'),
-(36,0.00241645,251.20,11,4,'2025-07-05 04:42:38','2025-07-05 04:43:37'),
-(37,0.03239601,3367.69,13,4,'2025-07-05 04:42:38','2025-07-05 04:43:37'),
-(46,0.00033791,35.83,1,5,'2025-07-05 04:48:06','2025-07-05 04:48:06'),
-(47,0.00022959,24.34,3,5,'2025-07-05 04:48:06','2025-07-05 04:48:06'),
-(48,0.00483291,512.50,6,5,'2025-07-05 04:48:06','2025-07-05 04:48:06'),
-(49,0.00805488,854.17,7,5,'2025-07-05 04:48:06','2025-07-05 04:48:06'),
-(50,0.00120823,128.12,8,5,'2025-07-05 04:48:06','2025-07-05 04:48:06'),
-(51,0.02416464,2562.51,9,5,'2025-07-05 04:48:06','2025-07-05 04:48:06'),
-(52,0.00241645,256.24,11,5,'2025-07-05 04:48:06','2025-07-05 04:48:06'),
-(53,0.03239601,3435.39,13,5,'2025-07-05 04:48:06','2025-07-05 04:48:06'),
-(54,0.00057702,59.98,1,6,'2025-07-05 04:53:29','2025-07-05 04:54:17'),
-(55,0.00023308,24.23,3,6,'2025-07-05 04:53:29','2025-07-05 04:54:17'),
-(56,0.00484897,504.07,6,6,'2025-07-05 04:53:29','2025-07-05 04:54:17'),
-(57,0.00840228,873.45,7,6,'2025-07-05 04:53:29','2025-07-05 04:54:17'),
-(58,0.00121224,126.01,8,6,'2025-07-05 04:53:29','2025-07-05 04:54:17'),
-(59,0.02424484,2520.34,9,6,'2025-07-05 04:53:29','2025-07-05 04:54:17'),
-(60,0.00242447,252.03,11,6,'2025-07-05 04:53:29','2025-07-05 04:54:17'),
-(61,0.03251411,3379.97,13,6,'2025-07-05 04:53:29','2025-07-05 04:54:17'),
-(62,0.01603274,1666.66,31,6,'2025-07-05 04:53:29','2025-07-05 04:54:17'),
-(72,0.00057702,60.61,1,7,'2025-07-05 04:58:58','2025-07-05 04:58:58'),
-(73,0.00023308,24.48,3,7,'2025-07-05 04:58:58','2025-07-05 04:58:58'),
-(74,0.00484897,509.35,6,7,'2025-07-05 04:58:58','2025-07-05 04:58:58'),
-(75,0.00840228,882.61,7,7,'2025-07-05 04:58:58','2025-07-05 04:58:58'),
-(76,0.00121224,127.33,8,7,'2025-07-05 04:58:58','2025-07-05 04:58:58'),
-(77,0.02424484,2546.79,9,7,'2025-07-05 04:58:58','2025-07-05 04:58:58'),
-(78,0.00242447,254.67,11,7,'2025-07-05 04:58:58','2025-07-05 04:58:58'),
-(79,0.03251411,3415.43,13,7,'2025-07-05 04:58:58','2025-07-05 04:58:58'),
-(80,0.01603274,1684.15,31,7,'2025-07-05 04:58:58','2025-07-05 04:58:58'),
-(81,0.00454711,509.44,6,8,'2025-07-05 05:47:37','2025-07-05 05:47:37'),
-(82,0.00113678,127.36,8,8,'2025-07-05 05:47:37','2025-07-05 05:47:37'),
-(83,0.02273555,2547.24,9,8,'2025-07-05 05:47:37','2025-07-05 05:47:37'),
-(84,0.00227355,254.72,11,8,'2025-07-05 05:47:37','2025-07-05 05:47:37'),
-(85,0.00059486,64.16,1,9,'2025-07-05 06:04:05','2025-07-05 06:04:27'),
-(86,0.00021804,23.51,3,9,'2025-07-05 06:04:05','2025-07-05 06:04:27'),
-(87,0.00468095,504.87,6,9,'2025-07-05 06:04:05','2025-07-05 06:04:27'),
-(88,0.00608614,656.43,7,9,'2025-07-05 06:04:05','2025-07-05 06:04:27'),
-(89,0.00117027,126.22,8,9,'2025-07-05 06:04:05','2025-07-05 06:04:27'),
-(90,0.02340474,2524.38,9,9,'2025-07-05 06:04:05','2025-07-05 06:04:27'),
-(91,0.00234046,252.43,11,9,'2025-07-05 06:04:05','2025-07-05 06:04:27'),
-(92,0.02448023,2640.38,13,9,'2025-07-05 06:04:05','2025-07-05 06:04:27'),
-(93,0.01160942,1252.16,31,9,'2025-07-05 06:04:05','2025-07-05 06:04:27'),
-(94,0.04635731,5000.00,40,9,'2025-07-05 06:04:05','2025-07-05 06:04:27'),
-(95,0.00231787,250.00,43,9,'2025-07-05 06:04:05','2025-07-05 06:04:27'),
-(107,0.00059486,65.22,1,10,'2025-07-05 06:08:54','2025-07-05 06:08:54'),
-(108,0.00021804,23.90,3,10,'2025-07-05 06:08:54','2025-07-05 06:08:54'),
-(109,0.00468095,513.22,6,10,'2025-07-05 06:08:54','2025-07-05 06:08:54'),
-(110,0.00608614,667.28,7,10,'2025-07-05 06:08:54','2025-07-05 06:08:54'),
-(111,0.00117027,128.30,8,10,'2025-07-05 06:08:54','2025-07-05 06:08:54'),
-(112,0.02340474,2566.10,9,10,'2025-07-05 06:08:54','2025-07-05 06:08:54'),
-(113,0.00234046,256.60,11,10,'2025-07-05 06:08:54','2025-07-05 06:08:54'),
-(114,0.02448023,2684.01,13,10,'2025-07-05 06:08:54','2025-07-05 06:08:54'),
-(115,0.01160942,1272.85,31,10,'2025-07-05 06:08:54','2025-07-05 06:08:54'),
-(116,0.04635731,5082.62,40,10,'2025-07-05 06:08:54','2025-07-05 06:08:54'),
-(117,0.00231787,254.13,43,10,'2025-07-05 06:08:54','2025-07-05 06:08:54'),
-(118,0.00082786,90.12,1,11,'2025-07-06 14:06:34','2025-07-07 00:12:45'),
-(119,0.00021863,23.80,3,11,'2025-07-06 14:06:34','2025-07-07 00:13:04'),
-(120,0.00464739,505.91,6,11,'2025-07-06 14:06:34','2025-07-07 00:13:20'),
-(121,0.00604489,658.04,7,11,'2025-07-06 14:06:34','2025-07-07 00:13:38'),
-(122,0.00116187,126.48,8,11,'2025-07-06 14:06:34','2025-07-07 00:13:52'),
-(123,0.02323697,2529.55,9,11,'2025-07-06 14:06:34','2025-07-07 00:14:23'),
-(124,0.00232374,252.96,11,11,'2025-07-06 14:06:34','2025-07-07 00:14:38'),
-(125,0.02438901,2654.96,13,11,'2025-07-06 14:06:34','2025-07-07 00:14:55'),
-(126,0.01152621,1254.73,31,11,'2025-07-06 14:06:34','2025-07-07 00:15:09'),
-(127,0.04602501,5010.23,40,11,'2025-07-06 14:06:34','2025-07-07 00:15:24'),
-(128,0.00230124,250.51,43,11,'2025-07-06 14:06:34','2025-07-07 00:15:38'),
-(129,0.00344483,375.00,74,11,'2025-07-06 14:06:34','2025-07-07 00:15:51'),
-(346,0.00081848,90.12,1,15,'2025-07-08 09:04:41','2025-07-08 09:04:41'),
-(347,0.00021609,23.79,3,15,'2025-07-08 09:04:41','2025-07-08 09:04:41'),
-(348,0.00459461,505.91,6,15,'2025-07-08 09:04:41','2025-07-08 09:04:41'),
-(349,0.00597617,658.03,7,15,'2025-07-08 09:04:41','2025-07-08 09:04:41'),
-(350,0.00114867,126.48,8,15,'2025-07-08 09:04:41','2025-07-08 09:04:41'),
-(351,0.02297291,2529.55,9,15,'2025-07-08 09:04:41','2025-07-08 09:04:41'),
-(352,0.00229728,252.95,11,15,'2025-07-08 09:04:41','2025-07-08 09:04:41'),
-(353,0.02411180,2654.95,13,15,'2025-07-08 09:04:41','2025-07-08 09:04:41'),
-(354,0.01139523,1254.73,31,15,'2025-07-08 09:04:41','2025-07-08 09:04:41'),
-(355,0.04550194,5010.22,40,15,'2025-07-08 09:04:41','2025-07-08 09:04:41'),
-(356,0.00227512,250.51,43,15,'2025-07-08 09:04:41','2025-07-08 09:04:41'),
-(357,0.00340568,375.00,74,15,'2025-07-08 09:04:41','2025-07-08 09:04:41'),
-(358,0.00081848,98.11,1,16,'2025-07-08 10:26:12','2025-07-08 10:26:12'),
-(359,0.00021609,25.90,3,16,'2025-07-08 10:26:12','2025-07-08 10:26:12'),
-(360,0.00459461,550.80,6,16,'2025-07-08 10:26:12','2025-07-08 10:26:12'),
-(361,0.00597617,716.42,7,16,'2025-07-08 10:26:12','2025-07-08 10:26:12'),
-(362,0.00114867,137.70,8,16,'2025-07-08 10:26:12','2025-07-08 10:26:12'),
-(363,0.02297291,2753.99,9,16,'2025-07-08 10:26:12','2025-07-08 10:26:12'),
-(364,0.00229728,275.39,11,16,'2025-07-08 10:26:12','2025-07-08 10:26:12'),
-(365,0.02411180,2890.52,13,16,'2025-07-08 10:26:12','2025-07-08 10:26:12'),
-(366,0.01139523,1366.06,31,16,'2025-07-08 10:26:12','2025-07-08 10:26:12'),
-(367,0.04550194,5454.77,40,16,'2025-07-08 10:26:12','2025-07-08 10:26:12'),
-(368,0.00227512,272.74,43,16,'2025-07-08 10:26:12','2025-07-08 10:26:12'),
-(369,0.00340568,408.27,74,16,'2025-07-08 10:26:12','2025-07-08 10:26:12'),
-(370,0.00082786,92.00,1,12,'2025-07-08 10:33:50','2025-07-08 10:33:50'),
-(371,0.00021863,24.29,3,12,'2025-07-08 10:33:50','2025-07-08 10:33:50'),
-(372,0.00464739,516.50,6,12,'2025-07-08 10:33:50','2025-07-08 10:33:50'),
-(373,0.00604489,671.82,7,12,'2025-07-08 10:33:50','2025-07-08 10:33:50'),
-(374,0.00116187,129.12,8,12,'2025-07-08 10:33:50','2025-07-08 10:33:50'),
-(375,0.02323697,2582.52,9,12,'2025-07-08 10:33:50','2025-07-08 10:33:50'),
-(376,0.00232374,258.25,11,12,'2025-07-08 10:33:50','2025-07-08 10:33:50'),
-(377,0.02438901,2710.56,13,12,'2025-07-08 10:33:50','2025-07-08 10:33:50'),
-(378,0.01152621,1281.00,31,12,'2025-07-08 10:33:50','2025-07-08 10:33:50'),
-(379,0.04602501,5115.16,40,12,'2025-07-08 10:33:50','2025-07-08 10:33:50'),
-(380,0.00230124,255.75,43,12,'2025-07-08 10:33:50','2025-07-08 10:33:50'),
-(381,0.00344483,382.85,74,12,'2025-07-08 10:33:50','2025-07-08 10:33:50'),
-(382,0.00244337,269.04,1,17,'2025-07-08 10:34:16','2025-07-08 10:34:24'),
-(383,0.00023295,25.65,3,17,'2025-07-08 10:34:16','2025-07-08 10:34:24'),
-(384,0.00465697,512.78,6,17,'2025-07-08 10:34:16','2025-07-08 10:34:24'),
-(385,0.00607283,668.68,7,17,'2025-07-08 10:34:16','2025-07-08 10:34:24'),
-(386,0.00116429,128.20,8,17,'2025-07-08 10:34:16','2025-07-08 10:34:24'),
-(387,0.02328469,2563.88,9,17,'2025-07-08 10:34:16','2025-07-08 10:34:24'),
-(388,0.00232849,256.39,11,17,'2025-07-08 10:34:16','2025-07-08 10:34:24'),
-(389,0.02454461,2702.61,13,17,'2025-07-08 10:34:16','2025-07-08 10:34:24'),
-(390,0.01154989,1271.76,31,17,'2025-07-08 10:34:16','2025-07-08 10:34:24'),
-(391,0.04611956,5078.23,40,17,'2025-07-08 10:34:16','2025-07-08 10:34:24'),
-(392,0.00230606,253.92,43,17,'2025-07-08 10:34:16','2025-07-08 10:34:24'),
-(393,0.00345200,380.10,74,17,'2025-07-08 10:34:16','2025-07-08 10:34:24'),
-(406,0.00244337,269.04,1,18,'2025-07-08 10:34:37','2025-07-08 10:36:20'),
-(407,0.00023295,25.65,3,18,'2025-07-08 10:34:37','2025-07-08 10:36:20'),
-(408,0.00465697,512.78,6,18,'2025-07-08 10:34:37','2025-07-08 10:36:20'),
-(409,0.00607274,668.67,7,18,'2025-07-08 10:34:37','2025-07-08 10:36:20'),
-(410,0.00116429,128.20,8,18,'2025-07-08 10:34:37','2025-07-08 10:36:20'),
-(411,0.02328469,2563.88,9,18,'2025-07-08 10:34:37','2025-07-08 10:36:20'),
-(412,0.00232849,256.39,11,18,'2025-07-08 10:34:37','2025-07-08 10:36:20'),
-(413,0.02454461,2702.61,13,18,'2025-07-08 10:34:37','2025-07-08 10:36:20'),
-(414,0.01154989,1271.76,31,18,'2025-07-08 10:34:37','2025-07-08 10:36:20'),
-(415,0.04611956,5078.23,40,18,'2025-07-08 10:34:37','2025-07-08 10:36:20'),
-(416,0.00230606,253.92,43,18,'2025-07-08 10:34:37','2025-07-08 10:36:20'),
-(417,0.00345191,380.09,74,18,'2025-07-08 10:34:37','2025-07-08 10:36:20'),
-(430,0.00239974,269.04,1,19,'2025-07-08 10:36:28','2025-07-08 10:36:33'),
-(431,0.00022888,25.66,3,19,'2025-07-08 10:36:28','2025-07-08 10:36:33'),
-(432,0.00457390,512.79,6,19,'2025-07-08 10:36:28','2025-07-08 10:36:33'),
-(433,0.00596439,668.68,7,19,'2025-07-08 10:36:28','2025-07-08 10:36:33'),
-(434,0.00114350,128.20,8,19,'2025-07-08 10:36:28','2025-07-08 10:36:33'),
-(435,0.02286898,2563.89,9,19,'2025-07-08 10:36:28','2025-07-08 10:36:33'),
-(436,0.00228691,256.39,11,19,'2025-07-08 10:36:28','2025-07-08 10:36:33'),
-(437,0.02410641,2702.62,13,19,'2025-07-08 10:36:28','2025-07-08 10:36:33'),
-(438,0.01134365,1271.76,31,19,'2025-07-08 10:36:28','2025-07-08 10:36:33'),
-(439,0.04529600,5078.23,40,19,'2025-07-08 10:36:28','2025-07-08 10:36:33'),
-(440,0.00226488,253.92,43,19,'2025-07-08 10:36:28','2025-07-08 10:36:33'),
-(441,0.00339036,380.10,74,19,'2025-07-08 10:36:28','2025-07-08 10:36:33'),
-(454,0.00244337,292.91,1,21,'2025-07-08 10:41:13','2025-07-08 10:41:13'),
-(455,0.00023295,27.92,3,21,'2025-07-08 10:41:13','2025-07-08 10:41:13'),
-(456,0.00465697,558.27,6,21,'2025-07-08 10:41:13','2025-07-08 10:41:13'),
-(457,0.00607283,728.01,7,21,'2025-07-08 10:41:13','2025-07-08 10:41:13'),
-(458,0.00116429,139.57,8,21,'2025-07-08 10:41:13','2025-07-08 10:41:13'),
-(459,0.02328469,2791.36,9,21,'2025-07-08 10:41:13','2025-07-08 10:41:13'),
-(460,0.00232849,279.13,11,21,'2025-07-08 10:41:13','2025-07-08 10:41:13'),
-(461,0.02454461,2942.40,13,21,'2025-07-08 10:41:13','2025-07-08 10:41:13'),
-(462,0.01154989,1384.60,31,21,'2025-07-08 10:41:13','2025-07-08 10:41:13'),
-(463,0.04611956,5528.81,40,21,'2025-07-08 10:41:13','2025-07-08 10:41:13'),
-(464,0.00230606,276.45,43,21,'2025-07-08 10:41:13','2025-07-08 10:41:13'),
-(465,0.00345200,413.82,74,21,'2025-07-08 10:41:13','2025-07-08 10:41:13'),
-(466,0.00244337,292.91,1,22,'2025-07-08 10:41:15','2025-07-08 10:41:15'),
-(467,0.00023295,27.92,3,22,'2025-07-08 10:41:15','2025-07-08 10:41:15'),
-(468,0.00465697,558.27,6,22,'2025-07-08 10:41:15','2025-07-08 10:41:15'),
-(469,0.00607274,728.00,7,22,'2025-07-08 10:41:15','2025-07-08 10:41:15'),
-(470,0.00116429,139.57,8,22,'2025-07-08 10:41:15','2025-07-08 10:41:15'),
-(471,0.02328469,2791.36,9,22,'2025-07-08 10:41:15','2025-07-08 10:41:15'),
-(472,0.00232849,279.13,11,22,'2025-07-08 10:41:15','2025-07-08 10:41:15'),
-(473,0.02454461,2942.40,13,22,'2025-07-08 10:41:15','2025-07-08 10:41:15'),
-(474,0.01154989,1384.60,31,22,'2025-07-08 10:41:15','2025-07-08 10:41:15'),
-(475,0.04611956,5528.81,40,22,'2025-07-08 10:41:15','2025-07-08 10:41:15'),
-(476,0.00230606,276.45,43,22,'2025-07-08 10:41:15','2025-07-08 10:41:15'),
-(477,0.00345191,413.81,74,22,'2025-07-08 10:41:15','2025-07-08 10:41:15'),
-(478,0.00239974,287.68,1,23,'2025-07-08 10:41:16','2025-07-08 10:41:16'),
-(479,0.00022888,27.43,3,23,'2025-07-08 10:41:16','2025-07-08 10:41:16'),
-(480,0.00457390,548.31,6,23,'2025-07-08 10:41:16','2025-07-08 10:41:16'),
-(481,0.00596439,715.01,7,23,'2025-07-08 10:41:16','2025-07-08 10:41:16'),
-(482,0.00114350,137.08,8,23,'2025-07-08 10:41:16','2025-07-08 10:41:16'),
-(483,0.02286898,2741.53,9,23,'2025-07-08 10:41:16','2025-07-08 10:41:16'),
-(484,0.00228691,274.15,11,23,'2025-07-08 10:41:16','2025-07-08 10:41:16'),
-(485,0.02410641,2889.87,13,23,'2025-07-08 10:41:16','2025-07-08 10:41:16'),
-(486,0.01134365,1359.87,31,23,'2025-07-08 10:41:16','2025-07-08 10:41:16'),
-(487,0.04529600,5430.08,40,23,'2025-07-08 10:41:16','2025-07-08 10:41:16'),
-(488,0.00226488,271.51,43,23,'2025-07-08 10:41:16','2025-07-08 10:41:16'),
-(489,0.00339036,406.43,74,23,'2025-07-08 10:41:16','2025-07-08 10:41:16'),
-(490,0.00633866,697.95,1,28,'2025-07-09 04:08:37','2025-07-09 04:08:49'),
-(491,0.00027191,29.94,3,28,'2025-07-09 04:08:37','2025-07-09 04:08:49'),
-(492,0.00479920,528.44,6,28,'2025-07-09 04:08:37','2025-07-09 04:08:49'),
-(493,0.00590527,650.23,7,28,'2025-07-09 04:08:37','2025-07-09 04:08:49'),
-(494,0.00119989,132.12,8,28,'2025-07-09 04:08:37','2025-07-09 04:08:49'),
-(495,0.02399571,2642.17,9,28,'2025-07-09 04:08:37','2025-07-09 04:08:49'),
-(496,0.00239960,264.22,11,28,'2025-07-09 04:08:37','2025-07-09 04:08:49'),
-(497,0.02553498,2811.66,13,28,'2025-07-09 04:08:37','2025-07-09 04:08:49'),
-(498,0.01190263,1310.60,31,28,'2025-07-09 04:08:37','2025-07-09 04:08:49'),
-(499,0.04752779,5233.29,40,28,'2025-07-09 04:08:37','2025-07-09 04:08:49'),
-(500,0.00237653,261.68,43,28,'2025-07-09 04:08:37','2025-07-09 04:08:49'),
-(501,0.00355744,391.71,74,28,'2025-07-09 04:08:37','2025-07-09 04:08:49');
-/*!40000 ALTER TABLE `member_sinyal` ENABLE KEYS */;
-UNLOCK TABLES;
+INSERT INTO `member_sinyal` (`id`, `amount_btc`, `amount_usdt`, `member_id`, `sinyal_id`, `created_at`, `updated_at`) VALUES
+(1, 0.00454711, 500.00, 6, 1, '2025-07-05 04:13:31', '2025-07-05 04:13:52'),
+(2, 0.00113678, 125.00, 8, 1, '2025-07-05 04:13:31', '2025-07-05 04:13:52'),
+(3, 0.02273555, 2500.00, 9, 1, '2025-07-05 04:13:31', '2025-07-05 04:13:52'),
+(4, 0.00227355, 250.00, 11, 1, '2025-07-05 04:13:31', '2025-07-05 04:13:52'),
+(9, 0.00022022, 23.33, 3, 2, '2025-07-05 04:30:44', '2025-07-05 04:31:31'),
+(10, 0.00471894, 500.00, 6, 2, '2025-07-05 04:30:44', '2025-07-05 04:31:31'),
+(11, 0.00786490, 833.33, 7, 2, '2025-07-05 04:30:44', '2025-07-05 04:31:31'),
+(12, 0.00117974, 125.00, 8, 2, '2025-07-05 04:30:44', '2025-07-05 04:31:31'),
+(13, 0.02359471, 2500.00, 9, 2, '2025-07-05 04:30:44', '2025-07-05 04:31:31'),
+(14, 0.00235947, 250.00, 11, 2, '2025-07-05 04:30:44', '2025-07-05 04:31:31'),
+(15, 0.03161691, 3350.00, 13, 2, '2025-07-05 04:30:44', '2025-07-05 04:31:31'),
+(23, 0.00022022, 24.01, 3, 3, '2025-07-05 04:38:48', '2025-07-05 04:38:48'),
+(24, 0.00471894, 514.55, 6, 3, '2025-07-05 04:38:48', '2025-07-05 04:38:48'),
+(25, 0.00786490, 857.59, 7, 3, '2025-07-05 04:38:48', '2025-07-05 04:38:48'),
+(26, 0.00117974, 128.63, 8, 3, '2025-07-05 04:38:48', '2025-07-05 04:38:48'),
+(27, 0.02359471, 2572.78, 9, 3, '2025-07-05 04:38:48', '2025-07-05 04:38:48'),
+(28, 0.00235947, 257.27, 11, 3, '2025-07-05 04:38:48', '2025-07-05 04:38:48'),
+(29, 0.03161691, 3447.53, 13, 3, '2025-07-05 04:38:48', '2025-07-05 04:38:48'),
+(30, 0.00033791, 35.12, 1, 4, '2025-07-05 04:42:38', '2025-07-05 04:43:37'),
+(31, 0.00022959, 23.86, 3, 4, '2025-07-05 04:42:38', '2025-07-05 04:43:37'),
+(32, 0.00483291, 502.40, 6, 4, '2025-07-05 04:42:38', '2025-07-05 04:43:37'),
+(33, 0.00805488, 837.33, 7, 4, '2025-07-05 04:42:38', '2025-07-05 04:43:37'),
+(34, 0.00120823, 125.60, 8, 4, '2025-07-05 04:42:38', '2025-07-05 04:43:37'),
+(35, 0.02416464, 2512.01, 9, 4, '2025-07-05 04:42:38', '2025-07-05 04:43:37'),
+(36, 0.00241645, 251.20, 11, 4, '2025-07-05 04:42:38', '2025-07-05 04:43:37'),
+(37, 0.03239601, 3367.69, 13, 4, '2025-07-05 04:42:38', '2025-07-05 04:43:37'),
+(46, 0.00033791, 35.83, 1, 5, '2025-07-05 04:48:06', '2025-07-05 04:48:06'),
+(47, 0.00022959, 24.34, 3, 5, '2025-07-05 04:48:06', '2025-07-05 04:48:06'),
+(48, 0.00483291, 512.50, 6, 5, '2025-07-05 04:48:06', '2025-07-05 04:48:06'),
+(49, 0.00805488, 854.17, 7, 5, '2025-07-05 04:48:06', '2025-07-05 04:48:06'),
+(50, 0.00120823, 128.12, 8, 5, '2025-07-05 04:48:06', '2025-07-05 04:48:06'),
+(51, 0.02416464, 2562.51, 9, 5, '2025-07-05 04:48:06', '2025-07-05 04:48:06'),
+(52, 0.00241645, 256.24, 11, 5, '2025-07-05 04:48:06', '2025-07-05 04:48:06'),
+(53, 0.03239601, 3435.39, 13, 5, '2025-07-05 04:48:06', '2025-07-05 04:48:06'),
+(54, 0.00057702, 59.98, 1, 6, '2025-07-05 04:53:29', '2025-07-05 04:54:17'),
+(55, 0.00023308, 24.23, 3, 6, '2025-07-05 04:53:29', '2025-07-05 04:54:17'),
+(56, 0.00484897, 504.07, 6, 6, '2025-07-05 04:53:29', '2025-07-05 04:54:17'),
+(57, 0.00840228, 873.45, 7, 6, '2025-07-05 04:53:29', '2025-07-05 04:54:17'),
+(58, 0.00121224, 126.01, 8, 6, '2025-07-05 04:53:29', '2025-07-05 04:54:17'),
+(59, 0.02424484, 2520.34, 9, 6, '2025-07-05 04:53:29', '2025-07-05 04:54:17'),
+(60, 0.00242447, 252.03, 11, 6, '2025-07-05 04:53:29', '2025-07-05 04:54:17'),
+(61, 0.03251411, 3379.97, 13, 6, '2025-07-05 04:53:29', '2025-07-05 04:54:17'),
+(62, 0.01603274, 1666.66, 31, 6, '2025-07-05 04:53:29', '2025-07-05 04:54:17'),
+(72, 0.00057702, 60.61, 1, 7, '2025-07-05 04:58:58', '2025-07-05 04:58:58'),
+(73, 0.00023308, 24.48, 3, 7, '2025-07-05 04:58:58', '2025-07-05 04:58:58'),
+(74, 0.00484897, 509.35, 6, 7, '2025-07-05 04:58:58', '2025-07-05 04:58:58'),
+(75, 0.00840228, 882.61, 7, 7, '2025-07-05 04:58:58', '2025-07-05 04:58:58'),
+(76, 0.00121224, 127.33, 8, 7, '2025-07-05 04:58:58', '2025-07-05 04:58:58'),
+(77, 0.02424484, 2546.79, 9, 7, '2025-07-05 04:58:58', '2025-07-05 04:58:58'),
+(78, 0.00242447, 254.67, 11, 7, '2025-07-05 04:58:58', '2025-07-05 04:58:58'),
+(79, 0.03251411, 3415.43, 13, 7, '2025-07-05 04:58:58', '2025-07-05 04:58:58'),
+(80, 0.01603274, 1684.15, 31, 7, '2025-07-05 04:58:58', '2025-07-05 04:58:58'),
+(81, 0.00454711, 509.44, 6, 8, '2025-07-05 05:47:37', '2025-07-05 05:47:37'),
+(82, 0.00113678, 127.36, 8, 8, '2025-07-05 05:47:37', '2025-07-05 05:47:37'),
+(83, 0.02273555, 2547.24, 9, 8, '2025-07-05 05:47:37', '2025-07-05 05:47:37'),
+(84, 0.00227355, 254.72, 11, 8, '2025-07-05 05:47:37', '2025-07-05 05:47:37'),
+(85, 0.00059486, 64.16, 1, 9, '2025-07-05 06:04:05', '2025-07-05 06:04:27'),
+(86, 0.00021804, 23.51, 3, 9, '2025-07-05 06:04:05', '2025-07-05 06:04:27'),
+(87, 0.00468095, 504.87, 6, 9, '2025-07-05 06:04:05', '2025-07-05 06:04:27'),
+(88, 0.00608614, 656.43, 7, 9, '2025-07-05 06:04:05', '2025-07-05 06:04:27'),
+(89, 0.00117027, 126.22, 8, 9, '2025-07-05 06:04:05', '2025-07-05 06:04:27'),
+(90, 0.02340474, 2524.38, 9, 9, '2025-07-05 06:04:05', '2025-07-05 06:04:27'),
+(91, 0.00234046, 252.43, 11, 9, '2025-07-05 06:04:05', '2025-07-05 06:04:27'),
+(92, 0.02448023, 2640.38, 13, 9, '2025-07-05 06:04:05', '2025-07-05 06:04:27'),
+(93, 0.01160942, 1252.16, 31, 9, '2025-07-05 06:04:05', '2025-07-05 06:04:27'),
+(94, 0.04635731, 5000.00, 40, 9, '2025-07-05 06:04:05', '2025-07-05 06:04:27'),
+(95, 0.00231787, 250.00, 43, 9, '2025-07-05 06:04:05', '2025-07-05 06:04:27'),
+(107, 0.00059486, 65.22, 1, 10, '2025-07-05 06:08:54', '2025-07-05 06:08:54'),
+(108, 0.00021804, 23.90, 3, 10, '2025-07-05 06:08:54', '2025-07-05 06:08:54'),
+(109, 0.00468095, 513.22, 6, 10, '2025-07-05 06:08:54', '2025-07-05 06:08:54'),
+(110, 0.00608614, 667.28, 7, 10, '2025-07-05 06:08:54', '2025-07-05 06:08:54'),
+(111, 0.00117027, 128.30, 8, 10, '2025-07-05 06:08:54', '2025-07-05 06:08:54'),
+(112, 0.02340474, 2566.10, 9, 10, '2025-07-05 06:08:54', '2025-07-05 06:08:54'),
+(113, 0.00234046, 256.60, 11, 10, '2025-07-05 06:08:54', '2025-07-05 06:08:54'),
+(114, 0.02448023, 2684.01, 13, 10, '2025-07-05 06:08:54', '2025-07-05 06:08:54'),
+(115, 0.01160942, 1272.85, 31, 10, '2025-07-05 06:08:54', '2025-07-05 06:08:54'),
+(116, 0.04635731, 5082.62, 40, 10, '2025-07-05 06:08:54', '2025-07-05 06:08:54'),
+(117, 0.00231787, 254.13, 43, 10, '2025-07-05 06:08:54', '2025-07-05 06:08:54'),
+(118, 0.00082786, 90.12, 1, 11, '2025-07-06 14:06:34', '2025-07-07 00:12:45'),
+(119, 0.00021863, 23.80, 3, 11, '2025-07-06 14:06:34', '2025-07-07 00:13:04'),
+(120, 0.00464739, 505.91, 6, 11, '2025-07-06 14:06:34', '2025-07-07 00:13:20'),
+(121, 0.00604489, 658.04, 7, 11, '2025-07-06 14:06:34', '2025-07-07 00:13:38'),
+(122, 0.00116187, 126.48, 8, 11, '2025-07-06 14:06:34', '2025-07-07 00:13:52'),
+(123, 0.02323697, 2529.55, 9, 11, '2025-07-06 14:06:34', '2025-07-07 00:14:23'),
+(124, 0.00232374, 252.96, 11, 11, '2025-07-06 14:06:34', '2025-07-07 00:14:38'),
+(125, 0.02438901, 2654.96, 13, 11, '2025-07-06 14:06:34', '2025-07-07 00:14:55'),
+(126, 0.01152621, 1254.73, 31, 11, '2025-07-06 14:06:34', '2025-07-07 00:15:09'),
+(127, 0.04602501, 5010.23, 40, 11, '2025-07-06 14:06:34', '2025-07-07 00:15:24'),
+(128, 0.00230124, 250.51, 43, 11, '2025-07-06 14:06:34', '2025-07-07 00:15:38'),
+(129, 0.00344483, 375.00, 74, 11, '2025-07-06 14:06:34', '2025-07-07 00:15:51'),
+(142, 0.00082786, 92.00, 1, 12, '2025-07-09 19:41:02', '2025-07-09 19:41:02'),
+(143, 0.00021863, 24.29, 3, 12, '2025-07-09 19:41:02', '2025-07-09 19:41:02'),
+(144, 0.00464739, 516.50, 6, 12, '2025-07-09 19:41:02', '2025-07-09 19:41:02'),
+(145, 0.00604489, 671.82, 7, 12, '2025-07-09 19:41:02', '2025-07-09 19:41:02'),
+(146, 0.00116187, 129.12, 8, 12, '2025-07-09 19:41:02', '2025-07-09 19:41:02'),
+(147, 0.02323697, 2582.52, 9, 12, '2025-07-09 19:41:02', '2025-07-09 19:41:02'),
+(148, 0.00232374, 258.25, 11, 12, '2025-07-09 19:41:02', '2025-07-09 19:41:02'),
+(149, 0.02438901, 2710.56, 13, 12, '2025-07-09 19:41:02', '2025-07-09 19:41:02'),
+(150, 0.01152621, 1281.00, 31, 12, '2025-07-09 19:41:02', '2025-07-09 19:41:02'),
+(151, 0.04602501, 5115.16, 40, 12, '2025-07-09 19:41:02', '2025-07-09 19:41:02'),
+(152, 0.00230124, 255.75, 43, 12, '2025-07-09 19:41:02', '2025-07-09 19:41:02'),
+(153, 0.00344483, 382.85, 74, 12, '2025-07-09 19:41:02', '2025-07-09 19:41:02'),
+(154, 0.00112102, 124.27, 1, 13, '2025-07-10 21:33:39', '2025-07-10 22:42:54'),
+(155, 0.00021780, 24.14, 3, 13, '2025-07-10 21:33:39', '2025-07-10 22:42:54'),
+(156, 0.00457533, 507.22, 6, 13, '2025-07-10 21:33:39', '2025-07-10 22:42:54'),
+(157, 0.00599914, 665.07, 7, 13, '2025-07-10 21:33:39', '2025-07-10 22:42:54'),
+(158, 0.00114384, 126.80, 8, 13, '2025-07-10 21:33:39', '2025-07-10 22:42:54'),
+(159, 0.02287647, 2536.10, 9, 13, '2025-07-10 21:33:39', '2025-07-10 22:42:54'),
+(160, 0.00228764, 253.61, 11, 13, '2025-07-10 21:33:39', '2025-07-10 22:42:54'),
+(161, 0.02403060, 2664.05, 13, 13, '2025-07-10 21:33:39', '2025-07-10 22:42:54'),
+(162, 0.01134740, 1257.98, 31, 13, '2025-07-10 21:33:39', '2025-07-10 22:42:54'),
+(163, 0.04531096, 5023.21, 40, 13, '2025-07-10 21:33:39', '2025-07-10 22:42:54'),
+(164, 0.00226559, 251.16, 43, 13, '2025-07-10 21:33:39', '2025-07-10 22:42:54'),
+(165, 0.00339141, 375.97, 74, 13, '2025-07-10 21:33:39', '2025-07-10 22:42:54'),
+(166, 0.00225508, 250.00, 78, 13, '2025-07-10 21:33:39', '2025-07-10 22:42:54'),
+(180, 0.00112102, 130.18, 1, 14, '2025-07-10 23:01:53', '2025-07-10 23:01:53'),
+(181, 0.00021780, 25.29, 3, 14, '2025-07-10 23:01:53', '2025-07-10 23:01:53'),
+(182, 0.00457533, 531.35, 6, 14, '2025-07-10 23:01:53', '2025-07-10 23:01:53'),
+(183, 0.00599914, 696.70, 7, 14, '2025-07-10 23:01:53', '2025-07-10 23:01:53'),
+(184, 0.00114384, 132.83, 8, 14, '2025-07-10 23:01:53', '2025-07-10 23:01:53'),
+(185, 0.02287647, 2656.73, 9, 14, '2025-07-10 23:01:53', '2025-07-10 23:01:53'),
+(186, 0.00228764, 265.67, 11, 14, '2025-07-10 23:01:53', '2025-07-10 23:01:53'),
+(187, 0.02403060, 2790.76, 13, 14, '2025-07-10 23:01:53', '2025-07-10 23:01:53'),
+(188, 0.01134740, 1317.81, 31, 14, '2025-07-10 23:01:53', '2025-07-10 23:01:53'),
+(189, 0.04531096, 5262.13, 40, 14, '2025-07-10 23:01:53', '2025-07-10 23:01:53'),
+(190, 0.00226559, 263.11, 43, 14, '2025-07-10 23:01:53', '2025-07-10 23:01:53'),
+(191, 0.00339141, 393.85, 74, 14, '2025-07-10 23:01:53', '2025-07-10 23:01:53'),
+(192, 0.00225508, 261.89, 78, 14, '2025-07-10 23:01:53', '2025-07-10 23:01:53'),
+(193, 0.00000000, 204.28, 1, 15, '2025-07-11 02:21:00', '2025-07-11 02:21:00'),
+(194, 0.00000000, 24.95, 3, 15, '2025-07-11 02:21:00', '2025-07-11 02:21:00'),
+(195, 0.00000000, 510.21, 6, 15, '2025-07-11 02:21:00', '2025-07-11 02:21:00'),
+(196, 0.00000000, 669.87, 7, 15, '2025-07-11 02:21:00', '2025-07-11 02:21:00'),
+(197, 0.00000000, 127.56, 8, 15, '2025-07-11 02:21:00', '2025-07-11 02:21:00'),
+(198, 0.00000000, 2551.04, 9, 15, '2025-07-11 02:21:00', '2025-07-11 02:21:00'),
+(199, 0.00000000, 255.11, 11, 15, '2025-07-11 02:21:00', '2025-07-11 02:21:00'),
+(200, 0.00000000, 2684.79, 13, 15, '2025-07-11 02:21:00', '2025-07-11 02:21:00'),
+(201, 0.00000000, 1265.39, 31, 15, '2025-07-11 02:21:00', '2025-07-11 02:21:00'),
+(202, 0.00000000, 5052.78, 40, 15, '2025-07-11 02:21:00', '2025-07-11 02:21:00'),
+(203, 0.00000000, 252.65, 43, 15, '2025-07-11 02:21:00', '2025-07-11 02:21:00'),
+(204, 0.00000000, 378.19, 74, 15, '2025-07-11 02:21:00', '2025-07-11 02:21:00'),
+(205, 0.00000000, 251.48, 78, 15, '2025-07-11 02:21:00', '2025-07-11 02:21:00'),
+(206, 0.00000000, 204.28, 1, 16, '2025-07-11 02:23:05', '2025-07-11 02:23:05'),
+(207, 0.00000000, 24.95, 3, 16, '2025-07-11 02:23:05', '2025-07-11 02:23:05'),
+(208, 0.00000000, 510.21, 6, 16, '2025-07-11 02:23:05', '2025-07-11 02:23:05'),
+(209, 0.00000000, 669.87, 7, 16, '2025-07-11 02:23:05', '2025-07-11 02:23:05'),
+(210, 0.00000000, 127.56, 8, 16, '2025-07-11 02:23:05', '2025-07-11 02:23:05'),
+(211, 0.00000000, 2551.04, 9, 16, '2025-07-11 02:23:05', '2025-07-11 02:23:05'),
+(212, 0.00000000, 255.11, 11, 16, '2025-07-11 02:23:05', '2025-07-11 02:23:05'),
+(213, 0.00000000, 2684.79, 13, 16, '2025-07-11 02:23:05', '2025-07-11 02:23:05'),
+(214, 0.00000000, 1265.39, 31, 16, '2025-07-11 02:23:05', '2025-07-11 02:23:05'),
+(215, 0.00000000, 5052.78, 40, 16, '2025-07-11 02:23:05', '2025-07-11 02:23:05'),
+(216, 0.00000000, 252.65, 43, 16, '2025-07-11 02:23:05', '2025-07-11 02:23:05'),
+(217, 0.00000000, 378.19, 74, 16, '2025-07-11 02:23:05', '2025-07-11 02:23:05'),
+(218, 0.00000000, 251.48, 78, 16, '2025-07-11 02:23:05', '2025-07-11 02:23:05'),
+(219, 0.00175549, 204.28, 1, 17, '2025-07-11 02:24:03', '2025-07-11 02:25:01'),
+(220, 0.00021441, 24.95, 3, 17, '2025-07-11 02:24:03', '2025-07-11 02:25:01'),
+(221, 0.00438451, 510.21, 6, 17, '2025-07-11 02:24:03', '2025-07-11 02:25:01'),
+(222, 0.00575656, 669.87, 7, 17, '2025-07-11 02:24:03', '2025-07-11 02:25:01'),
+(223, 0.00109619, 127.56, 8, 17, '2025-07-11 02:24:03', '2025-07-11 02:25:01'),
+(224, 0.02192249, 2551.04, 9, 17, '2025-07-11 02:24:03', '2025-07-11 02:25:01'),
+(225, 0.00219230, 255.11, 11, 17, '2025-07-11 02:24:03', '2025-07-11 02:25:01'),
+(226, 0.02307187, 2684.79, 13, 17, '2025-07-11 02:24:03', '2025-07-11 02:25:01'),
+(227, 0.01087419, 1265.39, 31, 17, '2025-07-11 02:24:03', '2025-07-11 02:25:01'),
+(228, 0.04342131, 5052.78, 40, 17, '2025-07-11 02:24:03', '2025-07-11 02:25:01'),
+(229, 0.00217116, 252.65, 43, 17, '2025-07-11 02:24:03', '2025-07-11 02:25:01'),
+(230, 0.00324999, 378.19, 74, 17, '2025-07-11 02:24:03', '2025-07-11 02:25:01'),
+(231, 0.00216111, 251.48, 78, 17, '2025-07-11 02:24:03', '2025-07-11 02:25:01'),
+(245, 0.00175549, 206.50, 1, 19, '2025-07-11 06:54:02', '2025-07-11 06:54:02'),
+(246, 0.00021441, 25.22, 3, 19, '2025-07-11 06:54:02', '2025-07-11 06:54:02'),
+(247, 0.00438451, 515.75, 6, 19, '2025-07-11 06:54:02', '2025-07-11 06:54:02'),
+(248, 0.00575656, 677.15, 7, 19, '2025-07-11 06:54:02', '2025-07-11 06:54:02'),
+(249, 0.00109619, 128.94, 8, 19, '2025-07-11 06:54:02', '2025-07-11 06:54:02'),
+(250, 0.02192249, 2578.79, 9, 19, '2025-07-11 06:54:02', '2025-07-11 06:54:02'),
+(251, 0.00219230, 257.88, 11, 19, '2025-07-11 06:54:02', '2025-07-11 06:54:02'),
+(252, 0.02307187, 2713.99, 13, 19, '2025-07-11 06:54:02', '2025-07-11 06:54:02'),
+(253, 0.01087419, 1279.15, 31, 19, '2025-07-11 06:54:02', '2025-07-11 06:54:02'),
+(254, 0.04342131, 5107.74, 40, 19, '2025-07-11 06:54:02', '2025-07-11 06:54:02'),
+(255, 0.00217116, 255.39, 43, 19, '2025-07-11 06:54:02', '2025-07-11 06:54:02'),
+(256, 0.00324999, 382.30, 74, 19, '2025-07-11 06:54:02', '2025-07-11 06:54:02'),
+(257, 0.00216111, 254.21, 78, 19, '2025-07-11 06:54:02', '2025-07-11 06:54:02'),
+(258, 0.00189288, 223.11, 1, 20, '2025-07-11 07:23:37', '2025-07-11 07:24:01'),
+(259, 0.00021329, 25.14, 3, 20, '2025-07-11 07:23:37', '2025-07-11 07:24:01'),
+(260, 0.00433451, 510.90, 6, 20, '2025-07-11 07:23:37', '2025-07-11 07:24:01'),
+(261, 0.00569265, 670.98, 7, 20, '2025-07-11 07:23:37', '2025-07-11 07:24:01'),
+(262, 0.00108367, 127.73, 8, 20, '2025-07-11 07:23:37', '2025-07-11 07:24:01'),
+(263, 0.02167232, 2554.47, 9, 20, '2025-07-11 07:23:37', '2025-07-11 07:24:01'),
+(264, 0.00216726, 255.45, 11, 20, '2025-07-11 07:23:37', '2025-07-11 07:24:01'),
+(265, 0.02281852, 2689.57, 13, 20, '2025-07-11 07:23:37', '2025-07-11 07:24:01'),
+(266, 0.01075009, 1267.09, 31, 20, '2025-07-11 07:23:37', '2025-07-11 07:24:01'),
+(267, 0.04292595, 5059.59, 40, 20, '2025-07-11 07:23:37', '2025-07-11 07:24:01'),
+(268, 0.00214639, 252.99, 43, 20, '2025-07-11 07:23:37', '2025-07-11 07:24:01'),
+(269, 0.00321292, 378.70, 74, 20, '2025-07-11 07:23:37', '2025-07-11 07:24:01'),
+(270, 0.00213646, 251.82, 78, 20, '2025-07-11 07:23:37', '2025-07-11 07:24:01'),
+(284, 0.00189288, 224.54, 1, 22, '2025-07-11 22:33:09', '2025-07-11 22:33:09'),
+(285, 0.00021329, 25.30, 3, 22, '2025-07-11 22:33:09', '2025-07-11 22:33:09'),
+(286, 0.00433451, 514.19, 6, 22, '2025-07-11 22:33:09', '2025-07-11 22:33:09'),
+(287, 0.00569265, 675.31, 7, 22, '2025-07-11 22:33:09', '2025-07-11 22:33:09'),
+(288, 0.00108367, 128.54, 8, 22, '2025-07-11 22:33:09', '2025-07-11 22:33:09'),
+(289, 0.02167232, 2570.99, 9, 22, '2025-07-11 22:33:09', '2025-07-11 22:33:09'),
+(290, 0.00216726, 257.09, 11, 22, '2025-07-11 22:33:09', '2025-07-11 22:33:09'),
+(291, 0.02281852, 2706.98, 13, 22, '2025-07-11 22:33:09', '2025-07-11 22:33:09'),
+(292, 0.01075009, 1275.28, 31, 22, '2025-07-11 22:33:09', '2025-07-11 22:33:09'),
+(293, 0.04292595, 5092.35, 40, 22, '2025-07-11 22:33:09', '2025-07-11 22:33:09'),
+(294, 0.00214639, 254.62, 43, 22, '2025-07-11 22:33:09', '2025-07-11 22:33:09'),
+(295, 0.00321292, 381.14, 74, 22, '2025-07-11 22:33:09', '2025-07-11 22:33:09'),
+(296, 0.00213646, 253.44, 78, 22, '2025-07-11 22:33:09', '2025-07-11 22:33:09'),
+(297, 0.00195923, 230.93, 1, 23, '2025-07-12 01:08:38', '2025-07-12 01:09:01'),
+(298, 0.00021422, 25.25, 3, 23, '2025-07-12 01:08:38', '2025-07-12 01:09:01'),
+(299, 0.00433799, 511.31, 6, 23, '2025-07-12 01:08:38', '2025-07-12 01:09:01'),
+(300, 0.00569825, 671.64, 7, 23, '2025-07-12 01:08:38', '2025-07-12 01:09:01'),
+(301, 0.00108452, 127.83, 8, 23, '2025-07-12 01:08:38', '2025-07-12 01:09:01'),
+(302, 0.02168971, 2556.52, 9, 23, '2025-07-12 01:08:38', '2025-07-12 01:09:01'),
+(303, 0.00216895, 255.65, 11, 23, '2025-07-12 01:08:38', '2025-07-12 01:09:01'),
+(304, 0.02284261, 2692.41, 13, 23, '2025-07-12 01:08:38', '2025-07-12 01:09:01'),
+(305, 0.01075874, 1268.11, 31, 23, '2025-07-12 01:08:38', '2025-07-12 01:09:01'),
+(306, 0.04296031, 5063.64, 40, 23, '2025-07-12 01:08:38', '2025-07-12 01:09:01'),
+(307, 0.00214808, 253.19, 43, 23, '2025-07-12 01:08:38', '2025-07-12 01:09:01'),
+(308, 0.00321546, 379.00, 74, 23, '2025-07-12 01:08:38', '2025-07-12 01:09:01'),
+(309, 0.00213816, 252.02, 78, 23, '2025-07-12 01:08:38', '2025-07-12 01:09:01'),
+(323, 0.00195923, 233.39, 1, 25, '2025-07-13 14:19:02', '2025-07-13 14:19:02'),
+(324, 0.00021422, 25.51, 3, 25, '2025-07-13 14:19:02', '2025-07-13 14:19:02'),
+(325, 0.00433799, 516.78, 6, 25, '2025-07-13 14:19:02', '2025-07-13 14:19:02'),
+(326, 0.00569825, 678.82, 7, 25, '2025-07-13 14:19:02', '2025-07-13 14:19:02'),
+(327, 0.00108452, 129.18, 8, 25, '2025-07-13 14:19:02', '2025-07-13 14:19:02'),
+(328, 0.02168971, 2583.89, 9, 25, '2025-07-13 14:19:02', '2025-07-13 14:19:02'),
+(329, 0.00216895, 258.37, 11, 25, '2025-07-13 14:19:02', '2025-07-13 14:19:02'),
+(330, 0.02284261, 2721.24, 13, 25, '2025-07-13 14:19:02', '2025-07-13 14:19:02'),
+(331, 0.01075874, 1281.68, 31, 25, '2025-07-13 14:19:02', '2025-07-13 14:19:02'),
+(332, 0.04296031, 5117.88, 40, 25, '2025-07-13 14:19:02', '2025-07-13 14:19:02'),
+(333, 0.00214808, 255.89, 43, 25, '2025-07-13 14:19:02', '2025-07-13 14:19:02'),
+(334, 0.00321546, 383.04, 74, 25, '2025-07-13 14:19:02', '2025-07-13 14:19:02'),
+(335, 0.00213816, 254.71, 78, 25, '2025-07-13 14:19:02', '2025-07-13 14:19:02'),
+(336, 0.00000000, 249.03, 1, 26, '2025-07-14 04:30:19', '2025-07-14 04:30:19'),
+(337, 0.00000000, 25.43, 3, 26, '2025-07-14 04:30:19', '2025-07-14 04:30:19'),
+(338, 0.00000000, 511.99, 6, 26, '2025-07-14 04:30:19', '2025-07-14 04:30:19'),
+(339, 0.00000000, 672.73, 7, 26, '2025-07-14 04:30:19', '2025-07-14 04:30:19'),
+(340, 0.00000000, 128.00, 8, 26, '2025-07-14 04:30:19', '2025-07-14 04:30:19'),
+(341, 0.00000000, 2559.90, 9, 26, '2025-07-14 04:30:19', '2025-07-14 04:30:19'),
+(342, 0.00000000, 255.99, 11, 26, '2025-07-14 04:30:19', '2025-07-14 04:30:19'),
+(343, 0.00000000, 2697.13, 13, 26, '2025-07-14 04:30:19', '2025-07-14 04:30:19'),
+(344, 0.00000000, 1269.79, 31, 26, '2025-07-14 04:30:19', '2025-07-14 04:30:19'),
+(345, 0.00000000, 5070.35, 40, 26, '2025-07-14 04:30:19', '2025-07-14 04:30:19'),
+(346, 0.00000000, 253.52, 43, 26, '2025-07-14 04:30:19', '2025-07-14 04:30:19'),
+(347, 0.00000000, 379.50, 74, 26, '2025-07-14 04:30:19', '2025-07-14 04:30:19'),
+(348, 0.00000000, 252.35, 78, 26, '2025-07-14 04:30:19', '2025-07-14 04:30:19'),
+(349, 0.00203087, 249.03, 1, 27, '2025-07-14 05:25:57', '2025-07-14 05:26:01'),
+(350, 0.00020738, 25.43, 3, 27, '2025-07-14 05:25:57', '2025-07-14 05:26:01'),
+(351, 0.00417533, 511.99, 6, 27, '2025-07-14 05:25:57', '2025-07-14 05:26:01'),
+(352, 0.00548618, 672.73, 7, 27, '2025-07-14 05:25:57', '2025-07-14 05:26:01'),
+(353, 0.00104385, 128.00, 8, 27, '2025-07-14 05:25:57', '2025-07-14 05:26:01'),
+(354, 0.02087625, 2559.90, 9, 27, '2025-07-14 05:25:57', '2025-07-14 05:26:01'),
+(355, 0.00208762, 255.99, 11, 27, '2025-07-14 05:25:57', '2025-07-14 05:26:01'),
+(356, 0.02199537, 2697.13, 13, 27, '2025-07-14 05:25:57', '2025-07-14 05:26:01'),
+(357, 0.01035527, 1269.79, 31, 27, '2025-07-14 05:25:57', '2025-07-14 05:26:01'),
+(358, 0.04134922, 5070.35, 40, 27, '2025-07-14 05:25:57', '2025-07-14 05:26:01'),
+(359, 0.00206748, 253.52, 43, 27, '2025-07-14 05:25:57', '2025-07-14 05:26:01'),
+(360, 0.00309486, 379.50, 74, 27, '2025-07-14 05:25:57', '2025-07-14 05:26:01'),
+(361, 0.00205794, 252.35, 78, 27, '2025-07-14 05:25:57', '2025-07-14 05:26:01'),
+(375, 0.00000000, 249.03, 1, 30, '2025-07-15 02:14:23', '2025-07-15 02:14:23'),
+(376, 0.00000000, 25.42, 3, 30, '2025-07-15 02:14:23', '2025-07-15 02:14:23'),
+(377, 0.00000000, 511.98, 6, 30, '2025-07-15 02:14:23', '2025-07-15 02:14:23'),
+(378, 0.00000000, 672.72, 7, 30, '2025-07-15 02:14:23', '2025-07-15 02:14:23'),
+(379, 0.00000000, 127.99, 8, 30, '2025-07-15 02:14:23', '2025-07-15 02:14:23'),
+(380, 0.00000000, 2559.90, 9, 30, '2025-07-15 02:14:23', '2025-07-15 02:14:23'),
+(381, 0.00000000, 255.99, 11, 30, '2025-07-15 02:14:23', '2025-07-15 02:14:23'),
+(382, 0.00000000, 2697.12, 13, 30, '2025-07-15 02:14:23', '2025-07-15 02:14:23'),
+(383, 0.00000000, 1269.78, 31, 30, '2025-07-15 02:14:23', '2025-07-15 02:14:23'),
+(384, 0.00000000, 5070.35, 40, 30, '2025-07-15 02:14:23', '2025-07-15 02:14:23'),
+(385, 0.00000000, 253.52, 43, 30, '2025-07-15 02:14:23', '2025-07-15 02:14:23'),
+(386, 0.00000000, 379.50, 74, 30, '2025-07-15 02:14:23', '2025-07-15 02:14:23'),
+(387, 0.00000000, 252.35, 78, 30, '2025-07-15 02:14:23', '2025-07-15 02:14:23'),
+(388, 0.00209942, 249.03, 1, 31, '2025-07-17 06:14:26', '2025-07-17 06:15:01'),
+(389, 0.00021430, 25.42, 3, 31, '2025-07-17 06:14:26', '2025-07-17 06:15:01'),
+(390, 0.00431619, 511.98, 6, 31, '2025-07-17 06:14:26', '2025-07-17 06:15:01'),
+(391, 0.00567129, 672.72, 7, 31, '2025-07-17 06:14:26', '2025-07-17 06:15:01'),
+(392, 0.00107900, 127.99, 8, 31, '2025-07-17 06:14:26', '2025-07-17 06:15:01'),
+(393, 0.02158093, 2559.90, 9, 31, '2025-07-17 06:14:26', '2025-07-17 06:15:01'),
+(394, 0.00215809, 255.99, 11, 31, '2025-07-17 06:14:26', '2025-07-17 06:15:01'),
+(395, 0.02273775, 2697.12, 13, 31, '2025-07-17 06:14:26', '2025-07-17 06:15:01'),
+(396, 0.01070473, 1269.78, 31, 31, '2025-07-17 06:14:26', '2025-07-17 06:15:01'),
+(397, 0.04274498, 5070.35, 40, 31, '2025-07-17 06:14:26', '2025-07-17 06:15:01'),
+(398, 0.00213727, 253.52, 43, 31, '2025-07-17 06:14:26', '2025-07-17 06:15:01'),
+(399, 0.00319933, 379.50, 74, 31, '2025-07-17 06:14:26', '2025-07-17 06:15:01'),
+(400, 0.00212741, 252.35, 78, 31, '2025-07-17 06:14:26', '2025-07-17 06:15:01'),
+(414, 0.00209942, 261.11, 1, 33, '2025-07-21 00:39:28', '2025-07-21 00:39:28'),
+(415, 0.00021430, 26.65, 3, 33, '2025-07-21 00:39:28', '2025-07-21 00:39:28'),
+(416, 0.00431619, 536.80, 6, 33, '2025-07-21 00:39:28', '2025-07-21 00:39:28'),
+(417, 0.00567129, 705.36, 7, 33, '2025-07-21 00:39:28', '2025-07-21 00:39:28'),
+(418, 0.00107900, 134.18, 8, 33, '2025-07-21 00:39:28', '2025-07-21 00:39:28'),
+(419, 0.02158093, 2684.12, 9, 33, '2025-07-21 00:39:28', '2025-07-21 00:39:28'),
+(420, 0.00215809, 268.39, 11, 33, '2025-07-21 00:39:28', '2025-07-21 00:39:28'),
+(421, 0.02273775, 2828.01, 13, 33, '2025-07-21 00:39:28', '2025-07-21 00:39:28'),
+(422, 0.01070473, 1331.40, 31, 33, '2025-07-21 00:39:28', '2025-07-21 00:39:28'),
+(423, 0.04274498, 5316.41, 40, 33, '2025-07-21 00:39:28', '2025-07-21 00:39:28'),
+(424, 0.00213727, 265.81, 43, 33, '2025-07-21 00:39:28', '2025-07-21 00:39:28'),
+(425, 0.00319933, 397.90, 74, 33, '2025-07-21 00:39:28', '2025-07-21 00:39:28'),
+(426, 0.00212741, 264.58, 78, 33, '2025-07-21 00:39:28', '2025-07-21 00:39:28');
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `proxies`
 --
 
-DROP TABLE IF EXISTS `proxies`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `proxies` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `ip_address` varchar(45) NOT NULL,
-  `port` int(11) NOT NULL,
-  `username` varchar(255) DEFAULT NULL,
-  `password` varchar(255) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  `id` bigint UNSIGNED NOT NULL,
+  `ip_address` varchar(45) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
+  `port` int NOT NULL,
+  `username` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `password` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `proxies`
 --
 
-LOCK TABLES `proxies` WRITE;
-/*!40000 ALTER TABLE `proxies` DISABLE KEYS */;
-INSERT INTO `proxies` VALUES
-(1,'38.154.227.167',5868,'brwbdrjy','4mqmjsgb0t3i',NULL),
-(2,'38.153.152.244',9594,'brwbdrjy','4mqmjsgb0t3i',NULL),
-(3,'173.211.0.148',6641,'brwbdrjy','4mqmjsgb0t3i',NULL),
-(4,'86.38.234.176',6630,'brwbdrjy','4mqmjsgb0t3i',NULL),
-(5,'161.123.152.115',6360,'brwbdrjy','4mqmjsgb0t3i',NULL),
-(6,'23.94.138.75',6349,'brwbdrjy','4mqmjsgb0t3i',NULL),
-(7,'64.64.118.149',6732,'brwbdrjy','4mqmjsgb0t3i',NULL),
-(8,'198.105.101.92',5721,'brwbdrjy','4mqmjsgb0t3i',NULL),
-(9,'166.88.58.10',5735,'brwbdrjy','4mqmjsgb0t3i',NULL),
-(10,'45.151.162.198',6600,'brwbdrjy','4mqmjsgb0t3i',NULL);
-/*!40000 ALTER TABLE `proxies` ENABLE KEYS */;
-UNLOCK TABLES;
+INSERT INTO `proxies` (`id`, `ip_address`, `port`, `username`, `password`, `created_at`) VALUES
+(1, '38.154.227.167', 5868, 'brwbdrjy', '4mqmjsgb0t3i', NULL),
+(2, '38.153.152.244', 9594, 'brwbdrjy', '4mqmjsgb0t3i', NULL),
+(3, '173.211.0.148', 6641, 'brwbdrjy', '4mqmjsgb0t3i', NULL),
+(4, '86.38.234.176', 6630, 'brwbdrjy', '4mqmjsgb0t3i', NULL),
+(5, '161.123.152.115', 6360, 'brwbdrjy', '4mqmjsgb0t3i', NULL),
+(6, '23.94.138.75', 6349, 'brwbdrjy', '4mqmjsgb0t3i', NULL),
+(7, '64.64.118.149', 6732, 'brwbdrjy', '4mqmjsgb0t3i', NULL),
+(8, '198.105.101.92', 5721, 'brwbdrjy', '4mqmjsgb0t3i', NULL),
+(9, '166.88.58.10', 5735, 'brwbdrjy', '4mqmjsgb0t3i', NULL),
+(10, '45.151.162.198', 6600, 'brwbdrjy', '4mqmjsgb0t3i', NULL);
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `settings`
 --
 
-DROP TABLE IF EXISTS `settings`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `settings` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `key` varchar(50) NOT NULL,
-  `value` text NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `key` (`key`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  `value` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `settings`
 --
 
-LOCK TABLES `settings` WRITE;
-/*!40000 ALTER TABLE `settings` DISABLE KEYS */;
-INSERT INTO `settings` VALUES
-(3,'price','500'),
-(4,'cost','0.01'),
-(5,'referral_fee','0.02'),
-(6,'cost_trade','0.01'),
-(7,'asset_btc','0.02558');
-/*!40000 ALTER TABLE `settings` ENABLE KEYS */;
-UNLOCK TABLES;
+INSERT INTO `settings` (`id`, `key`, `value`) VALUES
+(3, 'price', '500'),
+(4, 'cost', '0.01'),
+(5, 'referral_fee', '0.02'),
+(6, 'cost_trade', '0.01'),
+(7, 'asset_btc', '0.00001838');
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `sinyal`
 --
 
-DROP TABLE IF EXISTS `sinyal`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sinyal` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `order_id` bigint(20) DEFAULT NULL,
+  `id` int NOT NULL,
+  `order_id` bigint DEFAULT NULL,
   `type` enum('Buy A','Buy B','Buy C','Buy D','Sell A','Sell B','Sell C','Sell D') NOT NULL DEFAULT 'Buy A',
   `entry_price` decimal(10,2) NOT NULL,
-  `pair_id` int(11) DEFAULT NULL,
-  `admin_id` int(11) DEFAULT NULL,
+  `pair_id` int DEFAULT NULL,
+  `admin_id` int DEFAULT NULL,
   `ip_addr` varchar(45) DEFAULT NULL,
   `is_deleted` enum('no','yes') NOT NULL DEFAULT 'no',
   `status` enum('pending','filled','canceled') NOT NULL DEFAULT 'pending',
-  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `order_id` (`order_id`),
-  KEY `fk_admin` (`admin_id`),
-  CONSTRAINT `fk_admin` FOREIGN KEY (`admin_id`) REFERENCES `member` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `sinyal`
 --
 
-LOCK TABLES `sinyal` WRITE;
-/*!40000 ALTER TABLE `sinyal` DISABLE KEYS */;
-INSERT INTO `sinyal` VALUES
-(1,1256233,'Buy A',109850.00,1,1,'36.83.150.207','no','filled','2025-05-26 09:49:26','2025-07-05 19:05:02'),
-(2,1264801,'Buy B',105850.00,2,1,'36.83.150.207','no','filled','2025-05-30 08:30:02','2025-07-05 19:05:28'),
-(3,1268192,'Sell B',109150.00,2,1,'36.83.150.207','no','filled','2025-06-10 16:57:01','2025-07-05 19:05:43'),
-(4,1271558,'Buy B',103850.00,4,1,'36.83.150.207','no','filled','2025-06-15 04:07:56','2025-07-05 19:05:57'),
-(5,1272951,'Sell B',106150.00,4,1,'36.83.150.207','no','filled','2025-06-20 18:12:55','2025-07-05 19:06:17'),
-(6,1276105,'Buy B',103850.00,6,1,'36.83.150.207','no','filled','2025-06-21 16:59:45','2025-07-05 19:06:31'),
-(7,1277675,'Sell B',105150.00,6,1,'36.83.150.207','no','filled','2025-06-24 15:36:23','2025-07-05 19:06:57'),
-(8,1294824,'Sell A',112150.00,1,1,'36.83.150.207','no','filled','2025-06-25 17:45:56','2025-07-05 19:07:15'),
-(9,1302001,'Buy A',107750.00,9,1,'36.83.150.207','no','filled','2025-06-29 17:00:21','2025-07-05 19:07:33'),
-(10,1303635,'Sell A',109750.00,9,1,'36.83.150.207','no','filled','2025-06-29 17:20:41','2025-07-05 19:07:45'),
-(11,45654497121,'Buy A',108750.00,11,1,'103.175.212.90','no','filled','2025-07-06 22:06:34','2025-07-08 17:33:50'),
-(12,45654750941,'Sell A',111250.00,11,1,'103.175.212.81','no','filled','2025-07-06 22:13:43','2025-07-08 17:33:50'),
-(13,NULL,'Buy B',102000.00,NULL,12,'::1','yes','canceled','2025-07-08 13:26:25','2025-07-08 14:48:47'),
-(14,NULL,'Buy B',110000.00,NULL,12,'::1','yes','canceled','2025-07-08 14:49:16','2025-07-08 14:49:51'),
-(15,2761058,'Buy B',110000.00,15,12,'::1','no','filled','2025-07-08 14:52:26','2025-07-08 17:26:43'),
-(16,2788036,'Sell B',120000.00,15,12,'::1','no','filled','2025-07-08 16:05:16','2025-07-08 10:26:12'),
-(17,2824488,'Buy A',110000.00,17,12,'::1','no','filled','2025-07-08 17:34:16','2025-07-08 17:41:13'),
-(18,2824580,'Buy B',110000.00,18,12,'::1','no','filled','2025-07-08 17:34:37','2025-07-08 17:41:15'),
-(19,2825245,'Buy C',112000.00,19,12,'::1','no','filled','2025-07-08 17:36:28','2025-07-08 17:41:16'),
-(20,NULL,'Buy D',107000.00,NULL,12,'::1','yes','canceled','2025-07-08 17:36:45','2025-07-08 17:40:19'),
-(21,2826961,'Sell A',120000.00,17,12,'::1','no','filled','2025-07-08 17:40:35','2025-07-08 17:41:13'),
-(22,2826984,'Sell B',120000.00,18,12,'::1','no','filled','2025-07-08 17:40:39','2025-07-08 17:41:15'),
-(23,2827017,'Sell C',120000.00,19,12,'::1','no','filled','2025-07-08 17:40:43','2025-07-08 17:41:16'),
-(24,NULL,'Buy A',110000.00,NULL,12,'::1','yes','canceled','2025-07-09 11:03:16','2025-07-09 11:03:58'),
-(25,NULL,'Buy A',110000.00,NULL,12,'::1','yes','canceled','2025-07-09 11:04:49','2025-07-09 11:04:58'),
-(26,NULL,'Buy A',110000.00,NULL,12,'::1','yes','canceled','2025-07-09 11:05:37','2025-07-09 11:06:34'),
-(27,NULL,'Buy A',110000.00,NULL,12,'::1','yes','canceled','2025-07-09 11:06:57','2025-07-09 11:07:29'),
-(28,3213866,'Buy A',110000.00,NULL,12,'::1','no','filled','2025-07-09 11:08:37','2025-07-09 11:08:49');
-/*!40000 ALTER TABLE `sinyal` ENABLE KEYS */;
-UNLOCK TABLES;
+INSERT INTO `sinyal` (`id`, `order_id`, `type`, `entry_price`, `pair_id`, `admin_id`, `ip_addr`, `is_deleted`, `status`, `created_at`, `updated_at`) VALUES
+(1, 1256233, 'Buy A', 109850.00, 1, 1, '36.83.150.207', 'no', 'filled', '2025-05-26 09:49:26', '2025-07-05 19:05:02'),
+(2, 1264801, 'Buy B', 105850.00, 2, 1, '36.83.150.207', 'no', 'filled', '2025-05-30 08:30:02', '2025-07-05 19:05:28'),
+(3, 1268192, 'Sell B', 109150.00, 2, 1, '36.83.150.207', 'no', 'filled', '2025-06-10 16:57:01', '2025-07-05 19:05:43'),
+(4, 1271558, 'Buy B', 103850.00, 4, 1, '36.83.150.207', 'no', 'filled', '2025-06-15 04:07:56', '2025-07-05 19:05:57'),
+(5, 1272951, 'Sell B', 106150.00, 4, 1, '36.83.150.207', 'no', 'filled', '2025-06-20 18:12:55', '2025-07-05 19:06:17'),
+(6, 1276105, 'Buy B', 103850.00, 6, 1, '36.83.150.207', 'no', 'filled', '2025-06-21 16:59:45', '2025-07-05 19:06:31'),
+(7, 1277675, 'Sell B', 105150.00, 6, 1, '36.83.150.207', 'no', 'filled', '2025-06-24 15:36:23', '2025-07-05 19:06:57'),
+(8, 1294824, 'Sell A', 112150.00, 1, 1, '36.83.150.207', 'no', 'filled', '2025-06-25 17:45:56', '2025-07-05 19:07:15'),
+(9, 1302001, 'Buy A', 107750.00, 9, 1, '36.83.150.207', 'no', 'filled', '2025-06-29 17:00:21', '2025-07-05 19:07:33'),
+(10, 1303635, 'Sell A', 109750.00, 9, 1, '36.83.150.207', 'no', 'filled', '2025-06-29 17:20:41', '2025-07-05 19:07:45'),
+(11, 45654497121, 'Buy A', 108750.00, 11, 1, '103.175.212.90', 'no', 'filled', '2025-07-06 22:06:34', '2025-07-10 03:41:02'),
+(12, 45654750941, 'Sell A', 111250.00, 11, 1, '103.175.212.81', 'no', 'filled', '2025-07-06 22:13:43', '2025-07-10 03:41:02'),
+(13, 45824193424, 'Buy A', 110750.00, 13, 1, '103.175.212.100', 'no', 'filled', '2025-07-11 05:33:39', '2025-07-11 07:02:52'),
+(14, 4005762, 'Sell A', 116250.00, 13, 1, '180.249.120.181', 'no', 'filled', '2025-07-11 07:01:19', '2025-07-11 07:02:11'),
+(15, 45839188549, 'Buy A', 116250.00, NULL, 1, '59.153.130.200', 'yes', 'canceled', '2025-07-11 10:21:00', '2025-07-11 10:21:36'),
+(16, 45839298095, 'Buy A', 106250.00, NULL, 1, '59.153.130.200', 'yes', 'canceled', '2025-07-11 10:23:05', '2025-07-11 10:23:46'),
+(17, 45839327595, 'Buy A', 116250.00, 17, 1, '59.153.130.200', 'no', 'filled', '2025-07-11 10:24:03', '2025-07-11 14:54:02'),
+(18, 45839456568, 'Sell A', 119500.00, 17, 1, '59.153.130.200', 'yes', 'canceled', '2025-07-11 10:27:22', '2025-07-11 14:48:56'),
+(19, 45851298969, 'Sell A', 117750.00, 17, 1, '59.153.130.200', 'no', 'filled', '2025-07-11 14:53:21', '2025-07-11 14:54:02'),
+(20, 45852577061, 'Buy A', 117750.00, 20, 1, '59.153.130.200', 'no', 'filled', '2025-07-11 15:23:37', '2025-07-12 06:33:09'),
+(21, 45852621376, 'Sell A', 119750.00, 20, 1, '59.153.130.200', 'yes', 'canceled', '2025-07-11 15:24:30', '2025-07-12 06:31:12'),
+(22, 45889181282, 'Sell A', 118750.00, 20, 1, '103.175.212.61', 'no', 'filled', '2025-07-12 06:32:34', '2025-07-12 06:33:09'),
+(23, 45892759131, 'Buy A', 117750.00, 23, 1, '103.175.212.80', 'no', 'filled', '2025-07-12 09:08:38', '2025-07-13 22:19:02'),
+(24, 45892829800, 'Sell A', 119500.00, 23, 1, '103.175.212.90', 'yes', 'canceled', '2025-07-12 09:11:11', '2025-07-13 06:21:08'),
+(25, 45926021021, 'Sell A', 119250.00, 23, 1, '103.175.212.67', 'no', 'filled', '2025-07-13 11:28:34', '2025-07-13 22:19:02'),
+(26, 45969317397, 'Buy A', 119750.00, NULL, 1, '59.153.130.200', 'yes', 'canceled', '2025-07-14 12:30:19', '2025-07-14 12:30:39'),
+(27, 45972237604, 'Buy A', 122500.00, NULL, 1, '112.215.221.33', 'no', 'filled', '2025-07-14 13:25:57', '2025-07-14 13:26:01'),
+(28, 45972395827, 'Sell A', 124500.00, 27, 1, '112.215.64.198', 'yes', 'canceled', '2025-07-14 13:27:21', '2025-07-14 17:30:41'),
+(29, 45983065686, 'Sell A', 124500.00, 27, 1, '59.153.130.200', 'yes', 'canceled', '2025-07-14 17:32:56', '2025-07-15 09:26:42'),
+(30, 46026700485, 'Buy B', 117500.00, NULL, 1, '103.175.212.78', 'no', 'filled', '2025-07-15 10:14:23', '2025-08-12 09:24:32'),
+(31, 46143422279, 'Buy B', 118500.00, 31, 1, '59.153.130.200', 'yes', 'canceled', '2025-07-17 14:14:26', '2025-08-12 09:22:52'),
+(32, 46147544166, 'Sell A', 124500.00, 27, 1, '59.153.130.200', 'no', 'pending', '2025-07-17 16:16:27', '2025-07-17 16:16:27'),
+(33, 46147544936, 'Sell B', 124500.00, 31, 1, '59.153.130.200', 'no', 'filled', '2025-07-17 16:16:28', '2025-07-21 08:39:28');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tb_member_onetone`
+--
+
+CREATE TABLE `tb_member_onetone` (
+  `id` int UNSIGNED NOT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tb_member_onetone`
+--
+
+INSERT INTO `tb_member_onetone` (`id`, `email`, `is_deleted`, `created_at`, `updated_at`) VALUES
+(1, 'eddy_h99@yahoo.com', 0, '2025-07-18 18:49:29', '2025-07-18 18:49:29'),
+(2, 'xeyad85172@misehub.com', 0, '2025-08-01 18:58:22', '2025-08-01 18:58:22'),
+(3, 'evantrendi@gmail.com', 0, '2025-08-02 05:21:23', '2025-08-02 05:21:23'),
+(4, 'rakege8015@misehub.com', 0, '2025-08-02 07:03:03', '2025-08-02 07:03:03');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tb_payment_onetoone`
+--
+
+CREATE TABLE `tb_payment_onetoone` (
+  `id` int UNSIGNED NOT NULL,
+  `id_member_onetoone` int UNSIGNED NOT NULL,
+  `invoice_number` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `status_invoice` enum('paid','unpaid') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'unpaid',
+  `link_invoice` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `invoice_date` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tb_payment_onetoone`
+--
+
+INSERT INTO `tb_payment_onetoone` (`id`, `id_member_onetoone`, `invoice_number`, `status_invoice`, `link_invoice`, `invoice_date`, `created_at`, `updated_at`) VALUES
+(1, 4, '123', 'unpaid', 'https://goog.le', '2025-08-01 16:00:00', '2025-08-02 07:22:37', '2025-08-02 07:22:37'),
+(2, 4, '0BtPH3', 'unpaid', 'https://www.coinpayments.net/index.php?cmd=checkout&id=CPJH0PAVJIS73RZJ6G831BFWIB&key=366f12c8945fc385fce15fc37074b459', '2025-08-02 15:25:26', '2025-08-02 07:25:27', '2025-08-02 07:25:27'),
+(3, 4, 'kliKuj', 'unpaid', 'https://www.coinpayments.net/index.php?cmd=checkout&id=CPJH5WZFYBDTZMP0C8FDARAVGK&key=afc113ced52d6a4ca02f99054a695c40', '2025-08-02 15:36:17', '2025-08-02 07:36:18', '2025-08-02 07:36:18');
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `wallet`
 --
 
-DROP TABLE IF EXISTS `wallet`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `wallet` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `master_wallet` decimal(20,2) NOT NULL DEFAULT 0.00,
-  `client_wallet` decimal(20,2) NOT NULL DEFAULT 0.00,
-  `member_id` int(11) NOT NULL,
-  `order_id` bigint(20) NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `member_id` (`member_id`),
-  KEY `order_id` (`order_id`),
-  CONSTRAINT `wallet_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `wallet_ibfk_2` FOREIGN KEY (`order_id`) REFERENCES `sinyal` (`order_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  `id` int NOT NULL,
+  `master_wallet` decimal(20,2) NOT NULL DEFAULT '0.00',
+  `client_wallet` decimal(20,2) NOT NULL DEFAULT '0.00',
+  `member_id` int NOT NULL,
+  `order_id` bigint NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `wallet`
 --
 
-LOCK TABLES `wallet` WRITE;
-/*!40000 ALTER TABLE `wallet` DISABLE KEYS */;
-INSERT INTO `wallet` VALUES
-(1,0.34,0.33,3,1268192,'2025-07-05 12:38:48'),
-(2,6.63,7.20,6,1268192,'2025-07-05 12:38:48'),
-(3,11.05,12.01,7,1268192,'2025-07-05 12:38:48'),
-(4,1.65,1.80,8,1268192,'2025-07-05 12:38:48'),
-(5,33.15,36.02,9,1268192,'2025-07-05 12:38:48'),
-(6,3.31,3.60,11,1268192,'2025-07-05 12:38:48'),
-(7,49.25,48.27,13,1268192,'2025-07-05 12:38:48'),
-(8,0.36,0.35,1,1272951,'2025-07-05 12:48:06'),
-(9,0.24,0.24,3,1272951,'2025-07-05 12:48:06'),
-(10,4.60,4.99,6,1272951,'2025-07-05 12:48:06'),
-(11,7.67,8.33,7,1272951,'2025-07-05 12:48:06'),
-(12,1.15,1.25,8,1272951,'2025-07-05 12:48:06'),
-(13,23.00,24.99,9,1272951,'2025-07-05 12:48:06'),
-(14,2.30,2.49,11,1272951,'2025-07-05 12:48:06'),
-(15,34.19,33.51,13,1272951,'2025-07-05 12:48:06'),
-(16,0.31,0.31,1,1277675,'2025-07-05 12:58:58'),
-(17,0.12,0.12,3,1277675,'2025-07-05 12:58:58'),
-(18,2.40,2.61,6,1277675,'2025-07-05 12:58:58'),
-(19,4.17,4.53,7,1277675,'2025-07-05 12:58:58'),
-(20,0.60,0.65,8,1277675,'2025-07-05 12:58:58'),
-(21,12.05,13.09,9,1277675,'2025-07-05 12:58:58'),
-(22,1.20,1.31,11,1277675,'2025-07-05 12:58:58'),
-(23,17.91,17.55,13,1277675,'2025-07-05 12:58:58'),
-(24,7.96,8.66,31,1277675,'2025-07-05 12:58:58'),
-(25,4.30,4.67,6,1294824,'2025-07-05 13:47:37'),
-(26,1.07,1.16,8,1294824,'2025-07-05 13:47:37'),
-(27,21.51,23.38,9,1294824,'2025-07-05 13:47:37'),
-(28,2.15,2.33,11,1294824,'2025-07-05 13:47:37'),
-(29,0.53,0.52,1,1303635,'2025-07-05 14:08:54'),
-(30,0.19,0.19,3,1303635,'2025-07-05 14:08:54'),
-(31,3.80,4.13,6,1303635,'2025-07-05 14:08:54'),
-(32,4.94,5.37,7,1303635,'2025-07-05 14:08:54'),
-(33,0.95,1.03,8,1303635,'2025-07-05 14:08:54'),
-(34,19.00,20.65,9,1303635,'2025-07-05 14:08:54'),
-(35,1.90,2.06,11,1303635,'2025-07-05 14:08:54'),
-(36,22.03,21.60,13,1303635,'2025-07-05 14:08:54'),
-(37,9.42,10.24,31,1303635,'2025-07-05 14:08:54'),
-(38,37.63,40.90,40,1303635,'2025-07-05 14:08:54'),
-(39,1.88,2.04,43,1303635,'2025-07-05 14:08:54'),
-(40,4.03,3.95,1,2788036,'2025-07-08 17:26:12'),
-(41,1.06,1.04,3,2788036,'2025-07-08 17:26:12'),
-(42,20.44,22.22,6,2788036,'2025-07-08 17:26:12'),
-(43,26.59,28.90,7,2788036,'2025-07-08 17:26:12'),
-(44,5.11,5.55,8,2788036,'2025-07-08 17:26:12'),
-(45,102.23,111.09,9,2788036,'2025-07-08 17:26:12'),
-(46,10.22,11.11,11,2788036,'2025-07-08 17:26:12'),
-(47,118.96,116.60,13,2788036,'2025-07-08 17:26:12'),
-(48,50.71,55.10,31,2788036,'2025-07-08 17:26:12'),
-(49,202.49,220.05,40,2788036,'2025-07-08 17:26:12'),
-(50,10.12,11.00,43,2788036,'2025-07-08 17:26:12'),
-(51,15.15,16.47,74,2788036,'2025-07-08 17:26:12'),
-(52,0.95,0.93,1,45654750941,'2025-07-08 17:33:50'),
-(53,0.25,0.24,3,45654750941,'2025-07-08 17:33:50'),
-(54,4.82,5.24,6,45654750941,'2025-07-08 17:33:50'),
-(55,6.27,6.82,7,45654750941,'2025-07-08 17:33:50'),
-(56,1.20,1.31,8,45654750941,'2025-07-08 17:33:50'),
-(57,24.13,26.22,9,45654750941,'2025-07-08 17:33:50'),
-(58,2.41,2.62,11,45654750941,'2025-07-08 17:33:50'),
-(59,28.08,27.52,13,45654750941,'2025-07-08 17:33:50'),
-(60,11.96,13.00,31,45654750941,'2025-07-08 17:33:50'),
-(61,47.79,51.94,40,45654750941,'2025-07-08 17:33:50'),
-(62,2.38,2.59,43,45654750941,'2025-07-08 17:33:50'),
-(63,3.57,3.88,74,45654750941,'2025-07-08 17:33:50'),
-(64,12.05,11.81,1,2826961,'2025-07-08 17:41:13'),
-(65,1.14,1.12,3,2826961,'2025-07-08 17:41:13'),
-(66,20.72,22.52,6,2826961,'2025-07-08 17:41:13'),
-(67,27.02,29.36,7,2826961,'2025-07-08 17:41:13'),
-(68,5.18,5.63,8,2826961,'2025-07-08 17:41:13'),
-(69,103.62,112.60,9,2826961,'2025-07-08 17:41:13'),
-(70,10.36,11.26,11,2826961,'2025-07-08 17:41:13'),
-(71,121.09,118.69,13,2826961,'2025-07-08 17:41:13'),
-(72,51.39,55.85,31,2826961,'2025-07-08 17:41:13'),
-(73,205.24,223.03,40,2826961,'2025-07-08 17:41:13'),
-(74,10.26,11.15,43,2826961,'2025-07-08 17:41:13'),
-(75,15.36,16.69,74,2826961,'2025-07-08 17:41:13'),
-(76,12.05,11.81,1,2826984,'2025-07-08 17:41:15'),
-(77,1.14,1.12,3,2826984,'2025-07-08 17:41:15'),
-(78,20.72,22.52,6,2826984,'2025-07-08 17:41:15'),
-(79,27.02,29.36,7,2826984,'2025-07-08 17:41:15'),
-(80,5.18,5.63,8,2826984,'2025-07-08 17:41:15'),
-(81,103.62,112.60,9,2826984,'2025-07-08 17:41:15'),
-(82,10.36,11.26,11,2826984,'2025-07-08 17:41:15'),
-(83,121.09,118.69,13,2826984,'2025-07-08 17:41:15'),
-(84,51.39,55.85,31,2826984,'2025-07-08 17:41:15'),
-(85,205.24,223.03,40,2826984,'2025-07-08 17:41:15'),
-(86,10.26,11.15,43,2826984,'2025-07-08 17:41:15'),
-(87,15.36,16.69,74,2826984,'2025-07-08 17:41:15'),
-(88,9.41,9.22,1,2827017,'2025-07-08 17:41:16'),
-(89,0.89,0.88,3,2827017,'2025-07-08 17:41:16'),
-(90,16.18,17.58,6,2827017,'2025-07-08 17:41:16'),
-(91,21.10,22.93,7,2827017,'2025-07-08 17:41:16'),
-(92,4.04,4.39,8,2827017,'2025-07-08 17:41:16'),
-(93,80.91,87.93,9,2827017,'2025-07-08 17:41:16'),
-(94,8.09,8.79,11,2827017,'2025-07-08 17:41:16'),
-(95,94.56,92.69,13,2827017,'2025-07-08 17:41:16'),
-(96,40.13,43.61,31,2827017,'2025-07-08 17:41:16'),
-(97,160.26,174.16,40,2827017,'2025-07-08 17:41:16'),
-(98,8.01,8.70,43,2827017,'2025-07-08 17:41:16'),
-(99,11.99,13.03,74,2827017,'2025-07-08 17:41:16');
-/*!40000 ALTER TABLE `wallet` ENABLE KEYS */;
-UNLOCK TABLES;
+INSERT INTO `wallet` (`id`, `master_wallet`, `client_wallet`, `member_id`, `order_id`, `created_at`) VALUES
+(1, 0.34, 0.33, 3, 1268192, '2025-07-05 12:38:48'),
+(2, 6.63, 7.20, 6, 1268192, '2025-07-05 12:38:48'),
+(3, 11.05, 12.01, 7, 1268192, '2025-07-05 12:38:48'),
+(4, 1.65, 1.80, 8, 1268192, '2025-07-05 12:38:48'),
+(5, 33.15, 36.02, 9, 1268192, '2025-07-05 12:38:48'),
+(6, 3.31, 3.60, 11, 1268192, '2025-07-05 12:38:48'),
+(7, 49.25, 48.27, 13, 1268192, '2025-07-05 12:38:48'),
+(8, 0.36, 0.35, 1, 1272951, '2025-07-05 12:48:06'),
+(9, 0.24, 0.24, 3, 1272951, '2025-07-05 12:48:06'),
+(10, 4.60, 4.99, 6, 1272951, '2025-07-05 12:48:06'),
+(11, 7.67, 8.33, 7, 1272951, '2025-07-05 12:48:06'),
+(12, 1.15, 1.25, 8, 1272951, '2025-07-05 12:48:06'),
+(13, 23.00, 24.99, 9, 1272951, '2025-07-05 12:48:06'),
+(14, 2.30, 2.49, 11, 1272951, '2025-07-05 12:48:06'),
+(15, 34.19, 33.51, 13, 1272951, '2025-07-05 12:48:06'),
+(16, 0.31, 0.31, 1, 1277675, '2025-07-05 12:58:58'),
+(17, 0.12, 0.12, 3, 1277675, '2025-07-05 12:58:58'),
+(18, 2.40, 2.61, 6, 1277675, '2025-07-05 12:58:58'),
+(19, 4.17, 4.53, 7, 1277675, '2025-07-05 12:58:58'),
+(20, 0.60, 0.65, 8, 1277675, '2025-07-05 12:58:58'),
+(21, 12.05, 13.09, 9, 1277675, '2025-07-05 12:58:58'),
+(22, 1.20, 1.31, 11, 1277675, '2025-07-05 12:58:58'),
+(23, 17.91, 17.55, 13, 1277675, '2025-07-05 12:58:58'),
+(24, 7.96, 8.66, 31, 1277675, '2025-07-05 12:58:58'),
+(25, 4.30, 4.67, 6, 1294824, '2025-07-05 13:47:37'),
+(26, 1.07, 1.16, 8, 1294824, '2025-07-05 13:47:37'),
+(27, 21.51, 23.38, 9, 1294824, '2025-07-05 13:47:37'),
+(28, 2.15, 2.33, 11, 1294824, '2025-07-05 13:47:37'),
+(29, 0.53, 0.52, 1, 1303635, '2025-07-05 14:08:54'),
+(30, 0.19, 0.19, 3, 1303635, '2025-07-05 14:08:54'),
+(31, 3.80, 4.13, 6, 1303635, '2025-07-05 14:08:54'),
+(32, 4.94, 5.37, 7, 1303635, '2025-07-05 14:08:54'),
+(33, 0.95, 1.03, 8, 1303635, '2025-07-05 14:08:54'),
+(34, 19.00, 20.65, 9, 1303635, '2025-07-05 14:08:54'),
+(35, 1.90, 2.06, 11, 1303635, '2025-07-05 14:08:54'),
+(36, 22.03, 21.60, 13, 1303635, '2025-07-05 14:08:54'),
+(37, 9.42, 10.24, 31, 1303635, '2025-07-05 14:08:54'),
+(38, 37.63, 40.90, 40, 1303635, '2025-07-05 14:08:54'),
+(39, 1.88, 2.04, 43, 1303635, '2025-07-05 14:08:54'),
+(40, 0.95, 0.93, 1, 45654750941, '2025-07-10 03:41:02'),
+(41, 0.25, 0.24, 3, 45654750941, '2025-07-10 03:41:02'),
+(42, 4.82, 5.24, 6, 45654750941, '2025-07-10 03:41:02'),
+(43, 6.27, 6.82, 7, 45654750941, '2025-07-10 03:41:02'),
+(44, 1.20, 1.31, 8, 45654750941, '2025-07-10 03:41:02'),
+(45, 24.13, 26.22, 9, 45654750941, '2025-07-10 03:41:02'),
+(46, 2.41, 2.62, 11, 45654750941, '2025-07-10 03:41:02'),
+(47, 28.08, 27.52, 13, 45654750941, '2025-07-10 03:41:02'),
+(48, 11.96, 13.00, 31, 45654750941, '2025-07-10 03:41:02'),
+(49, 47.79, 51.94, 40, 45654750941, '2025-07-10 03:41:02'),
+(50, 2.38, 2.59, 43, 45654750941, '2025-07-10 03:41:02'),
+(51, 3.57, 3.88, 74, 45654750941, '2025-07-10 03:41:02'),
+(52, 2.98, 2.92, 1, 4005762, '2025-07-11 07:01:53'),
+(53, 0.58, 0.57, 3, 4005762, '2025-07-11 07:01:53'),
+(54, 10.99, 11.94, 6, 4005762, '2025-07-11 07:01:53'),
+(55, 14.40, 15.65, 7, 4005762, '2025-07-11 07:01:53'),
+(56, 2.75, 2.98, 8, 4005762, '2025-07-11 07:01:53'),
+(57, 54.94, 59.71, 9, 4005762, '2025-07-11 07:01:53'),
+(58, 5.49, 5.97, 11, 4005762, '2025-07-11 07:01:53'),
+(59, 63.99, 62.72, 13, 4005762, '2025-07-11 07:01:53'),
+(60, 27.25, 29.61, 31, 4005762, '2025-07-11 07:01:53'),
+(61, 108.82, 118.26, 40, 4005762, '2025-07-11 07:01:53'),
+(62, 5.44, 5.91, 43, 4005762, '2025-07-11 07:01:53'),
+(63, 8.14, 8.85, 74, 4005762, '2025-07-11 07:01:53'),
+(64, 5.41, 5.88, 78, 4005762, '2025-07-11 07:01:53'),
+(65, 1.12, 1.10, 1, 45851298969, '2025-07-11 14:54:02'),
+(66, 0.13, 0.13, 3, 45851298969, '2025-07-11 14:54:02'),
+(67, 2.52, 2.74, 6, 45851298969, '2025-07-11 14:54:02'),
+(68, 3.31, 3.60, 7, 45851298969, '2025-07-11 14:54:02'),
+(69, 0.63, 0.68, 8, 45851298969, '2025-07-11 14:54:02'),
+(70, 12.64, 13.73, 9, 45851298969, '2025-07-11 14:54:02'),
+(71, 1.26, 1.37, 11, 45851298969, '2025-07-11 14:54:02'),
+(72, 14.74, 14.45, 13, 45851298969, '2025-07-11 14:54:02'),
+(73, 6.27, 6.81, 31, 45851298969, '2025-07-11 14:54:02'),
+(74, 25.03, 27.20, 40, 45851298969, '2025-07-11 14:54:02'),
+(75, 1.25, 1.36, 43, 45851298969, '2025-07-11 14:54:02'),
+(76, 1.87, 2.03, 74, 45851298969, '2025-07-11 14:54:02'),
+(77, 1.24, 1.35, 78, 45851298969, '2025-07-11 14:54:02'),
+(78, 0.72, 0.71, 1, 45889181282, '2025-07-12 06:33:09'),
+(79, 0.08, 0.08, 3, 45889181282, '2025-07-12 06:33:09'),
+(80, 1.50, 1.63, 6, 45889181282, '2025-07-12 06:33:09'),
+(81, 1.97, 2.15, 7, 45889181282, '2025-07-12 06:33:09'),
+(82, 0.37, 0.40, 8, 45889181282, '2025-07-12 06:33:09'),
+(83, 7.53, 8.18, 9, 45889181282, '2025-07-12 06:33:09'),
+(84, 0.75, 0.81, 11, 45889181282, '2025-07-12 06:33:09'),
+(85, 8.79, 8.62, 13, 45889181282, '2025-07-12 06:33:09'),
+(86, 3.73, 4.06, 31, 45889181282, '2025-07-12 06:33:09'),
+(87, 14.92, 16.22, 40, 45889181282, '2025-07-12 06:33:09'),
+(88, 0.74, 0.81, 43, 45889181282, '2025-07-12 06:33:09'),
+(89, 1.11, 1.21, 74, 45889181282, '2025-07-12 06:33:09'),
+(90, 0.74, 0.80, 78, 45889181282, '2025-07-12 06:33:09'),
+(91, 1.24, 1.22, 1, 45926021021, '2025-07-13 22:19:02'),
+(92, 0.13, 0.13, 3, 45926021021, '2025-07-13 22:19:02'),
+(93, 2.49, 2.71, 6, 45926021021, '2025-07-13 22:19:02'),
+(94, 3.27, 3.56, 7, 45926021021, '2025-07-13 22:19:02'),
+(95, 0.62, 0.67, 8, 45926021021, '2025-07-13 22:19:02'),
+(96, 12.47, 13.55, 9, 45926021021, '2025-07-13 22:19:02'),
+(97, 1.24, 1.35, 11, 45926021021, '2025-07-13 22:19:02'),
+(98, 14.56, 14.27, 13, 45926021021, '2025-07-13 22:19:02'),
+(99, 6.18, 6.72, 31, 45926021021, '2025-07-13 22:19:02'),
+(100, 24.71, 26.85, 40, 45926021021, '2025-07-13 22:19:02'),
+(101, 1.23, 1.34, 43, 45926021021, '2025-07-13 22:19:02'),
+(102, 1.84, 2.00, 74, 45926021021, '2025-07-13 22:19:02'),
+(103, 1.23, 1.33, 78, 45926021021, '2025-07-13 22:19:02'),
+(104, 6.10, 5.98, 1, 46147544936, '2025-07-21 08:39:28'),
+(105, 0.62, 0.61, 3, 46147544936, '2025-07-21 08:39:28'),
+(106, 11.31, 12.29, 6, 46147544936, '2025-07-21 08:39:28'),
+(107, 14.87, 16.16, 7, 46147544936, '2025-07-21 08:39:28'),
+(108, 2.82, 3.07, 8, 46147544936, '2025-07-21 08:39:28'),
+(109, 56.59, 61.49, 9, 46147544936, '2025-07-21 08:39:28'),
+(110, 5.65, 6.14, 11, 46147544936, '2025-07-21 08:39:28'),
+(111, 66.10, 64.79, 13, 46147544936, '2025-07-21 08:39:28'),
+(112, 28.07, 30.50, 31, 46147544936, '2025-07-21 08:39:28'),
+(113, 112.08, 121.80, 40, 46147544936, '2025-07-21 08:39:28'),
+(114, 5.60, 6.09, 43, 46147544936, '2025-07-21 08:39:28'),
+(115, 8.38, 9.11, 74, 46147544936, '2025-07-21 08:39:28'),
+(116, 5.57, 6.06, 78, 46147544936, '2025-07-21 08:39:28');
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `withdraw`
 --
 
-DROP TABLE IF EXISTS `withdraw`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `withdraw` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `member_id` int(11) NOT NULL,
-  `withdraw_type` enum('fiat','usdt','btc','usdc') NOT NULL DEFAULT 'fiat',
+  `id` int NOT NULL,
+  `member_id` int NOT NULL,
+  `withdraw_type` enum('fiat','usdt','btc','usdc') CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'fiat',
   `amount` decimal(18,6) NOT NULL,
-  `payment_details` text DEFAULT NULL,
+  `payment_details` text,
   `wallet_address` varchar(255) DEFAULT NULL,
   `status` enum('pending','rejected','completed') NOT NULL DEFAULT 'pending',
-  `jenis` enum('trade','withdraw','balance','comission') NOT NULL DEFAULT 'withdraw',
-  `requested_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `jenis` enum('trade','withdraw','balance','comission') CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'withdraw',
+  `requested_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `processed_at` datetime DEFAULT NULL,
-  `admin_notes` text DEFAULT NULL,
-  `ref_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `member_id` (`member_id`),
-  KEY `withdraw_ref_fk` (`ref_id`),
-  CONSTRAINT `withdraw_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`),
-  CONSTRAINT `withdraw_ref_fk` FOREIGN KEY (`ref_id`) REFERENCES `withdraw` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=219 DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  `admin_notes` text,
+  `ref_id` int DEFAULT NULL,
+  `is_topup` enum('yes','no') NOT NULL DEFAULT 'no'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `withdraw`
 --
 
-LOCK TABLES `withdraw` WRITE;
-/*!40000 ALTER TABLE `withdraw` DISABLE KEYS */;
-INSERT INTO `withdraw` VALUES
-(1,6,'usdt',2000.000000,NULL,NULL,'pending','trade','2025-07-04 14:05:18',NULL,NULL,NULL),
-(2,8,'usdt',500.000000,NULL,NULL,'pending','trade','2025-07-04 14:05:18',NULL,NULL,NULL),
-(3,9,'usdt',10000.000000,NULL,NULL,'pending','trade','2025-07-04 14:05:18',NULL,NULL,NULL),
-(4,11,'usdt',1000.000000,NULL,NULL,'pending','trade','2025-07-04 14:05:18',NULL,NULL,NULL),
-(5,3,'usdt',70.000000,NULL,NULL,'pending','comission','2025-07-04 14:05:18',NULL,NULL,NULL),
-(6,3,'usdt',70.000000,NULL,NULL,'pending','trade','2025-07-04 14:05:18',NULL,NULL,NULL),
-(7,7,'usdt',2500.000000,NULL,NULL,'pending','trade','2025-07-04 14:16:24',NULL,NULL,NULL),
-(8,13,'usdt',10000.000000,NULL,NULL,'pending','trade','2025-07-04 14:16:24',NULL,NULL,NULL),
-(9,13,'usdt',50.000000,NULL,NULL,'pending','comission','2025-07-04 14:05:18',NULL,NULL,NULL),
-(10,13,'usdt',50.000000,NULL,NULL,'pending','trade','2025-07-04 14:05:18',NULL,NULL,NULL),
-(11,3,'usdt',0.720000,NULL,NULL,'pending','comission','2025-07-05 12:38:48',NULL,NULL,NULL),
-(12,3,'usdt',0.720000,NULL,NULL,'pending','trade','2025-07-05 12:38:48',NULL,NULL,NULL),
-(13,13,'usdt',1.200000,NULL,NULL,'pending','comission','2025-07-05 12:38:48',NULL,NULL,NULL),
-(14,13,'usdt',1.200000,NULL,NULL,'pending','trade','2025-07-05 12:38:48',NULL,NULL,NULL),
-(15,3,'usdt',0.180000,NULL,NULL,'pending','comission','2025-07-05 12:38:48',NULL,NULL,NULL),
-(16,3,'usdt',0.180000,NULL,NULL,'pending','trade','2025-07-05 12:38:48',NULL,NULL,NULL),
-(17,13,'usdt',3.600000,NULL,NULL,'pending','comission','2025-07-05 12:38:48',NULL,NULL,NULL),
-(18,13,'usdt',3.600000,NULL,NULL,'pending','trade','2025-07-05 12:38:48',NULL,NULL,NULL),
-(19,3,'usdt',0.360000,NULL,NULL,'pending','comission','2025-07-05 12:38:48',NULL,NULL,NULL),
-(20,3,'usdt',0.360000,NULL,NULL,'pending','trade','2025-07-05 12:38:48',NULL,NULL,NULL),
-(21,3,'usdt',0.490000,NULL,NULL,'pending','comission','2025-07-05 12:48:06',NULL,NULL,NULL),
-(22,3,'usdt',0.490000,NULL,NULL,'pending','trade','2025-07-05 12:48:06',NULL,NULL,NULL),
-(23,13,'usdt',0.830000,NULL,NULL,'pending','comission','2025-07-05 12:48:06',NULL,NULL,NULL),
-(24,13,'usdt',0.830000,NULL,NULL,'pending','trade','2025-07-05 12:48:06',NULL,NULL,NULL),
-(25,3,'usdt',0.120000,NULL,NULL,'pending','comission','2025-07-05 12:48:06',NULL,NULL,NULL),
-(26,3,'usdt',0.120000,NULL,NULL,'pending','trade','2025-07-05 12:48:06',NULL,NULL,NULL),
-(27,13,'usdt',2.490000,NULL,NULL,'pending','comission','2025-07-05 12:48:06',NULL,NULL,NULL),
-(28,13,'usdt',2.490000,NULL,NULL,'pending','trade','2025-07-05 12:48:06',NULL,NULL,NULL),
-(29,3,'usdt',0.240000,NULL,NULL,'pending','comission','2025-07-05 12:48:06',NULL,NULL,NULL),
-(30,3,'usdt',0.240000,NULL,NULL,'pending','trade','2025-07-05 12:48:06',NULL,NULL,NULL),
-(31,31,'usdt',5000.000000,NULL,NULL,'pending','trade','2025-07-05 12:51:14',NULL,NULL,NULL),
-(32,7,'usdt',100.000000,NULL,NULL,'pending','comission','2025-07-05 12:48:06',NULL,NULL,NULL),
-(33,7,'usdt',100.000000,NULL,NULL,'pending','trade','2025-07-05 12:48:06',NULL,NULL,NULL),
-(34,3,'usdt',0.260000,NULL,NULL,'pending','comission','2025-07-05 12:58:58',NULL,NULL,NULL),
-(35,3,'usdt',0.260000,NULL,NULL,'pending','trade','2025-07-05 12:58:58',NULL,NULL,NULL),
-(36,13,'usdt',0.450000,NULL,NULL,'pending','comission','2025-07-05 12:58:58',NULL,NULL,NULL),
-(37,13,'usdt',0.450000,NULL,NULL,'pending','trade','2025-07-05 12:58:58',NULL,NULL,NULL),
-(38,3,'usdt',0.060000,NULL,NULL,'pending','comission','2025-07-05 12:58:58',NULL,NULL,NULL),
-(39,3,'usdt',0.060000,NULL,NULL,'pending','trade','2025-07-05 12:58:58',NULL,NULL,NULL),
-(40,13,'usdt',1.300000,NULL,NULL,'pending','comission','2025-07-05 12:58:58',NULL,NULL,NULL),
-(41,13,'usdt',1.300000,NULL,NULL,'pending','trade','2025-07-05 12:58:58',NULL,NULL,NULL),
-(42,3,'usdt',0.130000,NULL,NULL,'pending','comission','2025-07-05 12:58:58',NULL,NULL,NULL),
-(43,3,'usdt',0.130000,NULL,NULL,'pending','trade','2025-07-05 12:58:58',NULL,NULL,NULL),
-(44,7,'usdt',0.860000,NULL,NULL,'pending','comission','2025-07-05 12:58:58',NULL,NULL,NULL),
-(45,7,'usdt',0.860000,NULL,NULL,'pending','trade','2025-07-05 12:58:58',NULL,NULL,NULL),
-(46,3,'usdt',0.460000,NULL,NULL,'pending','comission','2025-07-05 13:47:37',NULL,NULL,NULL),
-(47,3,'usdt',0.460000,NULL,NULL,'pending','trade','2025-07-05 13:47:37',NULL,NULL,NULL),
-(48,3,'usdt',0.110000,NULL,NULL,'pending','comission','2025-07-05 13:47:37',NULL,NULL,NULL),
-(49,3,'usdt',0.110000,NULL,NULL,'pending','trade','2025-07-05 13:47:37',NULL,NULL,NULL),
-(50,13,'usdt',2.330000,NULL,NULL,'pending','comission','2025-07-05 13:47:37',NULL,NULL,NULL),
-(51,13,'usdt',2.330000,NULL,NULL,'pending','trade','2025-07-05 13:47:37',NULL,NULL,NULL),
-(52,3,'usdt',0.230000,NULL,NULL,'pending','comission','2025-07-05 13:47:37',NULL,NULL,NULL),
-(53,3,'usdt',0.230000,NULL,NULL,'pending','trade','2025-07-05 13:47:37',NULL,NULL,NULL),
-(54,40,'usdt',20000.000000,NULL,NULL,'pending','trade','2025-07-05 12:51:14',NULL,NULL,NULL),
-(55,43,'usdt',1000.000000,NULL,NULL,'pending','trade','2025-07-05 12:51:14',NULL,NULL,NULL),
-(56,13,'usdt',400.000000,NULL,NULL,'pending','comission','2025-07-05 13:47:37',NULL,NULL,NULL),
-(57,13,'usdt',400.000000,NULL,NULL,'pending','trade','2025-07-05 13:47:37',NULL,NULL,NULL),
-(58,3,'usdt',20.000000,NULL,NULL,'pending','comission','2025-07-05 13:47:37',NULL,NULL,NULL),
-(59,3,'usdt',20.000000,NULL,NULL,'pending','trade','2025-07-05 13:47:37',NULL,NULL,NULL),
-(60,3,'usdt',0.410000,NULL,NULL,'pending','comission','2025-07-05 14:08:54',NULL,NULL,NULL),
-(61,3,'usdt',0.410000,NULL,NULL,'pending','trade','2025-07-05 14:08:54',NULL,NULL,NULL),
-(62,13,'usdt',0.530000,NULL,NULL,'pending','comission','2025-07-05 14:08:54',NULL,NULL,NULL),
-(63,13,'usdt',0.530000,NULL,NULL,'pending','trade','2025-07-05 14:08:54',NULL,NULL,NULL),
-(64,3,'usdt',0.100000,NULL,NULL,'pending','comission','2025-07-05 14:08:54',NULL,NULL,NULL),
-(65,3,'usdt',0.100000,NULL,NULL,'pending','trade','2025-07-05 14:08:54',NULL,NULL,NULL),
-(66,13,'usdt',2.060000,NULL,NULL,'pending','comission','2025-07-05 14:08:54',NULL,NULL,NULL),
-(67,13,'usdt',2.060000,NULL,NULL,'pending','trade','2025-07-05 14:08:54',NULL,NULL,NULL),
-(68,3,'usdt',0.200000,NULL,NULL,'pending','comission','2025-07-05 14:08:54',NULL,NULL,NULL),
-(69,3,'usdt',0.200000,NULL,NULL,'pending','trade','2025-07-05 14:08:54',NULL,NULL,NULL),
-(70,7,'usdt',1.020000,NULL,NULL,'pending','comission','2025-07-05 14:08:54',NULL,NULL,NULL),
-(71,7,'usdt',1.020000,NULL,NULL,'pending','trade','2025-07-05 14:08:54',NULL,NULL,NULL),
-(72,13,'usdt',4.090000,NULL,NULL,'pending','comission','2025-07-05 14:08:54',NULL,NULL,NULL),
-(73,13,'usdt',4.090000,NULL,NULL,'pending','trade','2025-07-05 14:08:54',NULL,NULL,NULL),
-(74,3,'usdt',0.200000,NULL,NULL,'pending','comission','2025-07-05 14:08:54',NULL,NULL,NULL),
-(75,3,'usdt',0.200000,NULL,NULL,'pending','trade','2025-07-05 14:08:54',NULL,NULL,NULL),
-(76,13,'usdt',30.000000,NULL,NULL,'pending','comission','2025-07-06 11:36:09',NULL,NULL,NULL),
-(77,13,'usdt',30.000000,NULL,NULL,'pending','trade','2025-07-06 11:36:09',NULL,NULL,NULL),
-(78,74,'usdt',1500.000000,NULL,NULL,'pending','trade','2025-07-06 11:41:25',NULL,NULL,NULL),
-(79,3,'usdt',2.220000,NULL,NULL,'pending','comission','2025-07-08 17:26:12',NULL,NULL,NULL),
-(80,3,'usdt',2.220000,NULL,NULL,'pending','trade','2025-07-08 17:26:12',NULL,NULL,NULL),
-(81,13,'usdt',2.890000,NULL,NULL,'pending','comission','2025-07-08 17:26:12',NULL,NULL,NULL),
-(82,13,'usdt',2.890000,NULL,NULL,'pending','trade','2025-07-08 17:26:12',NULL,NULL,NULL),
-(83,3,'usdt',0.550000,NULL,NULL,'pending','comission','2025-07-08 17:26:12',NULL,NULL,NULL),
-(84,3,'usdt',0.550000,NULL,NULL,'pending','trade','2025-07-08 17:26:12',NULL,NULL,NULL),
-(85,13,'usdt',11.100000,NULL,NULL,'pending','comission','2025-07-08 17:26:12',NULL,NULL,NULL),
-(86,13,'usdt',11.100000,NULL,NULL,'pending','trade','2025-07-08 17:26:12',NULL,NULL,NULL),
-(87,3,'usdt',1.110000,NULL,NULL,'pending','comission','2025-07-08 17:26:12',NULL,NULL,NULL),
-(88,3,'usdt',1.110000,NULL,NULL,'pending','trade','2025-07-08 17:26:12',NULL,NULL,NULL),
-(89,7,'usdt',5.510000,NULL,NULL,'pending','comission','2025-07-08 17:26:12',NULL,NULL,NULL),
-(90,7,'usdt',5.510000,NULL,NULL,'pending','trade','2025-07-08 17:26:12',NULL,NULL,NULL),
-(91,13,'usdt',22.000000,NULL,NULL,'pending','comission','2025-07-08 17:26:12',NULL,NULL,NULL),
-(92,13,'usdt',22.000000,NULL,NULL,'pending','trade','2025-07-08 17:26:12',NULL,NULL,NULL),
-(93,3,'usdt',1.100000,NULL,NULL,'pending','comission','2025-07-08 17:26:12',NULL,NULL,NULL),
-(94,3,'usdt',1.100000,NULL,NULL,'pending','trade','2025-07-08 17:26:12',NULL,NULL,NULL),
-(95,13,'usdt',1.640000,NULL,NULL,'pending','comission','2025-07-08 17:26:12',NULL,NULL,NULL),
-(96,13,'usdt',1.640000,NULL,NULL,'pending','trade','2025-07-08 17:26:12',NULL,NULL,NULL),
-(97,3,'usdt',0.520000,NULL,NULL,'pending','comission','2025-07-08 17:33:50',NULL,NULL,NULL),
-(98,3,'usdt',0.520000,NULL,NULL,'pending','trade','2025-07-08 17:33:50',NULL,NULL,NULL),
-(99,13,'usdt',0.680000,NULL,NULL,'pending','comission','2025-07-08 17:33:50',NULL,NULL,NULL),
-(100,13,'usdt',0.680000,NULL,NULL,'pending','trade','2025-07-08 17:33:50',NULL,NULL,NULL),
-(101,3,'usdt',0.130000,NULL,NULL,'pending','comission','2025-07-08 17:33:50',NULL,NULL,NULL),
-(102,3,'usdt',0.130000,NULL,NULL,'pending','trade','2025-07-08 17:33:50',NULL,NULL,NULL),
-(103,13,'usdt',2.620000,NULL,NULL,'pending','comission','2025-07-08 17:33:50',NULL,NULL,NULL),
-(104,13,'usdt',2.620000,NULL,NULL,'pending','trade','2025-07-08 17:33:50',NULL,NULL,NULL),
-(105,3,'usdt',0.260000,NULL,NULL,'pending','comission','2025-07-08 17:33:50',NULL,NULL,NULL),
-(106,3,'usdt',0.260000,NULL,NULL,'pending','trade','2025-07-08 17:33:50',NULL,NULL,NULL),
-(107,7,'usdt',1.300000,NULL,NULL,'pending','comission','2025-07-08 17:33:50',NULL,NULL,NULL),
-(108,7,'usdt',1.300000,NULL,NULL,'pending','trade','2025-07-08 17:33:50',NULL,NULL,NULL),
-(109,13,'usdt',5.190000,NULL,NULL,'pending','comission','2025-07-08 17:33:50',NULL,NULL,NULL),
-(110,13,'usdt',5.190000,NULL,NULL,'pending','trade','2025-07-08 17:33:50',NULL,NULL,NULL),
-(111,3,'usdt',0.250000,NULL,NULL,'pending','comission','2025-07-08 17:33:50',NULL,NULL,NULL),
-(112,3,'usdt',0.250000,NULL,NULL,'pending','trade','2025-07-08 17:33:50',NULL,NULL,NULL),
-(113,13,'usdt',0.380000,NULL,NULL,'pending','comission','2025-07-08 17:33:50',NULL,NULL,NULL),
-(114,13,'usdt',0.380000,NULL,NULL,'pending','trade','2025-07-08 17:33:50',NULL,NULL,NULL),
-(115,3,'usdt',2.250000,NULL,NULL,'pending','comission','2025-07-08 17:41:13',NULL,NULL,NULL),
-(116,3,'usdt',2.250000,NULL,NULL,'pending','trade','2025-07-08 17:41:13',NULL,NULL,NULL),
-(117,13,'usdt',2.930000,NULL,NULL,'pending','comission','2025-07-08 17:41:13',NULL,NULL,NULL),
-(118,13,'usdt',2.930000,NULL,NULL,'pending','trade','2025-07-08 17:41:13',NULL,NULL,NULL),
-(119,3,'usdt',0.560000,NULL,NULL,'pending','comission','2025-07-08 17:41:13',NULL,NULL,NULL),
-(120,3,'usdt',0.560000,NULL,NULL,'pending','trade','2025-07-08 17:41:13',NULL,NULL,NULL),
-(121,13,'usdt',11.260000,NULL,NULL,'pending','comission','2025-07-08 17:41:13',NULL,NULL,NULL),
-(122,13,'usdt',11.260000,NULL,NULL,'pending','trade','2025-07-08 17:41:13',NULL,NULL,NULL),
-(123,3,'usdt',1.120000,NULL,NULL,'pending','comission','2025-07-08 17:41:13',NULL,NULL,NULL),
-(124,3,'usdt',1.120000,NULL,NULL,'pending','trade','2025-07-08 17:41:13',NULL,NULL,NULL),
-(125,7,'usdt',5.580000,NULL,NULL,'pending','comission','2025-07-08 17:41:13',NULL,NULL,NULL),
-(126,7,'usdt',5.580000,NULL,NULL,'pending','trade','2025-07-08 17:41:13',NULL,NULL,NULL),
-(127,13,'usdt',22.300000,NULL,NULL,'pending','comission','2025-07-08 17:41:13',NULL,NULL,NULL),
-(128,13,'usdt',22.300000,NULL,NULL,'pending','trade','2025-07-08 17:41:13',NULL,NULL,NULL),
-(129,3,'usdt',1.110000,NULL,NULL,'pending','comission','2025-07-08 17:41:13',NULL,NULL,NULL),
-(130,3,'usdt',1.110000,NULL,NULL,'pending','trade','2025-07-08 17:41:13',NULL,NULL,NULL),
-(131,13,'usdt',1.660000,NULL,NULL,'pending','comission','2025-07-08 17:41:13',NULL,NULL,NULL),
-(132,13,'usdt',1.660000,NULL,NULL,'pending','trade','2025-07-08 17:41:13',NULL,NULL,NULL),
-(133,3,'usdt',2.250000,NULL,NULL,'pending','comission','2025-07-08 17:41:15',NULL,NULL,NULL),
-(134,3,'usdt',2.250000,NULL,NULL,'pending','trade','2025-07-08 17:41:15',NULL,NULL,NULL),
-(135,13,'usdt',2.930000,NULL,NULL,'pending','comission','2025-07-08 17:41:15',NULL,NULL,NULL),
-(136,13,'usdt',2.930000,NULL,NULL,'pending','trade','2025-07-08 17:41:15',NULL,NULL,NULL),
-(137,3,'usdt',0.560000,NULL,NULL,'pending','comission','2025-07-08 17:41:15',NULL,NULL,NULL),
-(138,3,'usdt',0.560000,NULL,NULL,'pending','trade','2025-07-08 17:41:15',NULL,NULL,NULL),
-(139,13,'usdt',11.260000,NULL,NULL,'pending','comission','2025-07-08 17:41:15',NULL,NULL,NULL),
-(140,13,'usdt',11.260000,NULL,NULL,'pending','trade','2025-07-08 17:41:15',NULL,NULL,NULL),
-(141,3,'usdt',1.120000,NULL,NULL,'pending','comission','2025-07-08 17:41:15',NULL,NULL,NULL),
-(142,3,'usdt',1.120000,NULL,NULL,'pending','trade','2025-07-08 17:41:15',NULL,NULL,NULL),
-(143,7,'usdt',5.580000,NULL,NULL,'pending','comission','2025-07-08 17:41:15',NULL,NULL,NULL),
-(144,7,'usdt',5.580000,NULL,NULL,'pending','trade','2025-07-08 17:41:15',NULL,NULL,NULL),
-(145,13,'usdt',22.300000,NULL,NULL,'pending','comission','2025-07-08 17:41:15',NULL,NULL,NULL),
-(146,13,'usdt',22.300000,NULL,NULL,'pending','trade','2025-07-08 17:41:15',NULL,NULL,NULL),
-(147,3,'usdt',1.110000,NULL,NULL,'pending','comission','2025-07-08 17:41:15',NULL,NULL,NULL),
-(148,3,'usdt',1.110000,NULL,NULL,'pending','trade','2025-07-08 17:41:15',NULL,NULL,NULL),
-(149,13,'usdt',1.660000,NULL,NULL,'pending','comission','2025-07-08 17:41:15',NULL,NULL,NULL),
-(150,13,'usdt',1.660000,NULL,NULL,'pending','trade','2025-07-08 17:41:15',NULL,NULL,NULL),
-(151,3,'usdt',1.750000,NULL,NULL,'pending','comission','2025-07-08 17:41:16',NULL,NULL,NULL),
-(152,3,'usdt',1.750000,NULL,NULL,'pending','trade','2025-07-08 17:41:16',NULL,NULL,NULL),
-(153,13,'usdt',2.290000,NULL,NULL,'pending','comission','2025-07-08 17:41:16',NULL,NULL,NULL),
-(154,13,'usdt',2.290000,NULL,NULL,'pending','trade','2025-07-08 17:41:16',NULL,NULL,NULL),
-(155,3,'usdt',0.430000,NULL,NULL,'pending','comission','2025-07-08 17:41:16',NULL,NULL,NULL),
-(156,3,'usdt',0.430000,NULL,NULL,'pending','trade','2025-07-08 17:41:16',NULL,NULL,NULL),
-(157,13,'usdt',8.790000,NULL,NULL,'pending','comission','2025-07-08 17:41:16',NULL,NULL,NULL),
-(158,13,'usdt',8.790000,NULL,NULL,'pending','trade','2025-07-08 17:41:16',NULL,NULL,NULL),
-(159,3,'usdt',0.870000,NULL,NULL,'pending','comission','2025-07-08 17:41:16',NULL,NULL,NULL),
-(160,3,'usdt',0.870000,NULL,NULL,'pending','trade','2025-07-08 17:41:16',NULL,NULL,NULL),
-(161,7,'usdt',4.360000,NULL,NULL,'pending','comission','2025-07-08 17:41:16',NULL,NULL,NULL),
-(162,7,'usdt',4.360000,NULL,NULL,'pending','trade','2025-07-08 17:41:16',NULL,NULL,NULL),
-(163,13,'usdt',17.410000,NULL,NULL,'pending','comission','2025-07-08 17:41:16',NULL,NULL,NULL),
-(164,13,'usdt',17.410000,NULL,NULL,'pending','trade','2025-07-08 17:41:16',NULL,NULL,NULL),
-(165,3,'usdt',0.870000,NULL,NULL,'pending','comission','2025-07-08 17:41:16',NULL,NULL,NULL),
-(166,3,'usdt',0.870000,NULL,NULL,'pending','trade','2025-07-08 17:41:16',NULL,NULL,NULL),
-(167,13,'usdt',1.300000,NULL,NULL,'pending','comission','2025-07-08 17:41:16',NULL,NULL,NULL),
-(168,13,'usdt',1.300000,NULL,NULL,'pending','trade','2025-07-08 17:41:16',NULL,NULL,NULL),
-(169,7,'usdt',100.000000,NULL,NULL,'pending','balance','2025-07-09 10:23:47',NULL,NULL,NULL),
-(170,7,'usdt',100.000000,'{\"recipient\":null,\"routing_number\":null,\"account_type\":null,\"swift_code\":null,\"address\":null,\"network\":\"BEP20\"}','0x000000000000000000000000000000000000dEaD','completed','withdraw','2025-07-09 10:24:28',NULL,NULL,NULL),
-(172,1,'usdt',6.000000,NULL,NULL,'pending','balance','2025-07-09 10:51:17',NULL,NULL,NULL),
-(173,7,'usdt',71.000000,NULL,NULL,'pending','balance','2025-07-09 10:53:38',NULL,NULL,NULL),
-(174,7,'usdt',71.000000,'{\"recipient\":null,\"routing_number\":null,\"account_type\":null,\"swift_code\":null,\"address\":null,\"network\":\"BEP20\"}','0x000000000000000000000000000000000000dEaD','completed','withdraw','2025-07-09 10:54:01',NULL,NULL,NULL),
-(175,7,'btc',0.001905,NULL,NULL,'pending','balance','2025-07-09 11:09:21',NULL,NULL,NULL),
-(177,7,'usdt',4.000000,NULL,NULL,'pending','balance','2025-07-09 13:37:08',NULL,NULL,NULL),
-(178,7,'usdt',1.000000,NULL,NULL,'pending','balance','2025-07-09 13:37:26',NULL,NULL,NULL),
-(179,7,'btc',0.001905,'{\"recipient\":null,\"routing_number\":null,\"account_type\":null,\"swift_code\":null,\"address\":null,\"network\":\"Bitcoin\"}','1BitcoinEaterAddressDontSendf59kuE','completed','withdraw','2025-07-09 13:37:35',NULL,NULL,NULL),
-(180,1,'usdt',5.710000,NULL,NULL,'pending','balance','2025-07-09 14:07:27',NULL,NULL,NULL),
-(185,1,'usdt',5.000000,NULL,NULL,'pending','balance','2025-07-09 14:13:50',NULL,NULL,NULL),
-(186,1,'btc',0.000019,NULL,NULL,'pending','balance','2025-07-09 14:13:50',NULL,NULL,NULL),
-(187,7,'btc',0.002000,NULL,NULL,'pending','balance','2025-07-09 15:42:01',NULL,NULL,NULL),
-(207,7,'usdt',15.000000,NULL,NULL,'pending','balance','2025-07-09 17:07:07',NULL,NULL,NULL),
-(212,7,'usdt',15.000000,'{\"recipient\":null,\"routing_number\":null,\"account_type\":null,\"swift_code\":null,\"address\":null,\"network\":\"BEP20\"}','0x000000000000000000000000000000000000dEaD','rejected','withdraw','2025-07-09 17:09:58',NULL,NULL,NULL),
-(213,7,'btc',0.002000,'{\"recipient\":null,\"routing_number\":null,\"account_type\":null,\"swift_code\":null,\"address\":null,\"network\":\"Bitcoin\"}','1BitcoinEaterAddressDontSendf59kuE','rejected','withdraw','2025-07-09 17:13:10',NULL,NULL,NULL),
-(215,7,'btc',0.002000,'{\"recipient\":null,\"routing_number\":null,\"account_type\":null,\"swift_code\":null,\"address\":null,\"network\":\"Bitcoin\"}','1BitcoinEaterAddressDontSendf59kuE','completed','withdraw','2025-07-09 17:13:51',NULL,NULL,NULL),
-(216,7,'usdt',5.000000,NULL,'fee','completed','withdraw','2025-07-09 17:13:51',NULL,NULL,215),
-(217,1,'usdt',5.000000,NULL,'fee','pending','balance','2025-07-09 17:14:10',NULL,NULL,NULL),
-(218,1,'btc',0.000020,NULL,'fee','pending','balance','2025-07-09 17:14:10',NULL,NULL,NULL);
-/*!40000 ALTER TABLE `withdraw` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+INSERT INTO `withdraw` (`id`, `member_id`, `withdraw_type`, `amount`, `payment_details`, `wallet_address`, `status`, `jenis`, `requested_at`, `processed_at`, `admin_notes`, `ref_id`, `is_topup`) VALUES
+(1, 6, 'usdt', 2000.000000, NULL, NULL, 'pending', 'trade', '2025-07-04 14:05:18', NULL, NULL, NULL, 'no'),
+(2, 8, 'usdt', 500.000000, NULL, NULL, 'pending', 'trade', '2025-07-04 14:05:18', NULL, NULL, NULL, 'no'),
+(3, 9, 'usdt', 10000.000000, NULL, NULL, 'pending', 'trade', '2025-07-04 14:05:18', NULL, NULL, NULL, 'no'),
+(4, 11, 'usdt', 1000.000000, NULL, NULL, 'pending', 'trade', '2025-07-04 14:05:18', NULL, NULL, NULL, 'no'),
+(5, 3, 'usdt', 70.000000, NULL, NULL, 'pending', 'comission', '2025-07-04 14:05:18', NULL, NULL, NULL, 'no'),
+(6, 3, 'usdt', 70.000000, NULL, NULL, 'pending', 'trade', '2025-07-04 14:05:18', NULL, NULL, NULL, 'no'),
+(7, 7, 'usdt', 2500.000000, NULL, NULL, 'pending', 'trade', '2025-07-04 14:16:24', NULL, NULL, NULL, 'no'),
+(8, 13, 'usdt', 10000.000000, NULL, NULL, 'pending', 'trade', '2025-07-04 14:16:24', NULL, NULL, NULL, 'no'),
+(9, 13, 'usdt', 50.000000, NULL, NULL, 'pending', 'comission', '2025-07-04 14:05:18', NULL, NULL, NULL, 'no'),
+(10, 13, 'usdt', 50.000000, NULL, NULL, 'pending', 'trade', '2025-07-04 14:05:18', NULL, NULL, NULL, 'no'),
+(11, 3, 'usdt', 0.720000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:38:48', NULL, NULL, NULL, 'no'),
+(12, 3, 'usdt', 0.720000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:38:48', NULL, NULL, NULL, 'no'),
+(13, 13, 'usdt', 1.200000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:38:48', NULL, NULL, NULL, 'no'),
+(14, 13, 'usdt', 1.200000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:38:48', NULL, NULL, NULL, 'no'),
+(15, 3, 'usdt', 0.180000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:38:48', NULL, NULL, NULL, 'no'),
+(16, 3, 'usdt', 0.180000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:38:48', NULL, NULL, NULL, 'no'),
+(17, 13, 'usdt', 3.600000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:38:48', NULL, NULL, NULL, 'no'),
+(18, 13, 'usdt', 3.600000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:38:48', NULL, NULL, NULL, 'no'),
+(19, 3, 'usdt', 0.360000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:38:48', NULL, NULL, NULL, 'no'),
+(20, 3, 'usdt', 0.360000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:38:48', NULL, NULL, NULL, 'no'),
+(21, 3, 'usdt', 0.490000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:48:06', NULL, NULL, NULL, 'no'),
+(22, 3, 'usdt', 0.490000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:48:06', NULL, NULL, NULL, 'no'),
+(23, 13, 'usdt', 0.830000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:48:06', NULL, NULL, NULL, 'no'),
+(24, 13, 'usdt', 0.830000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:48:06', NULL, NULL, NULL, 'no'),
+(25, 3, 'usdt', 0.120000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:48:06', NULL, NULL, NULL, 'no'),
+(26, 3, 'usdt', 0.120000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:48:06', NULL, NULL, NULL, 'no'),
+(27, 13, 'usdt', 2.490000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:48:06', NULL, NULL, NULL, 'no'),
+(28, 13, 'usdt', 2.490000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:48:06', NULL, NULL, NULL, 'no'),
+(29, 3, 'usdt', 0.240000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:48:06', NULL, NULL, NULL, 'no'),
+(30, 3, 'usdt', 0.240000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:48:06', NULL, NULL, NULL, 'no'),
+(31, 31, 'usdt', 5000.000000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:51:14', NULL, NULL, NULL, 'no'),
+(32, 7, 'usdt', 100.000000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:48:06', NULL, NULL, NULL, 'no'),
+(33, 7, 'usdt', 100.000000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:48:06', NULL, NULL, NULL, 'no'),
+(34, 3, 'usdt', 0.260000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:58:58', NULL, NULL, NULL, 'no'),
+(35, 3, 'usdt', 0.260000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:58:58', NULL, NULL, NULL, 'no'),
+(36, 13, 'usdt', 0.450000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:58:58', NULL, NULL, NULL, 'no'),
+(37, 13, 'usdt', 0.450000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:58:58', NULL, NULL, NULL, 'no'),
+(38, 3, 'usdt', 0.060000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:58:58', NULL, NULL, NULL, 'no'),
+(39, 3, 'usdt', 0.060000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:58:58', NULL, NULL, NULL, 'no'),
+(40, 13, 'usdt', 1.300000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:58:58', NULL, NULL, NULL, 'no'),
+(41, 13, 'usdt', 1.300000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:58:58', NULL, NULL, NULL, 'no'),
+(42, 3, 'usdt', 0.130000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:58:58', NULL, NULL, NULL, 'no'),
+(43, 3, 'usdt', 0.130000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:58:58', NULL, NULL, NULL, 'no'),
+(44, 7, 'usdt', 0.860000, NULL, NULL, 'pending', 'comission', '2025-07-05 12:58:58', NULL, NULL, NULL, 'no'),
+(45, 7, 'usdt', 0.860000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:58:58', NULL, NULL, NULL, 'no'),
+(46, 3, 'usdt', 0.460000, NULL, NULL, 'pending', 'comission', '2025-07-05 13:47:37', NULL, NULL, NULL, 'no'),
+(47, 3, 'usdt', 0.460000, NULL, NULL, 'pending', 'trade', '2025-07-05 13:47:37', NULL, NULL, NULL, 'no'),
+(48, 3, 'usdt', 0.110000, NULL, NULL, 'pending', 'comission', '2025-07-05 13:47:37', NULL, NULL, NULL, 'no'),
+(49, 3, 'usdt', 0.110000, NULL, NULL, 'pending', 'trade', '2025-07-05 13:47:37', NULL, NULL, NULL, 'no'),
+(50, 13, 'usdt', 2.330000, NULL, NULL, 'pending', 'comission', '2025-07-05 13:47:37', NULL, NULL, NULL, 'no'),
+(51, 13, 'usdt', 2.330000, NULL, NULL, 'pending', 'trade', '2025-07-05 13:47:37', NULL, NULL, NULL, 'no'),
+(52, 3, 'usdt', 0.230000, NULL, NULL, 'pending', 'comission', '2025-07-05 13:47:37', NULL, NULL, NULL, 'no'),
+(53, 3, 'usdt', 0.230000, NULL, NULL, 'pending', 'trade', '2025-07-05 13:47:37', NULL, NULL, NULL, 'no'),
+(54, 40, 'usdt', 20000.000000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:51:14', NULL, NULL, NULL, 'no'),
+(55, 43, 'usdt', 1000.000000, NULL, NULL, 'pending', 'trade', '2025-07-05 12:51:14', NULL, NULL, NULL, 'no'),
+(56, 13, 'usdt', 400.000000, NULL, NULL, 'pending', 'comission', '2025-07-05 13:47:37', NULL, NULL, NULL, 'no'),
+(57, 13, 'usdt', 400.000000, NULL, NULL, 'pending', 'trade', '2025-07-05 13:47:37', NULL, NULL, NULL, 'no'),
+(58, 3, 'usdt', 20.000000, NULL, NULL, 'pending', 'comission', '2025-07-05 13:47:37', NULL, NULL, NULL, 'no'),
+(59, 3, 'usdt', 20.000000, NULL, NULL, 'pending', 'trade', '2025-07-05 13:47:37', NULL, NULL, NULL, 'no'),
+(60, 3, 'usdt', 0.410000, NULL, NULL, 'pending', 'comission', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(61, 3, 'usdt', 0.410000, NULL, NULL, 'pending', 'trade', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(62, 13, 'usdt', 0.530000, NULL, NULL, 'pending', 'comission', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(63, 13, 'usdt', 0.530000, NULL, NULL, 'pending', 'trade', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(64, 3, 'usdt', 0.100000, NULL, NULL, 'pending', 'comission', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(65, 3, 'usdt', 0.100000, NULL, NULL, 'pending', 'trade', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(66, 13, 'usdt', 2.060000, NULL, NULL, 'pending', 'comission', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(67, 13, 'usdt', 2.060000, NULL, NULL, 'pending', 'trade', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(68, 3, 'usdt', 0.200000, NULL, NULL, 'pending', 'comission', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(69, 3, 'usdt', 0.200000, NULL, NULL, 'pending', 'trade', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(70, 7, 'usdt', 1.020000, NULL, NULL, 'pending', 'comission', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(71, 7, 'usdt', 1.020000, NULL, NULL, 'pending', 'trade', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(72, 13, 'usdt', 4.090000, NULL, NULL, 'pending', 'comission', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(73, 13, 'usdt', 4.090000, NULL, NULL, 'pending', 'trade', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(74, 3, 'usdt', 0.200000, NULL, NULL, 'pending', 'comission', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(75, 3, 'usdt', 0.200000, NULL, NULL, 'pending', 'trade', '2025-07-05 14:08:54', NULL, NULL, NULL, 'no'),
+(76, 13, 'usdt', 30.000000, NULL, NULL, 'pending', 'comission', '2025-07-06 11:36:09', NULL, NULL, NULL, 'no'),
+(77, 13, 'usdt', 30.000000, NULL, NULL, 'pending', 'trade', '2025-07-06 11:36:09', NULL, NULL, NULL, 'no'),
+(78, 74, 'usdt', 1500.000000, NULL, NULL, 'pending', 'trade', '2025-07-06 11:41:25', NULL, NULL, NULL, 'no'),
+(79, 78, 'usdt', 1000.000000, NULL, NULL, 'pending', 'trade', '2025-07-06 11:41:25', NULL, NULL, NULL, 'no'),
+(80, 7, 'usdt', 20.000000, NULL, NULL, 'pending', 'comission', '2025-07-06 11:36:09', NULL, NULL, NULL, 'no'),
+(81, 7, 'usdt', 20.000000, NULL, NULL, 'pending', 'trade', '2025-07-06 11:36:09', NULL, NULL, NULL, 'no'),
+(82, 3, 'usdt', 0.520000, NULL, NULL, 'pending', 'comission', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(83, 3, 'usdt', 0.520000, NULL, NULL, 'pending', 'trade', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(84, 13, 'usdt', 0.680000, NULL, NULL, 'pending', 'comission', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(85, 13, 'usdt', 0.680000, NULL, NULL, 'pending', 'trade', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(86, 3, 'usdt', 0.130000, NULL, NULL, 'pending', 'comission', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(87, 3, 'usdt', 0.130000, NULL, NULL, 'pending', 'trade', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(88, 13, 'usdt', 2.620000, NULL, NULL, 'pending', 'comission', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(89, 13, 'usdt', 2.620000, NULL, NULL, 'pending', 'trade', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(90, 3, 'usdt', 0.260000, NULL, NULL, 'pending', 'comission', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(91, 3, 'usdt', 0.260000, NULL, NULL, 'pending', 'trade', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(92, 7, 'usdt', 1.300000, NULL, NULL, 'pending', 'comission', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(93, 7, 'usdt', 1.300000, NULL, NULL, 'pending', 'trade', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(94, 13, 'usdt', 5.190000, NULL, NULL, 'pending', 'comission', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(95, 13, 'usdt', 5.190000, NULL, NULL, 'pending', 'trade', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(96, 3, 'usdt', 0.250000, NULL, NULL, 'pending', 'comission', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(97, 3, 'usdt', 0.250000, NULL, NULL, 'pending', 'trade', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(98, 13, 'usdt', 0.380000, NULL, NULL, 'pending', 'comission', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(99, 13, 'usdt', 0.380000, NULL, NULL, 'pending', 'trade', '2025-07-10 03:41:02', NULL, NULL, NULL, 'no'),
+(100, 3, 'usdt', 1.190000, NULL, NULL, 'pending', 'comission', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(101, 3, 'usdt', 1.190000, NULL, NULL, 'pending', 'trade', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(102, 13, 'usdt', 1.560000, NULL, NULL, 'pending', 'comission', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(103, 13, 'usdt', 1.560000, NULL, NULL, 'pending', 'trade', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(104, 3, 'usdt', 0.290000, NULL, NULL, 'pending', 'comission', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(105, 3, 'usdt', 0.290000, NULL, NULL, 'pending', 'trade', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(106, 13, 'usdt', 5.970000, NULL, NULL, 'pending', 'comission', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(107, 13, 'usdt', 5.970000, NULL, NULL, 'pending', 'trade', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(108, 3, 'usdt', 0.590000, NULL, NULL, 'pending', 'comission', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(109, 3, 'usdt', 0.590000, NULL, NULL, 'pending', 'trade', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(110, 7, 'usdt', 2.960000, NULL, NULL, 'pending', 'comission', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(111, 7, 'usdt', 2.960000, NULL, NULL, 'pending', 'trade', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(112, 13, 'usdt', 11.820000, NULL, NULL, 'pending', 'comission', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(113, 13, 'usdt', 11.820000, NULL, NULL, 'pending', 'trade', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(114, 3, 'usdt', 0.590000, NULL, NULL, 'pending', 'comission', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(115, 3, 'usdt', 0.590000, NULL, NULL, 'pending', 'trade', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(116, 13, 'usdt', 0.880000, NULL, NULL, 'pending', 'comission', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(117, 13, 'usdt', 0.880000, NULL, NULL, 'pending', 'trade', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(118, 7, 'usdt', 0.580000, NULL, NULL, 'pending', 'comission', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(119, 7, 'usdt', 0.580000, NULL, NULL, 'pending', 'trade', '2025-07-11 07:01:53', NULL, NULL, NULL, 'no'),
+(120, 3, 'usdt', 0.270000, NULL, NULL, 'pending', 'comission', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(121, 3, 'usdt', 0.270000, NULL, NULL, 'pending', 'trade', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(122, 13, 'usdt', 0.360000, NULL, NULL, 'pending', 'comission', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(123, 13, 'usdt', 0.360000, NULL, NULL, 'pending', 'trade', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(124, 3, 'usdt', 0.060000, NULL, NULL, 'pending', 'comission', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(125, 3, 'usdt', 0.060000, NULL, NULL, 'pending', 'trade', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(126, 13, 'usdt', 1.370000, NULL, NULL, 'pending', 'comission', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(127, 13, 'usdt', 1.370000, NULL, NULL, 'pending', 'trade', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(128, 3, 'usdt', 0.130000, NULL, NULL, 'pending', 'comission', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(129, 3, 'usdt', 0.130000, NULL, NULL, 'pending', 'trade', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(130, 7, 'usdt', 0.680000, NULL, NULL, 'pending', 'comission', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(131, 7, 'usdt', 0.680000, NULL, NULL, 'pending', 'trade', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(132, 13, 'usdt', 2.720000, NULL, NULL, 'pending', 'comission', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(133, 13, 'usdt', 2.720000, NULL, NULL, 'pending', 'trade', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(134, 3, 'usdt', 0.130000, NULL, NULL, 'pending', 'comission', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(135, 3, 'usdt', 0.130000, NULL, NULL, 'pending', 'trade', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(136, 13, 'usdt', 0.200000, NULL, NULL, 'pending', 'comission', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(137, 13, 'usdt', 0.200000, NULL, NULL, 'pending', 'trade', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(138, 7, 'usdt', 0.130000, NULL, NULL, 'pending', 'comission', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(139, 7, 'usdt', 0.130000, NULL, NULL, 'pending', 'trade', '2025-07-11 14:54:02', NULL, NULL, NULL, 'no'),
+(140, 3, 'usdt', 0.160000, NULL, NULL, 'pending', 'comission', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(141, 3, 'usdt', 0.160000, NULL, NULL, 'pending', 'trade', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(142, 13, 'usdt', 0.210000, NULL, NULL, 'pending', 'comission', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(143, 13, 'usdt', 0.210000, NULL, NULL, 'pending', 'trade', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(144, 3, 'usdt', 0.040000, NULL, NULL, 'pending', 'comission', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(145, 3, 'usdt', 0.040000, NULL, NULL, 'pending', 'trade', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(146, 13, 'usdt', 0.810000, NULL, NULL, 'pending', 'comission', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(147, 13, 'usdt', 0.810000, NULL, NULL, 'pending', 'trade', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(148, 3, 'usdt', 0.080000, NULL, NULL, 'pending', 'comission', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(149, 3, 'usdt', 0.080000, NULL, NULL, 'pending', 'trade', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(150, 7, 'usdt', 0.400000, NULL, NULL, 'pending', 'comission', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(151, 7, 'usdt', 0.400000, NULL, NULL, 'pending', 'trade', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(152, 13, 'usdt', 1.620000, NULL, NULL, 'pending', 'comission', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(153, 13, 'usdt', 1.620000, NULL, NULL, 'pending', 'trade', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(154, 3, 'usdt', 0.080000, NULL, NULL, 'pending', 'comission', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(155, 3, 'usdt', 0.080000, NULL, NULL, 'pending', 'trade', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(156, 13, 'usdt', 0.120000, NULL, NULL, 'pending', 'comission', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(157, 13, 'usdt', 0.120000, NULL, NULL, 'pending', 'trade', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(158, 7, 'usdt', 0.080000, NULL, NULL, 'pending', 'comission', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(159, 7, 'usdt', 0.080000, NULL, NULL, 'pending', 'trade', '2025-07-12 06:33:09', NULL, NULL, NULL, 'no'),
+(160, 3, 'usdt', 0.270000, NULL, NULL, 'pending', 'comission', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(161, 3, 'usdt', 0.270000, NULL, NULL, 'pending', 'trade', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(162, 13, 'usdt', 0.350000, NULL, NULL, 'pending', 'comission', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(163, 13, 'usdt', 0.350000, NULL, NULL, 'pending', 'trade', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(164, 3, 'usdt', 0.060000, NULL, NULL, 'pending', 'comission', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(165, 3, 'usdt', 0.060000, NULL, NULL, 'pending', 'trade', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(166, 13, 'usdt', 1.350000, NULL, NULL, 'pending', 'comission', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(167, 13, 'usdt', 1.350000, NULL, NULL, 'pending', 'trade', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(168, 3, 'usdt', 0.130000, NULL, NULL, 'pending', 'comission', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(169, 3, 'usdt', 0.130000, NULL, NULL, 'pending', 'trade', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(170, 7, 'usdt', 0.670000, NULL, NULL, 'pending', 'comission', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(171, 7, 'usdt', 0.670000, NULL, NULL, 'pending', 'trade', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(172, 13, 'usdt', 2.680000, NULL, NULL, 'pending', 'comission', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(173, 13, 'usdt', 2.680000, NULL, NULL, 'pending', 'trade', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(174, 3, 'usdt', 0.130000, NULL, NULL, 'pending', 'comission', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(175, 3, 'usdt', 0.130000, NULL, NULL, 'pending', 'trade', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(176, 13, 'usdt', 0.200000, NULL, NULL, 'pending', 'comission', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(177, 13, 'usdt', 0.200000, NULL, NULL, 'pending', 'trade', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(178, 7, 'usdt', 0.130000, NULL, NULL, 'pending', 'comission', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(179, 7, 'usdt', 0.130000, NULL, NULL, 'pending', 'trade', '2025-07-13 22:19:02', NULL, NULL, NULL, 'no'),
+(180, 3, 'usdt', 1.220000, NULL, NULL, 'pending', 'comission', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(181, 3, 'usdt', 1.220000, NULL, NULL, 'pending', 'trade', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(182, 13, 'usdt', 1.610000, NULL, NULL, 'pending', 'comission', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(183, 13, 'usdt', 1.610000, NULL, NULL, 'pending', 'trade', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(184, 3, 'usdt', 0.300000, NULL, NULL, 'pending', 'comission', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(185, 3, 'usdt', 0.300000, NULL, NULL, 'pending', 'trade', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(186, 13, 'usdt', 6.140000, NULL, NULL, 'pending', 'comission', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(187, 13, 'usdt', 6.140000, NULL, NULL, 'pending', 'trade', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(188, 3, 'usdt', 0.610000, NULL, NULL, 'pending', 'comission', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(189, 3, 'usdt', 0.610000, NULL, NULL, 'pending', 'trade', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(190, 7, 'usdt', 3.050000, NULL, NULL, 'pending', 'comission', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(191, 7, 'usdt', 3.050000, NULL, NULL, 'pending', 'trade', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(192, 13, 'usdt', 12.180000, NULL, NULL, 'pending', 'comission', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(193, 13, 'usdt', 12.180000, NULL, NULL, 'pending', 'trade', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(194, 3, 'usdt', 0.600000, NULL, NULL, 'pending', 'comission', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(195, 3, 'usdt', 0.600000, NULL, NULL, 'pending', 'trade', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(196, 13, 'usdt', 0.910000, NULL, NULL, 'pending', 'comission', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(197, 13, 'usdt', 0.910000, NULL, NULL, 'pending', 'trade', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(198, 7, 'usdt', 0.600000, NULL, NULL, 'pending', 'comission', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(199, 7, 'usdt', 0.600000, NULL, NULL, 'pending', 'trade', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
+(200, 2, 'usdt', 500.000000, NULL, NULL, 'pending', 'trade', '2025-08-01 22:32:39', NULL, NULL, NULL, 'no'),
+(201, 9, 'usdt', 10.000000, NULL, NULL, 'pending', 'comission', '2025-08-01 22:32:39', NULL, NULL, NULL, 'no'),
+(202, 9, 'usdt', 10.000000, NULL, NULL, 'pending', 'trade', '2025-08-01 22:32:39', NULL, NULL, NULL, 'no'),
+(203, 9, 'usdt', 1000.000000, NULL, NULL, 'pending', 'trade', '2025-08-01 22:46:41', NULL, NULL, NULL, 'no'),
+(204, 13, 'usdt', 20.000000, NULL, NULL, 'pending', 'comission', '2025-08-01 22:46:41', NULL, NULL, NULL, 'no'),
+(205, 13, 'usdt', 20.000000, NULL, NULL, 'pending', 'trade', '2025-08-01 22:46:41', NULL, NULL, NULL, 'no'),
+(206, 9, 'usdt', 100.000000, NULL, NULL, 'pending', 'trade', '2025-08-13 23:26:31', NULL, NULL, 89, 'no'),
+(207, 13, 'usdt', 2.000000, NULL, NULL, 'pending', 'comission', '2025-08-13 23:26:31', NULL, NULL, 89, 'no'),
+(208, 13, 'usdt', 2.000000, NULL, NULL, 'pending', 'trade', '2025-08-13 23:26:31', NULL, NULL, 89, 'no'),
+(209, 9, 'usdt', 150.000000, NULL, NULL, 'pending', 'trade', '2025-08-14 06:56:34', NULL, NULL, 90, 'no'),
+(210, 13, 'usdt', 3.000000, NULL, NULL, 'pending', 'comission', '2025-08-14 06:56:34', NULL, NULL, 90, 'no'),
+(211, 13, 'usdt', 3.000000, NULL, NULL, 'pending', 'trade', '2025-08-14 06:56:34', NULL, NULL, 90, 'no');
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `member`
+--
+ALTER TABLE `member`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email` (`email`),
+  ADD UNIQUE KEY `refcode` (`refcode`),
+  ADD KEY `id_referral` (`id_referral`);
+
+--
+-- Indexes for table `member_commission`
+--
+ALTER TABLE `member_commission`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `member_id` (`member_id`),
+  ADD KEY `downline_id` (`downline_id`),
+  ADD KEY `member_commission_ibfk_3` (`order_id`);
+
+--
+-- Indexes for table `member_deposit`
+--
+ALTER TABLE `member_deposit`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `member_id` (`member_id`);
+
+--
+-- Indexes for table `member_sinyal`
+--
+ALTER TABLE `member_sinyal`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `member_id` (`member_id`,`sinyal_id`),
+  ADD KEY `fk_member_sinyal_member` (`member_id`),
+  ADD KEY `fk_member_sinyal_sinyal` (`sinyal_id`);
+
+--
+-- Indexes for table `proxies`
+--
+ALTER TABLE `proxies`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `settings`
+--
+ALTER TABLE `settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `key` (`key`);
+
+--
+-- Indexes for table `sinyal`
+--
+ALTER TABLE `sinyal`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `order_id` (`order_id`),
+  ADD KEY `fk_admin` (`admin_id`);
+
+--
+-- Indexes for table `tb_member_onetone`
+--
+ALTER TABLE `tb_member_onetone`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `tb_payment_onetoone`
+--
+ALTER TABLE `tb_payment_onetoone`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `tb_payment_onetoone_id_member_onetoone_foreign` (`id_member_onetoone`);
+
+--
+-- Indexes for table `wallet`
+--
+ALTER TABLE `wallet`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `member_id` (`member_id`),
+  ADD KEY `order_id` (`order_id`);
+
+--
+-- Indexes for table `withdraw`
+--
+ALTER TABLE `withdraw`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `member_id` (`member_id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `member`
+--
+ALTER TABLE `member`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
+
+--
+-- AUTO_INCREMENT for table `member_commission`
+--
+ALTER TABLE `member_commission`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=88;
+
+--
+-- AUTO_INCREMENT for table `member_deposit`
+--
+ALTER TABLE `member_deposit`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
+
+--
+-- AUTO_INCREMENT for table `member_sinyal`
+--
+ALTER TABLE `member_sinyal`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=427;
+
+--
+-- AUTO_INCREMENT for table `proxies`
+--
+ALTER TABLE `proxies`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT for table `settings`
+--
+ALTER TABLE `settings`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `sinyal`
+--
+ALTER TABLE `sinyal`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+
+--
+-- AUTO_INCREMENT for table `tb_member_onetone`
+--
+ALTER TABLE `tb_member_onetone`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `tb_payment_onetoone`
+--
+ALTER TABLE `tb_payment_onetoone`
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `wallet`
+--
+ALTER TABLE `wallet`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
+
+--
+-- AUTO_INCREMENT for table `withdraw`
+--
+ALTER TABLE `withdraw`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=212;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `member`
+--
+ALTER TABLE `member`
+  ADD CONSTRAINT `member_ibfk_1` FOREIGN KEY (`id_referral`) REFERENCES `member` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `member_commission`
+--
+ALTER TABLE `member_commission`
+  ADD CONSTRAINT `member_commission_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `member_commission_ibfk_2` FOREIGN KEY (`downline_id`) REFERENCES `member` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `member_commission_ibfk_3` FOREIGN KEY (`order_id`) REFERENCES `sinyal` (`order_id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+--
+-- Constraints for table `member_deposit`
+--
+ALTER TABLE `member_deposit`
+  ADD CONSTRAINT `member_deposit_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `member_sinyal`
+--
+ALTER TABLE `member_sinyal`
+  ADD CONSTRAINT `fk_member_sinyal_member` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_member_sinyal_sinyal` FOREIGN KEY (`sinyal_id`) REFERENCES `sinyal` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `sinyal`
+--
+ALTER TABLE `sinyal`
+  ADD CONSTRAINT `fk_admin` FOREIGN KEY (`admin_id`) REFERENCES `member` (`id`);
+
+--
+-- Constraints for table `tb_payment_onetoone`
+--
+ALTER TABLE `tb_payment_onetoone`
+  ADD CONSTRAINT `tb_payment_onetoone_id_member_onetoone_foreign` FOREIGN KEY (`id_member_onetoone`) REFERENCES `tb_member_onetone` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `wallet`
+--
+ALTER TABLE `wallet`
+  ADD CONSTRAINT `wallet_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`),
+  ADD CONSTRAINT `wallet_ibfk_2` FOREIGN KEY (`order_id`) REFERENCES `sinyal` (`order_id`);
+
+--
+-- Constraints for table `withdraw`
+--
+ALTER TABLE `withdraw`
+  ADD CONSTRAINT `withdraw_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+COMMIT;
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
-
--- Dump completed on 2025-07-09 17:15:41
