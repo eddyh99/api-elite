@@ -685,7 +685,7 @@ class Mdl_signal extends Model
                             SELECT ROUND(SUM( CASE WHEN m.id_referral IS NULL THEN w.master_wallet - (0.1 * w.client_wallet) ELSE w.master_wallet END ),2) AS total_adjusted_master_wallet FROM wallet w JOIN member m ON w.member_id = m.id
                         ) AS master_profit,
                         (
-                            SELECT ROUND(SUM(amount),2) AS withdraw FROM withdraw WHERE withdraw_type='usdt' AND jenis='withdraw' AND status!='cancelled'
+                            SELECT ROUND(SUM(amount),2) AS withdraw FROM withdraw WHERE withdraw_type='usdt' AND jenis='withdraw' AND status!='rejected'
                         ) AS withdraw
                     FROM sinyal s_sell
                     JOIN member_sinyal ms_sell ON ms_sell.sinyal_id = s_sell.id

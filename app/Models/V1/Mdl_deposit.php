@@ -743,4 +743,50 @@ class Mdl_deposit extends Model
             'message' => 'Successfully Added'
         ];
     }
+    
+    public function delete_topup($idtrans){
+        // Start transaction
+        $this->db->transBegin();
+    
+        try {
+            // Delete from withdraw table
+            $withdraw = $this->db->table("withdraw");
+            $withdraw->where([
+                "ref_id" => $idtrans,
+                "is_topup" => 1
+            ]);
+            $withdraw->delete();
+    
+            // Delete from member_deposit table
+            $deposit = $this->db->table("member_deposit");
+            $deposit->where("id", $idtrans);
+            $deposit->delete();
+    
+            // Check if all operations succeeded
+            if ($this->db->transStatus() === false) {
+                $this->db->transRollback();
+                return (object) [
+                    'code' => 400,
+                    'message' => 'An error occured'
+                ];
+            }
+    
+            // Commit transaction
+            $this->db->transCommit();
+            return (object) [
+                'code' => 200,
+                'message' => 'Successfully Deleted'
+            ];
+    
+        } catch (\Exception $e) {
+            // Rollback transaction on any exception
+            $this->db->transRollback();
+            // Optional: log the error
+            log_message('error', 'Transaction failed: ' . $e->getMessage());
+            return (object) [
+                'code' => 400,
+                'message' => 'An error occured'
+            ];            
+        }
+    }
 }

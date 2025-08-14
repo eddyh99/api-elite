@@ -417,28 +417,28 @@ class Member extends BaseController
         // if ($deposit->id_referral) {
             $comission = [
                 [
-                    'member_id' => $data->member_id,
+                    'member_id'     => $data->member_id,
                     'withdraw_type' => 'usdt',
-                    'amount' => $deposit->amount,
-                    'jenis' => 'trade',
-                    'ref_id' => $ref_id,
-                    'is_topup' => 'yes'
+                    'amount'        => $deposit->amount,
+                    'jenis'         => 'trade',
+                    'ref_id'        => $ref_id,
+                    'is_topup'      => 'yes'
                 ],
                 [
-                    'member_id' => $deposit->id_referral ?? 1,
+                    'member_id'     => $deposit->id_referral ?? 1,
                     'withdraw_type' => 'usdt',
-                    'amount' => $deposit->commission,
-                    'jenis' => 'comission',
-                    'ref_id' => $ref_id,
-                    'is_topup' => 'yes'
+                    'amount'        => $deposit->commission,
+                    'jenis'         => 'comission',
+                    'ref_id'        => $ref_id,
+                    'is_topup'      => 'yes'
                 ],
                 [
-                    'member_id' => $deposit->id_referral ?? 1,
+                    'member_id'     => $deposit->id_referral ?? 1,
                     'withdraw_type' => 'usdt',
-                    'amount' => $deposit->commission,
-                    'jenis' => 'trade',
-                    'ref_id' => $ref_id,
-                    'is_topup' => 'yes'
+                    'amount'        => $deposit->commission,
+                    'jenis'         => 'trade',
+                    'ref_id'        => $ref_id,
+                    'is_topup'      => 'yes'
                 ],
             ];
 
@@ -446,6 +446,18 @@ class Member extends BaseController
         // }
 
         return $this->respond(error_msg(200, "success topup", "01", $result->message), 201);		
+    }
+    
+    public function postDelete_topup(){
+        $data       = $this->request->getJSON();
+        $idtrans    = $data->id;
+        
+        $result = $this->deposit->delete_topup($idtrans);
+        if ($result->code !== 200) {
+			return $this->respond(error_msg($result->code, "subs", '01', $result->message), $result->code);
+		}
+		
+		return $this->respond(error_msg(200, "deposit", "01", "Successfully Deleted"), 201);	
     }
 
 }

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 14, 2025 at 07:31 AM
+-- Generation Time: Aug 14, 2025 at 09:32 PM
 -- Server version: 8.0.43
 -- PHP Version: 8.4.10
 
@@ -59,7 +59,7 @@ INSERT INTO `member` (`id`, `email`, `passwd`, `created_at`, `updated_at`, `refc
 (6, 'brio21569@gmail.com', 'a338fc407b2199b042afe64bcdb0d8e419822c29', '2025-05-19 09:16:20', '2025-07-21 00:39:28', NULL, 3, 'active', 'Europe/Rome', NULL, 'member', 511.9850, 0.0000, 0.0000, 0.0000, '62.211.27.92', 0),
 (7, 'danieldocooh@gmail.com', '5d9a94b24b414bec2225463d03fd04c04f1aa466', '2025-05-19 09:25:24', '2025-07-21 00:39:28', 'r3b3cc4', 13, 'active', 'Asia/Shanghai', NULL, 'referral', 672.7250, 0.0000, 0.0000, 0.0000, '103.175.212.66', 0),
 (8, 'ssilenziog@gmail.com', '78f2d37fb951d3456c35b096ba5511eeaa0f73fe', '2025-05-19 10:38:12', '2025-07-21 00:39:28', NULL, 3, 'active', 'Europe/Rome', NULL, 'member', 127.9950, 0.0000, 0.0000, 0.0000, '217.202.8.52', 0),
-(9, '3a3aj4g4@gmail.com', '23de24af77f1d5c4fdacf90ae06cf0c10320709b', '2025-05-20 00:53:33', '2025-07-21 00:39:28', NULL, 13, 'active', 'Asia/Shanghai', NULL, 'member', 2559.9025, 0.0000, 0.0000, 0.0000, '103.175.212.89', 0),
+(9, '3a3aj4g4@gmail.com', '23de24af77f1d5c4fdacf90ae06cf0c10320709b', '2025-05-20 00:53:33', '2025-08-14 13:09:01', '1000', 13, 'active', 'Asia/Shanghai', NULL, 'referral', 2559.9025, 0.0000, 0.0000, 0.0000, '103.175.212.89', 0),
 (10, 'lisette.paula8899@gmail.com', '2fdc3058c7552c693be213075308ef54d490a6b4', '2025-05-20 05:25:54', '2025-08-05 05:44:19', 'p4ul4', NULL, 'active', 'Asia/Makassar', NULL, 'referral', 0.0000, 0.0000, 0.0000, 0.0000, '110.139.176.94', 0),
 (11, 'maci81x@hotmail.it', '0d296436b80bc54f847035d231af30e72624530d', '2025-05-23 12:20:09', '2025-07-21 00:39:28', 'zzhr34o5', 3, 'active', 'Europe/Rome', NULL, 'member', 255.9900, 0.0000, 0.0000, 0.0000, '213.243.250.56', 0),
 (12, 'stefano.giovagnoli1234@gmail.com', '7f838487959c746237accb0dc2b5848679221fab', '2025-05-23 15:11:23', '2025-05-23 07:13:06', 'poi6v814', NULL, 'active', 'Europe/Rome', NULL, 'member', 0.0000, 0.0000, 0.0000, 0.0000, '128.116.239.58', 0),
@@ -279,8 +279,7 @@ INSERT INTO `member_deposit` (`id`, `invoice`, `member_id`, `amount`, `commissio
 (86, 'INV-FD41FDBE', 9, 100.00, 2.00, 0, '2025-08-13 14:52:52', 'pending'),
 (87, 'INV-52D1559A', 9, 100.00, 2.00, 0, '2025-08-13 14:54:52', 'pending'),
 (88, 'INV-99C669AA', 9, 100.00, 2.00, 0, '2025-08-13 14:55:51', 'pending'),
-(89, 'INV-3ABF9644', 9, 100.00, 2.00, 0, '2025-08-13 15:26:31', 'complete'),
-(90, 'INV-1DF7E4D2', 9, 150.00, 3.00, 1, '2025-08-13 22:56:34', 'complete');
+(89, 'INV-3ABF9644', 9, 100.00, 2.00, 0, '2025-08-13 15:26:31', 'complete');
 
 -- --------------------------------------------------------
 
@@ -1128,17 +1127,8 @@ INSERT INTO `withdraw` (`id`, `member_id`, `withdraw_type`, `amount`, `payment_d
 (198, 7, 'usdt', 0.600000, NULL, NULL, 'pending', 'comission', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
 (199, 7, 'usdt', 0.600000, NULL, NULL, 'pending', 'trade', '2025-07-21 08:39:28', NULL, NULL, NULL, 'no'),
 (200, 2, 'usdt', 500.000000, NULL, NULL, 'pending', 'trade', '2025-08-01 22:32:39', NULL, NULL, NULL, 'no'),
-(201, 9, 'usdt', 10.000000, NULL, NULL, 'pending', 'comission', '2025-08-01 22:32:39', NULL, NULL, NULL, 'no'),
-(202, 9, 'usdt', 10.000000, NULL, NULL, 'pending', 'trade', '2025-08-01 22:32:39', NULL, NULL, NULL, 'no'),
-(203, 9, 'usdt', 1000.000000, NULL, NULL, 'pending', 'trade', '2025-08-01 22:46:41', NULL, NULL, NULL, 'no'),
 (204, 13, 'usdt', 20.000000, NULL, NULL, 'pending', 'comission', '2025-08-01 22:46:41', NULL, NULL, NULL, 'no'),
-(205, 13, 'usdt', 20.000000, NULL, NULL, 'pending', 'trade', '2025-08-01 22:46:41', NULL, NULL, NULL, 'no'),
-(206, 9, 'usdt', 100.000000, NULL, NULL, 'pending', 'trade', '2025-08-13 23:26:31', NULL, NULL, 89, 'no'),
-(207, 13, 'usdt', 2.000000, NULL, NULL, 'pending', 'comission', '2025-08-13 23:26:31', NULL, NULL, 89, 'no'),
-(208, 13, 'usdt', 2.000000, NULL, NULL, 'pending', 'trade', '2025-08-13 23:26:31', NULL, NULL, 89, 'no'),
-(209, 9, 'usdt', 150.000000, NULL, NULL, 'pending', 'trade', '2025-08-14 06:56:34', NULL, NULL, 90, 'no'),
-(210, 13, 'usdt', 3.000000, NULL, NULL, 'pending', 'comission', '2025-08-14 06:56:34', NULL, NULL, 90, 'no'),
-(211, 13, 'usdt', 3.000000, NULL, NULL, 'pending', 'trade', '2025-08-14 06:56:34', NULL, NULL, 90, 'no');
+(205, 13, 'usdt', 20.000000, NULL, NULL, 'pending', 'trade', '2025-08-01 22:46:41', NULL, NULL, NULL, 'no');
 
 --
 -- Indexes for dumped tables
@@ -1247,7 +1237,7 @@ ALTER TABLE `member_commission`
 -- AUTO_INCREMENT for table `member_deposit`
 --
 ALTER TABLE `member_deposit`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=99;
 
 --
 -- AUTO_INCREMENT for table `member_sinyal`
@@ -1295,7 +1285,7 @@ ALTER TABLE `wallet`
 -- AUTO_INCREMENT for table `withdraw`
 --
 ALTER TABLE `withdraw`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=212;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=236;
 
 --
 -- Constraints for dumped tables
