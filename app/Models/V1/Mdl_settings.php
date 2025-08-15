@@ -18,6 +18,7 @@ class Mdl_settings extends Model
     protected $server_tz = "Asia/Singapore";
     protected $table      = 'settings';
     protected $primaryKey = 'id';
+    protected $allowedFields = ['key', 'value'];
 
     protected $returnType = 'object';
     protected $useTimestamps = false;
@@ -64,6 +65,116 @@ class Mdl_settings extends Model
                 'success'  => false,
                 'code'    => $e->getCode(),
                 'message' => 'An error occurred.' . $e
+            ];
+        }
+    }
+
+    public function createBankAccount($data)
+    {
+        try {
+            $this->db->transStart();
+
+            $batchData = [];
+            foreach ($data as $key => $value) {
+                $batchData[] = [
+                    'key'   => $key,
+                    'value' => trim($value)
+                ];
+            }
+
+            if (!empty($batchData)) {
+                $this->insertBatch($batchData);
+
+                // Cek error segera setelah query
+                $dbError = $this->db->error();
+                if (!empty($dbError['code'])) {
+                    $this->db->transRollback();
+                    return (object) [
+                        'success' => false,
+                        'code'    => $dbError['code'],
+                        'message' => $dbError['message']
+                    ];
+                }
+            }
+
+            $this->db->transComplete();
+
+            return (object) [
+                'success' => true,
+                'code'    => 201,
+                'message' => 'Bank account created successfully'
+            ];
+        } catch (\Throwable $e) {
+            return (object) [
+                'success' => false,
+                'code'    => 500,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function getBankAccount()
+    {
+        $sql = "
+        SELECT `key`, `value`
+        FROM settings
+        WHERE `key` IN (
+            'bank_account_name',
+            'bank_account_type',
+            'bank_routing_number',
+            'bank_account_number'
+        )
+    ";
+
+        $query = $this->db->query($sql);
+        $rows = $query->getResultArray();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[$row['key']] = $row['value'];
+        }
+
+        return (object) $result;
+    }
+
+
+    public function updateBankAccount($data)
+    {
+        try {
+            if (empty($data)) {
+                throw new \Exception('No data provided for update');
+            }
+
+            $updateData = [];
+            foreach ($data as $key => $value) {
+                $updateData[] = [
+                    'key'   => $key,
+                    'value' => trim($value)
+                ];
+            }
+
+            $this->db->transStart();
+
+            $this->db->table($this->table)->updateBatch($updateData, 'key');
+
+            $this->db->transComplete();
+
+            if ($this->db->transStatus() === false) {
+                throw new \Exception(
+                    'Failed to update bank account: ' . $this->db->error()['message']
+                );
+            }
+
+            return (object) [
+                'success' => true,
+                'code'    => 200,
+                'message' => 'Bank account updated successfully'
+            ];
+        } catch (\Exception $e) {
+            return (object) [
+                'success' => false,
+                'code'    => 500,
+                'message' => $e->getMessage()
             ];
         }
     }
