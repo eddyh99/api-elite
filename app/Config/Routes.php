@@ -26,4 +26,8 @@ $routes->group('apiv1', static function ($routes) {
     $routes->get('onetoone/list_payment', 'V1\Onetoone::getList_payment');
     $routes->post('onetoone/payment', 'V1\Onetoone::postPayment');
     $routes->put('onetoone/payment', 'V1\Onetoone::putPayment');
+
+    $routes->get('bank', 'V1\Bank::getIndex');
+    $routes->post('bank/create', 'V1\Bank::postCreateBankAccount');
+    $routes->post('bank/update', 'V1\Bank::postUpdateBankAccount');
 });
