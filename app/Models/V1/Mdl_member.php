@@ -62,7 +62,7 @@ class Mdl_member extends Model
                                 FROM withdraw
                                 WHERE member_id = m.id
                                   AND (
-                                    (jenis = 'withdraw' AND status <> 'rejected' AND withdraw_type IN ('usdt', 'usdc'))
+                                    (jenis = 'withdraw' AND status <> 'rejected' AND withdraw_type IN ('usdt', 'usdc','fiat'))
                                     OR (jenis = 'trade' AND withdraw_type = 'usdt')
                                   )
                             ), 0)
@@ -286,7 +286,28 @@ class Mdl_member extends Model
             "message"    => $query
         ];
     }
+    
+    public function getby_id($member_id){
+        $sql = "SELECT * FROM member
+                WHERE
+                    id = ?
+                LIMIT
+                    1";
 
+        $query = $this->db->query($sql, [$member_id])->getRow();
+        if (!$query) {
+            return (object) [
+                "code"    => "404",
+                "message" => "User not found"
+            ];
+        }
+
+        return (object) [
+            "code"    => "200",
+            "message" => $query
+        ];
+    }
+    
     public function getby_email($email)
     {
         $sql = "SELECT * FROM member
@@ -642,6 +663,7 @@ class Mdl_member extends Model
                         '-' AS subscription_status,
                         m.refcode,
                         m.role,
+                        ref.email as upline_referral,
                         -- USDT balance: deposits + balance withdraws - real withdraws/trades
                         COALESCE((
                             SELECT SUM(amount)
@@ -660,7 +682,7 @@ class Mdl_member extends Model
                             FROM withdraw
                             WHERE member_id = m.id
                             AND (
-                                (jenis = 'withdraw' AND status <> 'rejected' AND (withdraw_type = 'usdt' or withdraw_type = 'usdc'))
+                                (jenis = 'withdraw' AND status <> 'rejected' AND (withdraw_type = 'usdt' or withdraw_type = 'usdc' or withdraw_type='fiat'))
                                 OR (jenis = 'trade' AND withdraw_type = 'usdt')
                             )
                         ), 0) AS fund_usdt,
@@ -751,7 +773,7 @@ class Mdl_member extends Model
                       )
                       AS trade_btc
                     FROM
-                        member m
+                        member m LEFT JOIN member ref ON m.id_referral=ref.id
                     WHERE
                         m.email = ?";
 
@@ -781,36 +803,21 @@ class Mdl_member extends Model
     {
         try {
             if($id_member === NULL) {
-                $sql = "SELECT
-                        mb.*, komisi
-                    FROM
-                        member mb LEFT JOIN (
-        				SELECT member_id, sum(commission) as komisi 
-        					FROM member_deposit md 
-        				WHERE status='complete' GROUP BY member_id
-        			) dp
-                    ON mb.id=dp.member_id
-                    WHERE
-                        mb.id_referral IS NULL
-                        AND mb.is_delete = 0
-                        AND mb.role IN ('member', 'referral')
-                        AND mb.status IN ('active', 'referral')";
-                $query = $this->db->query($sql, [$id_member])->getResult();
+                $sql = "SELECT 
+                            DISTINCT mb.*, md.commission as komisi 
+                        FROM member mb INNER JOIN member_deposit md 
+                            ON mb.id=md.member_id 
+                        WHERE md.upline_id IS NULL
+                        AND md.status='complete'";
+                $query = $this->db->query($sql)->getResult();
             } else {
-                $sql = "SELECT
-                        mb.*, komisi
-                    FROM
-                        member mb LEFT JOIN (
-        				SELECT member_id, sum(commission) as komisi 
-        					FROM member_deposit md 
-        				WHERE status='complete' GROUP BY member_id
-        			) dp
-                    ON mb.id=dp.member_id
-                    WHERE
-                        mb.id_referral = ?
-                        AND mb.is_delete = 0
-                        AND mb.status IN ('active', 'referral')";
-            $query = $this->db->query($sql, [$id_member])->getResult();
+                $sql = "SELECT 
+                            DISTINCT mb.*, md.commission as komisi 
+                        FROM member mb INNER JOIN member_deposit md 
+                            ON mb.id=md.member_id 
+                        WHERE md.upline_id = ?
+                        AND md.status='complete'";
+                $query = $this->db->query($sql, [$id_member])->getResult();
             }
 
             if (!$query) {
@@ -1174,7 +1181,7 @@ class Mdl_member extends Model
                                 FROM withdraw
                                 WHERE member_id = m.id
                                 AND (
-                                    (jenis = 'withdraw' AND status <> 'rejected' AND (withdraw_type = 'usdt' OR withdraw_type = 'usdc'))
+                                    (jenis = 'withdraw' AND status <> 'rejected' AND (withdraw_type = 'usdt' OR withdraw_type = 'usdc' OR withdraw_type='fiat'))
                                     OR (jenis = 'trade' AND withdraw_type = 'usdt')
                                 )
                             ), 0) AS fund_balance,
@@ -1433,6 +1440,34 @@ class Mdl_member extends Model
                 'message' => $query
             ];
 
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.' .$e
+            ];
+        }
+    }
+
+    public function remove_referral($idmember){
+        // Reset referral for all members whose referral is this one
+        try{
+            $this->db->table("member")
+                ->set("id_referral", null)
+                ->where("id_referral", $idmember)
+                ->update();
+            
+            // Reset refcode and role for this member
+            $this->db->table("member")
+                ->set([
+                    "refcode" => null,
+                    "role"    => "member"   // string, not bare identifier
+                ])
+                ->where("id", $idmember)
+                ->update();
+            return (object) [
+                'code' => 200,
+                'message' => "Successfully Updated"
+            ];
         } catch (\Exception $e) {
             return (object) [
                 'code' => 500,

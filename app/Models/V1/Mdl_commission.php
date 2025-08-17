@@ -116,15 +116,31 @@ class Mdl_commission extends Model
         try {
 
             if($id_member === NULL) {
-                $sql = "SELECT
-                            w.created_at as date,
-                            w.client_wallet * 0.1 AS commission,
+                $sql = "SELECT 
+                            md.created_at as date,
+                            md.commission AS commission,
+                            CONCAT('deposit commission from ', m.email) AS description
+                        FROM 
+                            member_deposit md
+                        JOIN 
+                            member m ON md.member_id = m.id
+                        WHERE 
+                            md.upline_id IS NULL
+                            AND md.status='complete'
+                
+                        UNION ALL
+                        
+                        SELECT 
+                            w.created_at as date, 
+                            w.client_wallet * 0.1 AS commission, 
                             CONCAT('trade commission from ', m.email) AS description
-                        FROM
-                            wallet w
-                            INNER JOIN member m ON m.id = w.member_id
-                        WHERE
-                            m.id_referral IS Null";
+                        FROM wallet w
+                        INNER JOIN member m 
+                            ON w.member_id = m.id
+                        LEFT JOIN member_commission mc 
+                            ON mc.downline_id = w.member_id
+                           AND mc.order_id = w.order_id
+                        WHERE mc.id IS NULL;";
                 $query = $this->db->query($sql)->getResult();
             } else {
                 $sql = $this->getSql_commission();
@@ -164,7 +180,7 @@ class Mdl_commission extends Model
         JOIN 
             member m ON md.member_id = m.id
         WHERE 
-            m.id_referral = ?
+            md.upline_id = ?
             AND md.status='complete'
 
         UNION ALL

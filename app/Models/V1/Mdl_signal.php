@@ -682,7 +682,20 @@ class Mdl_signal extends Model
                             SELECT FLOOR(SUM(client_wallet * 0.1) * 100) / 100 FROM wallet
                         ) AS ref_comm,
                         (
-                            SELECT ROUND(SUM( CASE WHEN m.id_referral IS NULL THEN w.master_wallet - (0.1 * w.client_wallet) ELSE w.master_wallet END ),2) AS total_adjusted_master_wallet FROM wallet w JOIN member m ON w.member_id = m.id
+                            SELECT ROUND(
+                                SUM(
+                                    CASE 
+                                        WHEN mc.id IS NULL 
+                                            THEN w.master_wallet - (0.1 * w.client_wallet)
+                                        ELSE w.master_wallet
+                                    END
+                                ), 2
+                            )
+                            FROM wallet w
+                            JOIN member m ON w.member_id = m.id
+                            LEFT JOIN member_commission mc 
+                                ON mc.downline_id = w.member_id
+                               AND mc.order_id = w.order_id
                         ) AS master_profit,
                         (
                             SELECT ROUND(SUM(amount),2) AS withdraw FROM withdraw WHERE withdraw_type='usdt' AND jenis='withdraw' AND status!='rejected'

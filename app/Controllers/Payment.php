@@ -26,6 +26,7 @@ class Payment extends BaseController
         $referral       = $this->setting->get("referral_fee")->message;
         $mdata = array(
             "invoice"   => 'INV-' . strtoupper(bin2hex(random_bytes(4))),
+            "upline_id" => $this->member->getby_id($data->member_id)->message->id_referral ?? null,
 			"member_id" => trim($member->id),
 			"amount"    => trim($data->amount),
 			"commission"=> trim($data->amount) * $referral

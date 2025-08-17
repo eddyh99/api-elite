@@ -367,20 +367,24 @@ class Member extends BaseController
     public function postUpdate_refcode()
     {
         $data   = $this->request->getJSON();
-        $mdata = [
-            [
-                'id' => $data->idmember,
-                'role'  => 'referral',
-                'refcode' => $data->refcode
-            ]
-        ];
+        if (!empty($data->refcode)){
+            $mdata = [
+                [
+                    'id' => $data->idmember,
+                    'role'  => 'referral',
+                    'refcode' => $data->refcode
+                ]
+            ];
 
-        $result = $this->member->update_data($mdata);
+            $result = $this->member->update_data($mdata);
+        }else{
+            $result = $this->member->remove_referral($data->idmember);
+        }
         if (@$result->code != 200) {
             return $this->respond(error_msg(400, "member", "01", $result->message), 400);
         }
 
-        return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
+        return $this->respond(error_msg($result->code, "member", "01", "uccessfully Updated"), $result->code);
     }
     
     public function postManualtopup(){
@@ -389,10 +393,12 @@ class Member extends BaseController
         $mdata = array(
             "invoice"   => 'INV-' . strtoupper(bin2hex(random_bytes(4))),
 			"member_id" => trim($data->member_id),
+			"upline_id" => $this->member->getby_id($data->member_id)->message->id_referral ?? null,
 			"amount"    => trim($data->amount),
 			"commission"=> trim($data->amount) * $referral,
 			"is_manual" => 1
 		);
+
         
         $result = $this->deposit->add_balance($mdata);
         log_message("info",json_encode($result));
