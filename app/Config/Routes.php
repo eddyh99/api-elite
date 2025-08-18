@@ -18,6 +18,13 @@ $routes->group('non', static function ($routes) {
     $routes->post('update-bank','V1\Bank::postUpdate_bankaccount');
 });
 
+$routes->group('calculator', static function ($routes) {
+    $routes->get('mediation', 'V1\Calculator::getMediationCalculator');
+    $routes->post('mediation', 'V1\Calculator::postCreateMediationCalculator');
+    $routes->post('mediation/(:num)', 'V1\Calculator::postUpdateMediationCalculator/$1');
+    $routes->delete('mediation/(:num)', 'V1\Calculator::deleteMediationCalculator/$1');
+});
+
 
 //api tanpa filter
 $routes->group('apiv1', static function ($routes) {
