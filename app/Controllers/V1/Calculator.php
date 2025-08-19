@@ -13,6 +13,7 @@ class Calculator extends BaseController
     {
         $this->calc_mediation  = model('App\Models\V1\Mdl_calc_mediation');
         $this->calc_otc        = model('App\Models\V1\Mdl_calc_otc');
+        $this->calc_interest   = model('App\Models\V1\Mdl_calc_interest');
     }
 
     // ------- Calculator Mediation -------
@@ -136,7 +137,8 @@ class Calculator extends BaseController
     }
 
     // ------- Calculator OTC -------
-    public function getOtcCalculator(){
+    public function getOtcCalculator()
+    {
         $result = $this->calc_otc->first();
 
         if (empty($result)) {
@@ -240,4 +242,102 @@ class Calculator extends BaseController
         ]);
     }
 
+    // ------- Calculator Interest -------
+    public function getInterestCalculator()
+    {
+        $result = $this->calc_interest->first();
+
+        if (empty($result)) {
+            return $this->failNotFound('No interest calculator data found');
+        }
+
+        return $this->respond([
+            'success' => true,
+            'message' => 'Interest calculator data retrieved successfully',
+            'data'    => $result
+        ], 200);
+    }
+
+    public function postCreateInterestCalculator()
+    {
+        $result = $this->calc_interest->first();
+
+        if (!empty($result)) {
+            return $this->fail('Interest calculator data already exists.');
+        }
+
+        $data = $this->request->getJSON(true);
+
+        $rules = [
+            'amount'      => 'required|decimal',
+            'lock_amount' => 'permit_empty|in_list[0,1]'
+        ];
+
+        if (! $this->validate($rules)) {
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+
+        $this->calc_interest->insert($data);
+        $id = $this->calc_interest->insertID();
+        $dataInterest = $this->calc_interest->find($id);
+
+        return $this->respondCreated([
+            'success' => true,
+            'message' => 'Interest calculator data created successfully',
+            'data'    => $dataInterest
+        ]);
+    }
+
+    public function postUpdateInterestCalculator($id)
+    {
+        $interest = $this->calc_interest->find($id);
+
+        if (empty($interest)) {
+            return $this->failNotFound('Interest calculator data not found');
+        }
+
+        $data = $this->request->getJSON(true);
+
+        $rules = [
+            'amount'      => 'required|decimal',
+            'lock_amount' => 'permit_empty|in_list[0,1]'
+        ];
+
+        if (! $this->validate($rules)) {
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+
+        // Buang field yang kosong string
+        foreach ($data as $key => $value) {
+            if ($value === "") {
+                unset($data[$key]);
+            }
+        }
+
+        $this->calc_interest->update($id, $data);
+
+        $dataUpdate = $this->calc_interest->find($id);
+
+        return $this->respond([
+            'success' => true,
+            'message' => 'Interest calculator data updated successfully',
+            'data'    => $dataUpdate
+        ]);
+    }
+
+    public function deleteInterestCalculator($id)
+    {
+        $interest = $this->calc_interest->find($id);
+
+        if (empty($interest)) {
+            return $this->failNotFound('Interest calculator data not found');
+        }
+
+        $this->calc_interest->delete($id);
+
+        return $this->respondDeleted([
+            'success' => true,
+            'message' => 'Interest calculator data deleted successfully'
+        ]);
+    }
 }

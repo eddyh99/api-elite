@@ -36,3 +36,14 @@ CREATE TABLE `calculator_mediation` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+-- db_api_elite2.calculator_interest definition
+
+CREATE TABLE `calculator_interest` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `amount` decimal(10,2) NOT NULL,
+  `lock_amount` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

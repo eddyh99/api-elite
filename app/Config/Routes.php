@@ -29,6 +29,11 @@ $routes->group('calculator', static function ($routes) {
     $routes->post('otc', 'V1\Calculator::postCreateOtcCalculator');
     $routes->post('otc/(:num)', 'V1\Calculator::postUpdateOtcCalculator/$1');
     $routes->delete('otc/(:num)', 'V1\Calculator::deleteOtcCalculator/$1');
+    //interest
+    $routes->get('interest', 'V1\Calculator::getInterestCalculator');
+    $routes->post('interest', 'V1\Calculator::postCreateInterestCalculator');
+    $routes->post('interest/(:num)', 'V1\Calculator::postUpdateInterestCalculator/$1');
+    $routes->delete('interest/(:num)', 'V1\Calculator::deleteInterestCalculator/$1');
 });
 
 
