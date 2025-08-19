@@ -19,10 +19,16 @@ $routes->group('non', static function ($routes) {
 });
 
 $routes->group('calculator', static function ($routes) {
+    //mediation
     $routes->get('mediation', 'V1\Calculator::getMediationCalculator');
     $routes->post('mediation', 'V1\Calculator::postCreateMediationCalculator');
     $routes->post('mediation/(:num)', 'V1\Calculator::postUpdateMediationCalculator/$1');
     $routes->delete('mediation/(:num)', 'V1\Calculator::deleteMediationCalculator/$1');
+    //otc
+    $routes->get('otc', 'V1\Calculator::getOtcCalculator');
+    $routes->post('otc', 'V1\Calculator::postCreateOtcCalculator');
+    $routes->post('otc/(:num)', 'V1\Calculator::postUpdateOtcCalculator/$1');
+    $routes->delete('otc/(:num)', 'V1\Calculator::deleteOtcCalculator/$1');
 });
 
 
