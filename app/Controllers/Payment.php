@@ -24,13 +24,28 @@ class Payment extends BaseController
 		$data           = $this->request->getJSON();
         $member         = $this->member->getby_email(trim($data->email))->message;
         $referral       = $this->setting->get("referral_fee")->message;
+        
+        $uplineId = null;
+        
+        // Jika ada member_id di request, cek dulu
+        if (!empty($data->member_id)) {
+            $memberById = $this->member->getby_id($data->member_id)->message;
+            $uplineId   = $memberById->id_referral ?? null;
+        }
+        
+        // Jika tidak ada atau null, fallback ke $member
+        if (empty($uplineId)) {
+            $uplineId = $member->id ?? null;
+        }
+        
         $mdata = array(
             "invoice"   => 'INV-' . strtoupper(bin2hex(random_bytes(4))),
-            "upline_id" => $this->member->getby_id($data->member_id)->message->id_referral ?? null,
+            "upline_id" => $uplineId,
 			"member_id" => trim($member->id),
 			"amount"    => trim($data->amount),
 			"commission"=> trim($data->amount) * $referral
 		);
+        
         $result = $this->deposit->add_balance($mdata);
         if (@$result->code != 201) {
 			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
