@@ -178,4 +178,46 @@ class Mdl_settings extends Model
             ];
         }
     }
+
+    public function getUsBankFee()
+    {
+        $sql = "
+        SELECT `key`, `value`
+        FROM settings
+        WHERE `key` IN (
+            'us_bank_fee'
+        )
+    ";
+
+        $query = $this->db->query($sql);
+        $rows = $query->getResultArray();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[$row['key']] = $row['value'];
+        }
+
+        return (object) $result;
+    }
+
+    public function getInternationalBankFee()
+    {
+        $sql = "
+        SELECT `key`, `value`
+        FROM settings
+        WHERE `key` IN (
+            'international_bank_fee'
+        )
+    ";
+
+        $query = $this->db->query($sql);
+        $rows = $query->getResultArray();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[$row['key']] = $row['value'];
+        }
+
+        return (object) $result;
+    }
 }
