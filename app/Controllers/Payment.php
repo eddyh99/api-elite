@@ -31,7 +31,6 @@ class Payment extends BaseController
 			"amount"    => trim($data->amount),
 			"commission"=> trim($data->amount) * $referral
 		);
-        
         $result = $this->deposit->add_balance($mdata);
         if (@$result->code != 201) {
 			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);

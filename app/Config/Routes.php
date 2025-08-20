@@ -16,8 +16,14 @@ $routes->group('non', static function ($routes) {
     $routes->post('deposit', 'Payment::postDeposit');
     $routes->get('bank', 'V1\Bank::getIndex');
     $routes->post('update-bank','V1\Bank::postUpdate_bankaccount');
-    $routes->get('us-bank-fee','V1\Bank::getUsBankFee');
-    $routes->get('international-bank-fee','V1\Bank::getInternationalBankFee');
+
+    $routes->post('us-bank', 'V1\Bank::createUsBank');
+    $routes->post('us-bank-update', 'V1\Bank::postUpdateUsBankAccount');
+    $routes->get('us-bank', 'V1\Bank::getUsBankAccount');
+
+    $routes->post('international-bank', 'V1\Bank::createInternationalBank');
+    $routes->post('international-bank-update', 'V1\Bank::postUpdateInternationalBankAccount');
+    $routes->get('international-bank', 'V1\Bank::getInternationalBankAccount');
 });
 
 $routes->group('calculator', static function ($routes) {
