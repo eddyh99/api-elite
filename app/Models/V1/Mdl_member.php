@@ -804,22 +804,40 @@ class Mdl_member extends Model
         try {
             if($id_member === NULL) {
                 $sql = "SELECT 
-                            DISTINCT mb.*, md.commission as komisi 
-                        FROM member mb INNER JOIN member_deposit md 
-                            ON mb.id=md.member_id 
-                        WHERE md.upline_id IS NULL
-                        AND md.status='complete'";
+                            mb.id AS member_id,
+                            mb.email,
+                            mb.status,
+                            md.id AS deposit_id,
+                            md.amount,
+                            md.status AS deposit_status,
+                            md.commission AS komisi
+                        FROM member mb
+                        LEFT JOIN member_deposit md 
+                               ON mb.id = md.member_id 
+                              AND md.status = 'complete'
+                        WHERE (mb.id_referral IS NULL
+                           OR md.upline_id IS NULL)
+                           AND mb.status='active'";
                 $query = $this->db->query($sql)->getResult();
             } else {
                 $sql = "SELECT 
-                            mb.*, md.commission as komisi 
-                        FROM member mb INNER JOIN member_deposit md 
-                            ON mb.id=md.member_id 
-                        WHERE md.upline_id = ?
-                        AND md.status='complete'
-                        GROUP BY md.id
+                            m.id AS member_id,
+                            m.email,
+                            m.status,
+                            md.id AS deposit_id,
+                            md.amount,
+                            md.status AS deposit_status,
+                            md.commission AS komisi
+                        FROM member m
+                        LEFT JOIN member_deposit md 
+                               ON m.id = md.member_id 
+                              AND md.status = 'complete'
+                        WHERE (m.id_referral = ?
+                           OR md.upline_id = ?)
+                           AND m.status='active';
+
                         ";
-                $query = $this->db->query($sql, [$id_member])->getResult();
+                $query = $this->db->query($sql, [$id_member,$id_member])->getResult();
             }
 
             if (!$query) {
