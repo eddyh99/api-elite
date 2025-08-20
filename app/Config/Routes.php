@@ -18,6 +18,24 @@ $routes->group('non', static function ($routes) {
     $routes->post('update-bank','V1\Bank::postUpdate_bankaccount');
 });
 
+$routes->group('calculator', static function ($routes) {
+    //mediation
+    $routes->get('mediation', 'V1\Calculator::getMediationCalculator');
+    $routes->post('mediation', 'V1\Calculator::postCreateMediationCalculator');
+    $routes->post('mediation/(:num)', 'V1\Calculator::postUpdateMediationCalculator/$1');
+    $routes->delete('mediation/(:num)', 'V1\Calculator::deleteMediationCalculator/$1');
+    //otc
+    $routes->get('otc', 'V1\Calculator::getOtcCalculator');
+    $routes->post('otc', 'V1\Calculator::postCreateOtcCalculator');
+    $routes->post('otc/(:num)', 'V1\Calculator::postUpdateOtcCalculator/$1');
+    $routes->delete('otc/(:num)', 'V1\Calculator::deleteOtcCalculator/$1');
+    //interest
+    $routes->get('interest', 'V1\Calculator::getInterestCalculator');
+    $routes->post('interest', 'V1\Calculator::postCreateInterestCalculator');
+    $routes->post('interest/(:num)', 'V1\Calculator::postUpdateInterestCalculator/$1');
+    $routes->delete('interest/(:num)', 'V1\Calculator::deleteInterestCalculator/$1');
+});
+
 
 //api tanpa filter
 $routes->group('apiv1', static function ($routes) {
