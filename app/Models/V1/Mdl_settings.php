@@ -47,9 +47,9 @@ class Mdl_settings extends Model
             $builder = $this->db->table("settings");
             $key = key($data);
             $value = $data[$key];
-    
+
             $exists = $builder->where('key', $key)->get()->getRow();
-    
+
             if ($exists) {
                 $builder->where('key', $key)->update(['value' => $value]);
             } else {
@@ -113,18 +113,19 @@ class Mdl_settings extends Model
         }
     }
 
-    public function getBankAccount()
+    public function getUsBankAccount()
     {
         $sql = "
         SELECT `key`, `value`
         FROM settings
         WHERE `key` IN (
-            'bank_account_name',
-            'bank_account_type',
-            'bank_routing_number',
-            'bank_account_number'
+            'us_bank_account_name',
+            'us_bank_account_type',
+            'us_bank_routing_number',
+            'us_bank_account_number',
+            'us_bank_fee_setting'
         )
-    ";
+        ";
 
         $query = $this->db->query($sql);
         $rows = $query->getResultArray();
@@ -137,6 +138,29 @@ class Mdl_settings extends Model
         return (object) $result;
     }
 
+    public function getInternationalBankAccount()
+    {
+        $sql = "
+        SELECT `key`, `value`
+        FROM settings
+        WHERE `key` IN (
+            'inter_bank_account_name',
+            'inter_bank_account_number',
+            'inter_swift_code',
+            'inter_fee_setting'
+        )
+        ";
+
+        $query = $this->db->query($sql);
+        $rows = $query->getResultArray();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[$row['key']] = $row['value'];
+        }
+
+        return (object) $result;
+    }
 
     public function updateBankAccount($data)
     {
@@ -187,7 +211,7 @@ class Mdl_settings extends Model
         WHERE `key` IN (
             'us_bank_fee'
         )
-    ";
+     ";
 
         $query = $this->db->query($sql);
         $rows = $query->getResultArray();
@@ -208,7 +232,7 @@ class Mdl_settings extends Model
         WHERE `key` IN (
             'international_bank_fee'
         )
-    ";
+     ";
 
         $query = $this->db->query($sql);
         $rows = $query->getResultArray();
