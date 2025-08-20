@@ -812,11 +812,13 @@ class Mdl_member extends Model
                 $query = $this->db->query($sql)->getResult();
             } else {
                 $sql = "SELECT 
-                            DISTINCT mb.*, md.commission as komisi 
+                            mb.*, md.commission as komisi 
                         FROM member mb INNER JOIN member_deposit md 
                             ON mb.id=md.member_id 
                         WHERE md.upline_id = ?
-                        AND md.status='complete'";
+                        AND md.status='complete'
+                        GROUP BY md.id
+                        ";
                 $query = $this->db->query($sql, [$id_member])->getResult();
             }
 
