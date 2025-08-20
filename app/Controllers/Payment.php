@@ -19,8 +19,8 @@ class Payment extends BaseController
         $this->withdraw     = model('App\Models\V1\Mdl_withdraw');
     }
 
-    public function postDeposit() {
-        
+    public function postDeposit() 
+    {
 		$data           = $this->request->getJSON();
         $member         = $this->member->getby_email(trim($data->email))->message;
         $referral       = $this->setting->get("referral_fee")->message;
@@ -41,7 +41,8 @@ class Payment extends BaseController
     }
 
 
-    public function postUpdate_status() {
+    public function postUpdate_status()
+    {
         $data           = $this->request->getJSON();
         $mdata = [
             'invoice'   => trim($data->invoice),

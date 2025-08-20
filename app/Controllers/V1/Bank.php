@@ -67,4 +67,43 @@ class Bank extends BaseController
 
         return $this->respond($result);
     }
+
+    public function getUsBankFee(){
+        $result = $this->setting->getUsBankFee();
+
+        if (empty((array)$result)) {
+            return $this->respond([
+                'success' => false,
+                'code'    => 404,
+                'message' => 'US bank fee data not found'
+            ], 404);
+        }
+
+        return $this->respond([
+            'success' => true,
+            'code'    => 200,
+            'message' => 'US bank fees retrieved successfully',
+            'data'    => $result
+        ], 200);
+    }
+
+    public function getInternationalBankFee()
+    {
+        $result = $this->setting->getInternationalBankFee();
+
+        if (empty((array)$result)) {
+            return $this->respond([
+                'success' => false,
+                'code'    => 404,
+                'message' => 'International bank fee data not found'
+            ], 404);
+        }
+
+        return $this->respond([
+            'success' => true,
+            'code'    => 200,
+            'message' => 'International bank fees retrieved successfully',
+            'data'    => $result
+        ], 200);
+    }
 }
