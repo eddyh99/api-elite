@@ -465,5 +465,16 @@ class Member extends BaseController
 		
 		return $this->respond(error_msg(200, "deposit", "01", "Successfully Deleted"), 201);	
     }
+    
+    public function getList_downlinedepo(){
+        $id_member = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
+        $result = $this->member->get_downlinedepo($id_member);
+
+        if (@$result->code != 200) {
+            return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
+        }
+
+        return $this->respond(error_msg(200, "member", null, $result->data), 200);
+    }
 
 }

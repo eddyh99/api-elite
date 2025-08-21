@@ -35,7 +35,7 @@ class Payment extends BaseController
         
         // Jika tidak ada atau null, fallback ke $member
         if (empty($uplineId)) {
-            $uplineId = $member->id ?? null;
+            $uplineId = null;
         }
         
         $mdata = array(
