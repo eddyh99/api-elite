@@ -14,8 +14,6 @@ $routes->get('/', 'Home::index');
 $routes->group('non', static function ($routes) {
     $routes->post('notify_payment', 'Payment::postUpdate_status');
     $routes->post('deposit', 'Payment::postDeposit');
-    $routes->get('bank', 'V1\Bank::getIndex');
-    $routes->post('update-bank','V1\Bank::postUpdate_bankaccount');
 
     $routes->post('us-bank', 'V1\Bank::createUsBank');
     $routes->post('us-bank-update', 'V1\Bank::postUpdateUsBankAccount');

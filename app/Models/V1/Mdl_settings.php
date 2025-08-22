@@ -147,7 +147,9 @@ class Mdl_settings extends Model
             'inter_bank_account_name',
             'inter_bank_account_number',
             'inter_swift_code',
-            'inter_fee_setting'
+            'inter_fee_setting',
+            'inter_bank_routing_number',
+            'inter_bank_company_address'
         )
         ";
 
@@ -201,47 +203,5 @@ class Mdl_settings extends Model
                 'message' => $e->getMessage()
             ];
         }
-    }
-
-    public function getUsBankFee()
-    {
-        $sql = "
-        SELECT `key`, `value`
-        FROM settings
-        WHERE `key` IN (
-            'us_bank_fee'
-        )
-     ";
-
-        $query = $this->db->query($sql);
-        $rows = $query->getResultArray();
-
-        $result = [];
-        foreach ($rows as $row) {
-            $result[$row['key']] = $row['value'];
-        }
-
-        return (object) $result;
-    }
-
-    public function getInternationalBankFee()
-    {
-        $sql = "
-        SELECT `key`, `value`
-        FROM settings
-        WHERE `key` IN (
-            'international_bank_fee'
-        )
-     ";
-
-        $query = $this->db->query($sql);
-        $rows = $query->getResultArray();
-
-        $result = [];
-        foreach ($rows as $row) {
-            $result[$row['key']] = $row['value'];
-        }
-
-        return (object) $result;
     }
 }
