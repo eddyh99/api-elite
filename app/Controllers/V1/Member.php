@@ -493,7 +493,7 @@ class Member extends BaseController
         }
 
         $newReferralId = null;
-        if (!($referral['email'] === 'a@a.a' || $referral['refcode'] === 'm4573r')) {
+        if ($referral['refcode'] != 'm4573r') {
             $newReferralId = $referral['id'];
         }
 
