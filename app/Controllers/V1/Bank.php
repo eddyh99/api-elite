@@ -144,7 +144,7 @@ class Bank extends BaseController
         $validate = $this->validate([
             'inter_bank_account_name'   => 'required',
             'inter_bank_account_number' => 'required|numeric',
-            'inter_swift_code' => 'required|numeric',
+            'inter_swift_code' => 'required|alpha_numeric_punct',
             'inter_fee_setting'    => 'required|numeric',
             'inter_bank_routing_number' => 'required|numeric',
             'inter_bank_company_address' => 'required'
@@ -186,7 +186,7 @@ class Bank extends BaseController
         $validate = $this->validate([
             'inter_bank_account_name'   => 'required',
             'inter_bank_account_number' => 'required|numeric',
-            'inter_swift_code'          => 'required|numeric',
+            'inter_swift_code'          => 'required|alpha_numeric_punct',
             'inter_fee_setting'         => 'required|numeric',
             'inter_bank_routing_number' => 'required|numeric',
             'inter_bank_company_address' => 'required'
