@@ -466,4 +466,53 @@ class Member extends BaseController
 		return $this->respond(error_msg(200, "deposit", "01", "Successfully Deleted"), 201);	
     }
 
+    public function postChange_upline()
+    {
+        $data = $this->request->getJSON(true);
+        $rules = [
+            'new_referral' => 'required|min_length[3]|max_length[10]',
+            'member_email' => 'required|valid_email'
+        ];
+
+        if (! $this->validateData($data, $rules)) {
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+
+        $referral = $this->member
+            ->select('id, refcode, email')
+            ->where('refcode', $data['new_referral'])
+            ->first();
+
+        if (!$referral) {
+            return $this->failNotFound('Referral code not found');
+        }
+
+        $member = $this->member->where('email', $data['member_email'])->first();
+        if (!$member) {
+            return $this->failNotFound('Member not found');
+        }
+
+        $newReferralId = null;
+        if (!($referral['email'] === 'a@a.a' || $referral['refcode'] === 'm4573r')) {
+            $newReferralId = $referral['id'];
+        }
+
+        if ($member['id_referral'] == $newReferralId) {
+            return $this->respond([
+                'status'  => 200,
+                'message' => 'No changes made'
+            ]);
+        }
+
+        $update_referral = $this->member->update($member['id'], ['id_referral' => $newReferralId]);
+
+        if (!$update_referral) {
+            return $this->failServerError('Failed to update member referral');
+        }
+
+        return $this->respond([
+            'status'  => 200,
+            'message' => 'Referral updated successfully'
+        ]);
+    }
 }
