@@ -1,0 +1,286 @@
+<?php
+
+namespace App\Controllers\V2;
+
+use App\Controllers\BaseController;
+use App\Models\V1\Mdl_member_o2o;
+use CodeIgniter\API\ResponseTrait;
+
+class Auth extends BaseController
+{
+	use ResponseTrait;
+
+	public function __construct()
+	{
+		$this->member_o2o  = new Mdl_member_o2o();
+	}
+
+	public function postRegister()
+	{
+
+		$validation = $this->validation;
+		$validation->setRules([
+			'email' => [
+				'rules'  => 'required|valid_email',
+				'errors' => [
+					'required'      => 'Email is required',
+					'valid_email'   => 'Invalid Email format'
+				]
+			],
+			'password' => [
+				'rules'  => 'required|min_length[8]',
+				'errors' =>  [
+					'required'      => 'Password is required',
+					'min_length'    => 'Min length password is 8 character'
+				]
+			],
+			'role' => [
+				'rules'  => 'required|in_list[member,admin,manager,superadmin,referral]',
+				'errors' => [
+					'required' => 'User role is required.',
+					'in_list'  => 'Invalid user role.'
+				]
+			],
+			'timezone' => [
+				'rules'  => 'required',
+				'errors' =>  [
+					'required'      => 'User timezone is required',
+				]
+			],
+			'ip_address' => [
+				'rules'  => 'required|valid_ip',
+				'errors' => [
+					'required'  => 'User IP is required',
+					'valid_ip'  => 'User IP must be a valid IP address',
+				]
+			]
+
+		]);
+
+		if (!$validation->withRequest($this->request)->run()) {
+			return $this->fail($validation->getErrors());
+		}
+
+		$data           = $this->request->getJSON();
+
+		$mdata = array(
+			"email"     => trim($data->email),
+			"passwd"    => trim($data->password),
+			"role"		=> trim($data->role),
+			"status" => $data->status ?? ($data->role !== 'member' ? 'active' : 'new'),
+			"timezone"  => $data->timezone,
+			"refcode"	=> $data->refcode ?? null,
+			'ip_addr'	=> $data->ip_address
+		);
+
+		if (!empty($data->referral)) {
+			$refmember = $this->member_o2o->getby_refcode($data->referral);
+			if (!$refmember->exist) {
+				return $this->respond(error_msg(400, "auth", '01', $refmember->message), 400);
+			}
+			$mdata["id_referral"] = $refmember->id;
+		}
+
+		$mdata['otp'] = rand(1000, 9999);
+		$result = $this->member_o2o->add($mdata);
+
+		if (!@$result->success) {
+			if ($result->code == 1060 || $result->code == 1062) {
+				$result->message = 'User already registered';
+			}
+			return $this->respond(error_msg(400, "auth", '01', $result->message), 400);
+		}
+
+		$message = [
+			"text" => $result->message,
+			"otp"	  => $mdata['otp']
+		];
+
+		return $this->respond(error_msg(201, "auth", null, $message), 201);
+	}
+
+	public function postSignin()
+	{
+		$validation = $this->validation;
+		$validation->setRules([
+			'email' => [
+				'rules'  => 'required|valid_email',
+				'errors' => [
+					'required'      => 'Email is required',
+					'valid_email'   => 'Invalid Email format'
+				]
+			],
+			'password' => [
+				'rules'  => 'required|min_length[3]',
+				'errors' =>  [
+					'required'      => 'Password is required',
+					'min_length'    => 'Min length password is 8 character'
+				]
+			],
+		]);
+
+		if (!$validation->withRequest($this->request)->run()) {
+			return $this->fail($validation->getErrors());
+		}
+
+		$data	= $this->request->getJSON();
+		
+		$member = $this->member_o2o->getby_email($data->email);
+		
+		if (@$member->code != 200) {
+			return $this->respond(error_msg($member->code, "auth", "01", $member->message), $member->code);
+		}
+
+		if ($data->password == $member->message->passwd) {
+			$response = $member->message;
+			if($response->role == 'member') {
+				unset($response->access);
+			}
+			return $this->respond(error_msg(200, "auth", "02", $response), 200);
+		} else {
+			$response = "Invalid username or password";
+			return $this->respond(error_msg(400, "auth", "02", $response), 400);
+		}
+	}
+
+	public function postResend_token()
+	{
+		$validation = $this->validation;
+		$validation->setRules([
+			'email' => [
+				'rules'  => 'required|valid_email',
+				'errors' => [
+					'required'      => 'Email is required',
+					'valid_email'   => 'Invalid Email format'
+				]
+			]
+		]);
+
+		if (!$validation->withRequest($this->request)->run()) {
+			return $this->fail($validation->getErrors());
+		}
+
+		$data = $this->request->getJSON();
+		$mdata = [
+			'email' => filter_var($data->email, FILTER_VALIDATE_EMAIL),
+			'otp'	=> rand(1000, 9999)
+		];
+
+		$isgodmode = !empty($data->isgodmode) && $data->isgodmode == true;
+		$result = $this->member_o2o->update_otp($mdata, $isgodmode);
+		if ($result->code !== 200) {
+			return $this->respond(error_msg($result->code, "auth", '01', $result->message), $result->code);
+		}
+
+		$message = [
+			'text' => $result->message,
+			"otp"	  => $mdata['otp']
+		];
+
+		return $this->respond(error_msg($result->code, "auth", null, $message), $result->code);
+	}
+
+	public function postActivate_member()
+	{
+		$validation = $this->validation;
+		$validation->setRules([
+			'email' => [
+				'rules'  => 'required|valid_email',
+				'errors' => [
+					'required'      => 'Email is required',
+					'valid_email'   => 'Invalid Email format'
+				]
+			],
+			'otp' => [
+				'rules'  => 'required|numeric|exact_length[4]',
+				'errors' => [
+					'required'     => 'OTP is required',
+					'numeric'      => 'OTP must be a number',
+					'exact_length' => 'OTP must be exactly 4 digits'
+				]
+			]
+		]);
+
+		if (!$validation->withRequest($this->request)->run()) {
+			return $this->fail($validation->getErrors());
+		}
+
+		$data           = $this->request->getJSON();
+		$mdata = array(
+			"email"     => trim($data->email),
+			"otp"    => trim($data->otp),
+		);
+
+		$result = $this->member_o2o->activate($mdata);
+		if ($result->code !== 200) {
+			return $this->respond(error_msg($result->code, "auth", '01', $result->message), $result->code);
+		}
+
+		return $this->respond(error_msg(200, "auth", null, $result->message), 200);
+	}
+
+	public function postReset_password() 
+	{
+		$validation = $this->validation;
+		$validation->setRules([
+			'email' => [
+				'rules'  => 'required|valid_email',
+				'errors' => [
+					'required'      => 'Email is required',
+					'valid_email'   => 'Invalid Email format'
+				]
+			],
+			'password' => [
+				'rules'  => 'required|min_length[8]',
+				'errors' =>  [
+					'required'      => 'Password is required',
+					'min_length'    => 'Min length password is 8 character'
+				]
+			],
+			'otp' => [
+				'rules'  => 'required|numeric|exact_length[4]',
+				'errors' => [
+					'required'     => 'OTP is required',
+					'numeric'      => 'OTP must be a number',
+					'exact_length' => 'OTP must be exactly 4 digits'
+				]
+			]
+		]);
+
+		if (!$validation->withRequest($this->request)->run()) {
+			return $this->fail($validation->getErrors());
+		}
+
+		$data       = $this->request->getJSON();
+
+		$mdata = [
+			'email' 	=> trim($data->email),
+			'password'  => trim($data->password),
+			'otp'		=> trim($data->otp)
+		];
+
+		$result = $this->member_o2o->reset_password($mdata);
+		if ($result->code !== 200) {
+			return $this->respond(error_msg($result->code, "auth", '01', $result->message), $result->code);
+		}
+
+		return $this->respond(error_msg(200, "auth", null, $result->message), 200);
+	}
+
+	public function postOtp_check() 
+	{
+        $data = $this->request->getJSON();
+        $mdata = [
+            "email" => $data->email,
+            "otp" => $data->otp
+        ];
+
+        $result = $this->member_o2o->otp_check($mdata);
+        if (@$result->code != 200) {
+			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
+		}
+
+        return $this->respond(error_msg(200, "member", null, $result->message), 200);
+    }
+
+}
