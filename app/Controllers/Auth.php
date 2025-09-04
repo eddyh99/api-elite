@@ -3,15 +3,21 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Models\V1\Mdl_crypto_wallet;
+use App\Services\WalletCryptoService;
 use CodeIgniter\API\ResponseTrait;
 
 class Auth extends BaseController
 {
 	use ResponseTrait;
 
+	protected $walletService;
+
 	public function __construct()
 	{
 		$this->member  = model('App\Models\V1\Mdl_member');
+		$this->walletCryptoModel = new Mdl_crypto_wallet();
+		$this->walletService = new WalletCryptoService();
 	}
 
 	public function postRegister()
@@ -91,12 +97,103 @@ class Auth extends BaseController
 			return $this->respond(error_msg(400, "auth", '01', $result->message), 400);
 		}
 
+		$userId = $result->id;
+		$wallets = $this->walletService->generateAllWallets();
+
+		$walletData = [];
+
+		foreach ($wallets as $network => $wallet) {
+			$walletData[] = [
+				'member_id'  => $userId,
+				'type'       => 'hedgefund',               // bisa disesuaikan
+				'network'    => $network,                 // erc20, bep20, polygon, trc20, base, solana
+				'address'    => $wallet['address'],
+				'public_key' => $wallet['publicKey'] ?? null,
+				'private_key' => $wallet['privateKey'],    // plain text untuk testing
+				'created_at' => date('Y-m-d H:i:s'),
+				'updated_at' => date('Y-m-d H:i:s'),
+			];
+		}
+
+		try {
+			$this->walletCryptoModel->insertBatch($walletData);
+		} catch (\Exception $e) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => $e->getMessage(),
+				'trace' => $e->getTraceAsString()
+			], 500);
+		}
+
 		$message = [
 			"text" => $result->message,
 			"otp"	  => $mdata['otp']
 		];
 
 		return $this->respond(error_msg(201, "auth", null, $message), 201);
+	}
+
+	public function postCheck_wallet()
+	{
+		$data = $this->request->getJSON();
+		$email = $data->email ?? null;
+		$type = $data->type ?? null;
+
+		$result = $this->walletCryptoModel->getWalletByEmail($email, $type);
+		if (!$result) {
+			return $this->respond(error_msg(404, "auth", "01", "Wallet not found"), 404);
+		}
+		return $this->respond(error_msg(200, "auth", null, $result), 200);
+	}
+
+	public function postCreate_wallet()
+	{
+		$data = $this->request->getJSON();
+		$email = $data->email ?? null;
+		$type = $data->type ?? null;
+
+		$member = $this->member->getby_email($email);
+
+		$userId = $member->message->id;
+
+		$wallets = $this->walletService->generateAllWallets();
+
+		$walletData = [];
+
+		foreach ($wallets as $network => $wallet) {
+			$walletData[] = [
+				'member_id'  => $userId,
+				'type'       => $type,               // bisa disesuaikan
+				'network'    => $network,                 // erc20, bep20, polygon, trc20, base, solana
+				'address'    => $wallet['address'],
+				'public_key' => $wallet['publicKey'] ?? null,
+				'private_key' => $wallet['privateKey'],    // plain text untuk testing
+				'created_at' => date('Y-m-d H:i:s'),
+				'updated_at' => date('Y-m-d H:i:s'),
+			];
+		}
+
+		try {
+			$this->walletCryptoModel->insertBatch($walletData);
+		} catch (\Exception $e) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => $e->getMessage(),
+				'trace' => $e->getTraceAsString()
+			], 500);
+		}
+		return $this->respond(error_msg(201, "auth", null, "Wallet created successfully"), 201);
+	}
+
+	public function postGet_crypto_wallet()
+	{
+		$data = $this->request->getJSON();
+		$email = $data->email ?? null;
+		$type = $data->type ?? null;
+		$network = $data->network ?? null;
+
+		$result = $this->walletCryptoModel->getWalletInfo($email, $type, $network);
+		return $this->respond(error_msg(200, "auth", null, $result), 200);
 	}
 
 	public function postSignin()
@@ -132,7 +229,7 @@ class Auth extends BaseController
 
 		if ($data->password == $member->message->passwd) {
 			$response = $member->message;
-			if($response->role == 'member') {
+			if ($response->role == 'member') {
 				unset($response->access);
 			}
 
@@ -266,7 +363,8 @@ class Auth extends BaseController
 		return $this->respond(error_msg(200, "auth", null, $result->message), 200);
 	}
 
-	public function postReset_password() {
+	public function postReset_password()
+	{
 		$validation = $this->validation;
 		$validation->setRules([
 			'email' => [
@@ -314,30 +412,31 @@ class Auth extends BaseController
 		return $this->respond(error_msg(200, "auth", null, $result->message), 200);
 	}
 
-	public function postOtp_check() {
-        $data = $this->request->getJSON();
-        $mdata = [
-            "email" => $data->email,
-            "otp" => $data->otp
-        ];
+	public function postOtp_check()
+	{
+		$data = $this->request->getJSON();
+		$mdata = [
+			"email" => $data->email,
+			"otp" => $data->otp
+		];
 
-        $result = $this->member->otp_check($mdata);
-        if (@$result->code != 200) {
+		$result = $this->member->otp_check($mdata);
+		if (@$result->code != 200) {
 			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
 		}
 
-        return $this->respond(error_msg(200, "member", null, $result->message), 200);
-    }
+		return $this->respond(error_msg(200, "member", null, $result->message), 200);
+	}
 
-    public function getAssets()
-    {
-        $url = BINANCEAPI . "/account";
+	public function getAssets()
+	{
+		$url = BINANCEAPI . "/account";
 
-        $response = binanceAPI($url, []);
-        if (isset($response->code)) {
-            return $this->respond(error_msg(400, "binance", $response->code, $response->msg), 400);
-        }
+		$response = binanceAPI($url, []);
+		if (isset($response->code)) {
+			return $this->respond(error_msg(400, "binance", $response->code, $response->msg), 400);
+		}
 
-        return $this->respond(error_msg(200, "binance", null, $response), 200);
-    }
+		return $this->respond(error_msg(200, "binance", null, $response), 200);
+	}
 }
