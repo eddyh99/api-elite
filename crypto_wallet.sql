@@ -16,3 +16,19 @@ CREATE TABLE `crypto_wallet` (
 
 ALTER TABLE `crypto_wallet`
 MODIFY COLUMN `network` ENUM('erc20','bep20','polygon','trc20','base','solana') NOT NULL;
+
+ALTER TABLE `member_deposit`
+ADD COLUMN `payment_type` ENUM(
+    'us_bank',
+    'international_bank',
+    'usdt_bep20',
+    'usdt_trc20',
+    'usdt_erc20',
+    'usdt_polygon',
+    'usdc_bep20',
+    'usdc_trc20',
+    'usdc_erc20',
+    'usdc_polygon',
+    'usdc_base',
+    'usdc_solana'
+) NULL AFTER `invoice`;

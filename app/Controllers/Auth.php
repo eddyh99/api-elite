@@ -2,10 +2,12 @@
 
 namespace App\Controllers;
 
+use Web3\Web3;
+use Web3\Contract;
+use CodeIgniter\API\ResponseTrait;
 use App\Controllers\BaseController;
 use App\Models\V1\Mdl_crypto_wallet;
 use App\Services\WalletCryptoService;
-use CodeIgniter\API\ResponseTrait;
 
 class Auth extends BaseController
 {
@@ -239,7 +241,7 @@ class Auth extends BaseController
 			return $this->respond(error_msg(400, "auth", "02", $response), 400);
 		}
 	}
-
+	
 	// public function postAdmin_Signin()
 	// {
 	// 	$validation = $this->validation;
@@ -439,4 +441,205 @@ class Auth extends BaseController
 
 		return $this->respond(error_msg(200, "binance", null, $response), 200);
 	}
+
+	/* Cek wallet balance BEP20 USDT di BSC */
+	/*
+	public function postCheck_balance()
+	{
+		$json   = $this->request->getJSON(true);
+		$wallet = $json['wallet_address'] ?? null;
+
+		if (!$wallet) {
+			return $this->response->setJSON([
+				'status'  => 'error',
+				'message' => 'Wallet address is required'
+			]);
+		}
+
+		$rpcUrl = 'https://bsc-dataseed.binance.org/';
+		$web3   = new \Web3\Web3($rpcUrl);
+
+		$usdtContract = '0x55d398326f99059fF775485246999027B3197955';
+
+		$erc20Abi = '[{
+        "constant":true,
+        "inputs":[{"name":"_owner","type":"address"}],
+        "name":"balanceOf",
+        "outputs":[{"name":"balance","type":"uint256"}],
+        "type":"function"}]';
+
+		$contract = new \Web3\Contract($web3->provider, $erc20Abi);
+
+		$resultData = null;
+		$errorMsg   = null;
+
+		$contract->at($usdtContract)->call('balanceOf', $wallet, function ($err, $result) use ($wallet, &$resultData, &$errorMsg) {
+			if ($err !== null) {
+				$errorMsg = $err->getMessage();
+				return;
+			}
+
+			$balance = null;
+			$rawResult = $result; // ini adalah array
+
+			// Format 1: [0 => BigNumber]
+			if (isset($result[0])) {
+				$balance = $result[0]->toString();
+			}
+			// Format 2: ['balance' => BigNumber]
+			elseif (isset($result['balance'])) {
+				$balance = $result['balance']->toString();
+			}
+
+			if ($balance === null) {
+				$errorMsg = 'Balance result empty or unrecognized format';
+				return;
+			}
+
+			$humanReadable = bcdiv($balance, bcpow('10', '18'), 6);
+
+			$resultData = [
+				'status'         => 'success',
+				'wallet_address' => $wallet,
+				// 'balance'        => $humanReadable,
+				'raw_result'    => $rawResult
+			];
+		});
+
+
+		// setelah call, balikin hasil
+		if ($errorMsg !== null) {
+			return $this->respond([
+				'status'  => 'error',
+				'message' => $errorMsg
+			]);
+		}
+
+		return $this->respond($resultData);
+	}
+	*/
+
+	// Cek wallet balance BEP20 USDT/USDC di BSC dengan multiple RPC dan fallback
+	public function postCheck_wallet_bep20()
+	{
+		// Ambil data JSON dari request
+		$json   = $this->request->getJSON(true);
+		$wallet = $json['wallet_address'] ?? null;
+		$token  = strtolower($json['token'] ?? ''); // token pakai lowercase, contoh "usdt_bep20" dan "usdc_bep20", ini digunakan untuk pengecekan salah satu dari dua token
+
+		if (!$wallet) {
+			return $this->respond([
+				'status'  => 'error',
+				'message' => 'Wallet address is required'
+			]);
+		}
+
+		// Validasi format wallet BSC (harus 0x + 40 karakter hex)
+		if (substr($wallet, 0, 2) !== '0x' || strlen($wallet) !== 42 || !ctype_xdigit(substr($wallet, 2))) {
+			return $this->respond([
+				'status'  => 'error',
+				'message' => 'Invalid BSC wallet address'
+			]);
+		}
+
+		// Mapping token -> kontrak BEP20 di BSC
+		$tokenContracts = [
+			'usdt_bep20' => '0x55d398326f99059fF775485246999027B3197955',
+			'usdc_bep20' => '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d'
+		];
+
+		if (!isset($tokenContracts[$token])) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => 'Token not supported on BSC'
+			]);
+		}
+
+		// Daftar RPC BSC, kalau RPC pertama timeout/error, akan dicoba yang berikutnya
+		$rpcUrls = [
+			'https://bsc-dataseed1.ninicoin.io/',
+			'https://bsc-dataseed1.defibit.io/',
+			'https://bsc-dataseed.binance.org/'
+		];
+
+		// ABI sederhana ERC20 untuk fungsi balanceOf yang akan dikirim ke kontrak
+		$erc20Abi = '[{
+			"constant": true,
+			"inputs": [{"name":"_owner","type":"address"}],
+			"name": "balanceOf",
+			"outputs": [{"name":"balance","type":"uint256"}],
+			"type": "function"
+			}]';
+
+		$resultData = [
+			'status' => 'error',
+			'wallet_address' => $wallet,
+			'token' => $token,
+			'balance' => '0',
+			// 'rawBalance' => '0'
+		];
+
+		$success = false; // menandai apakah call berhasil
+		$lastError = '';  // menyimpan pesan error terakhir untuk debug
+
+		// Looping setiap RPC untuk fallback jika RPC pertama gagal
+		foreach ($rpcUrls as $rpcUrl) {
+			try {
+				// Buat provider untuk Web3
+				$provider = new \Web3\Providers\HttpProvider(
+					new \Web3\RequestManagers\HttpRequestManager($rpcUrl, 10) // timeout 10 detik
+				);
+				$web3 = new \Web3\Web3($provider);
+				$contract = new \Web3\Contract($web3->provider, $erc20Abi);
+
+				// Panggil fungsi balanceOf dari kontrak ERC20
+				$contract->at($tokenContracts[$token])->call('balanceOf', $wallet, function ($err, $balance) use (&$resultData, &$success, &$lastError) {
+					if ($err !== null) {
+						$lastError = $err->getMessage(); // simpan error jika ada
+						return;
+					}
+
+					$raw = null;
+					// $convert = $balance; // simpan raw balance untuk debug
+					// $resultData['rawBalance'] = $convert['balance']->toString(); // simpan raw balance untuk debug
+
+					// Parsing hasil balance (BigNumber)
+					if (is_array($balance)) {
+						if (isset($balance[0]) && method_exists($balance[0], 'toString')) {
+							$raw = $balance[0]->toString();
+						} elseif (isset($balance['balance']) && method_exists($balance['balance'], 'toString')) {
+							$raw = $balance['balance']->toString();
+						}
+					}
+
+					if ($raw === null) {
+						$raw = '0'; // jika balance tidak terbaca, default 0
+					}
+
+					// Konversi raw balance ke human-readable (BEP20 biasanya 18 decimals)
+					$resultData['balance'] = bcdiv($raw, bcpow('10', '18'), 6);
+					$resultData['status'] = 'success';
+					$success = true;
+				});
+
+				if ($success) break; // Jika berhasil, hentikan loop RPC
+
+			} catch (\Throwable $e) {
+				$lastError = $e->getMessage();
+				continue; // coba RPC berikutnya
+			}
+		}
+
+		// Jika semua RPC gagal, kembalikan pesan error terakhir
+		if (!$success) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => 'All RPC failed: ' . $lastError
+			]);
+		}
+
+		return $this->respond($resultData);
+	}
+
+
 }

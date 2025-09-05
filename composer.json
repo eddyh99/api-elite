@@ -19,7 +19,8 @@
         "kornrunner/secp256k1": "^0.3.0",
         "laminas/laminas-escaper": "^2.14",
         "psr/log": "^3.0",
-        "simplito/elliptic-php": "^1.0"
+        "simplito/elliptic-php": "^1.0",
+        "web3p/web3.php": "^0.1.6"
     },
     "require-dev": {
         "codeigniter/coding-standard": "^1.7",
