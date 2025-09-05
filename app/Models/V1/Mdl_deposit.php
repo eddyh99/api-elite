@@ -790,4 +790,35 @@ class Mdl_deposit extends Model
             ];            
         }
     }
+
+    public function update_crypto_deposit($mdata) {
+        try {
+            // Update status berdasarkan email member
+            $sql = "UPDATE member_deposit 
+                    SET status = ? 
+                    WHERE invoice = ?";
+    
+            $this->db->query($sql, [$mdata['status'], $mdata['invoice']]);
+            $affectedRows = $this->db->affectedRows();
+
+            // Jika update gagal
+            if (!$affectedRows) {
+                return (object) array(
+                    "code"    => 400,
+                    "message" => "Failed to update crypto deposit status"
+                );
+            }
+    
+        } catch (\Throwable $th) {
+            return (object) array(
+                "code"    => 500,
+                "message" => "An unexpected server error occurred"
+            );
+        }
+    
+        return (object) array(
+            "code"    => 201,
+            "message" => "Crypto Deposit has been updated successfully"
+        );
+    }
 }

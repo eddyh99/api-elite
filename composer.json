@@ -15,8 +15,12 @@
         "ext-mbstring": "*",
         "guzzlehttp/guzzle": "^7.9",
         "hashids/hashids": "^5.0",
+        "kornrunner/keccak": "^1.1",
+        "kornrunner/secp256k1": "^0.3.0",
         "laminas/laminas-escaper": "^2.14",
-        "psr/log": "^3.0"
+        "psr/log": "^3.0",
+        "simplito/elliptic-php": "^1.0",
+        "web3p/web3.php": "^0.1.6"
     },
     "require-dev": {
         "codeigniter/coding-standard": "^1.7",
