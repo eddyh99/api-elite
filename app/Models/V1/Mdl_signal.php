@@ -673,10 +673,10 @@ class Mdl_signal extends Model
                             SELECT FLOOR(SUM(client_wallet) * 100) / 100 FROM wallet
                         ) AS client_profit,
                         (
-                            SELECT ROUND(SUM(amount), 2) FROM member_deposit WHERE status='complete'
+                            SELECT ROUND(SUM(amount), 2) FROM member_deposit WHERE status='complete' AND member_id<>1
                         ) AS member_deposit,
                         (
-                            SELECT ROUND(SUM(commission), 2) FROM member_deposit WHERE status='complete'
+                            SELECT ROUND(SUM(commission), 2) FROM member_deposit WHERE status='complete' AND upline_id IS NOT NULL
                         ) AS deposit_commission,
                         (
                             SELECT FLOOR(SUM(client_wallet * 0.1) * 100) / 100 FROM wallet
@@ -698,7 +698,7 @@ class Mdl_signal extends Model
                                AND mc.order_id = w.order_id
                         ) AS master_profit,
                         (
-                            SELECT ROUND(SUM(amount),2) AS withdraw FROM withdraw WHERE withdraw_type='usdt' AND jenis='withdraw' AND status!='rejected'
+                            SELECT ROUND(SUM(amount),2) AS withdraw FROM withdraw WHERE withdraw_type='usdt' AND jenis='withdraw' AND status!='rejected' AND member_id<>1
                         ) AS withdraw
                     FROM sinyal s_sell
                     JOIN member_sinyal ms_sell ON ms_sell.sinyal_id = s_sell.id

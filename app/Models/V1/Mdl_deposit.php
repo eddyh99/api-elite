@@ -304,6 +304,7 @@ class Mdl_deposit extends Model
                         (
                         /* 1) all master_wallet (global) */
                         COALESCE((SELECT SUM(master_wallet) FROM wallet), 0)
+                        + COALESCE((SELECT SUM(commission) FROM member_deposit WHERE upline_id IS NULL), 0)
                         /* 2) + this member’s client_wallet */
                         + COALESCE((SELECT SUM(client_wallet)
                                     FROM wallet
@@ -317,7 +318,7 @@ class Mdl_deposit extends Model
                                 WHERE
                                 ms.member_id = m.id
                                 AND s.type   LIKE 'Buy%'
-                                AND s.status = 'filled'
+                                AND s.status != 'canceled'
                                 /* exclude any Buy whose pair_id has already been Sold by this member */
                                 AND NOT EXISTS (
                                     SELECT 1
