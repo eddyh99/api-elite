@@ -641,7 +641,7 @@ class Auth extends BaseController
 		return $this->respond($resultData);
 	}
 
-	//check wallet balance ERC20 USDT di Ethereum
+	//check wallet balance ERC20 USDTT/USDC di Ethereum
 	public function postCheck_wallet_erc20()
 	{
 		$json   = $this->request->getJSON(true);
@@ -680,6 +680,113 @@ class Auth extends BaseController
 			'https://eth-mainnet.public.blastapi.io',
 			'https://cloudflare-eth.com',
 			'https://rpc.ankr.com/eth'
+		];
+
+		$erc20Abi = '[{
+        "constant": true,
+        "inputs": [{"name":"_owner","type":"address"}],
+        "name": "balanceOf",
+        "outputs": [{"name":"balance","type":"uint256"}],
+        "type": "function"
+    	}]';
+
+		$resultData = [
+			'status' => 'error',
+			'wallet_address' => $wallet,
+			'token' => $token,
+			'balance' => '0'
+		];
+
+		$success = false;
+		$lastError = '';
+
+		foreach ($rpcUrls as $rpcUrl) {
+			try {
+				$provider = new \Web3\Providers\HttpProvider(
+					new \Web3\RequestManagers\HttpRequestManager($rpcUrl, 10)
+				);
+				$web3 = new \Web3\Web3($provider);
+				$contract = new \Web3\Contract($web3->provider, $erc20Abi);
+
+				$contract->at($tokenContracts[$token]['address'])->call('balanceOf', $wallet, function ($err, $balance) use (&$resultData, &$success, &$lastError, $tokenContracts, $token) {
+					if ($err !== null) {
+						$lastError = $err->getMessage();
+						return;
+					}
+
+					$raw = null;
+					if (is_array($balance)) {
+						if (isset($balance[0]) && method_exists($balance[0], 'toString')) {
+							$raw = $balance[0]->toString();
+						} elseif (isset($balance['balance']) && method_exists($balance['balance'], 'toString')) {
+							$raw = $balance['balance']->toString();
+						}
+					}
+					if ($raw === null) $raw = '0';
+
+					$decimals = $tokenContracts[$token]['decimals'];
+					$resultData['balance'] = bcdiv($raw, bcpow('10', $decimals), 6);
+					$resultData['status'] = 'success';
+					$success = true;
+				});
+
+				if ($success) break;
+			} catch (\Throwable $e) {
+				$lastError = $e->getMessage();
+				continue;
+			}
+		}
+
+		if (!$success) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => 'All RPC failed: ' . $lastError
+			]);
+		}
+
+		return $this->respond($resultData);
+	}
+
+	//check wallet balance ERC20 USDT/USDC di Polygon
+	public function postCheck_wallet_polygon()
+	{
+		$json   = $this->request->getJSON(true);
+		$wallet = $json['wallet_address'] ?? null;
+		$token  = strtolower($json['token'] ?? '');
+
+		if (!$wallet) {
+			return $this->respond([
+				'status'  => 'error',
+				'message' => 'Wallet address is required'
+			]);
+		}
+
+		// Validasi format wallet (Polygon juga sama seperti ETH/BSC)
+		if (substr($wallet, 0, 2) !== '0x' || strlen($wallet) !== 42 || !ctype_xdigit(substr($wallet, 2))) {
+			return $this->respond([
+				'status'  => 'error',
+				'message' => 'Invalid Polygon wallet address'
+			]);
+		}
+
+		// Mapping token ERC20 di Polygon
+		$tokenContracts = [
+			'usdt_polygon' => ['address' => '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', 'decimals' => 6],
+			'usdc_polygon' => ['address' => '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359', 'decimals' => 6],
+		];
+
+		if (!isset($tokenContracts[$token])) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => 'Token not supported on Polygon'
+			]);
+		}
+
+		// Daftar RPC Polygon
+		$rpcUrls = [
+			'https://polygon-rpc.com/',
+			'https://rpc.ankr.com/polygon',
+			'https://polygon-bor-rpc.publicnode.com'
 		];
 
 		$erc20Abi = '[{
