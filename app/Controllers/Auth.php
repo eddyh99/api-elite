@@ -241,7 +241,7 @@ class Auth extends BaseController
 			return $this->respond(error_msg(400, "auth", "02", $response), 400);
 		}
 	}
-	
+
 	// public function postAdmin_Signin()
 	// {
 	// 	$validation = $this->validation;
@@ -787,6 +787,111 @@ class Auth extends BaseController
 			'https://polygon-rpc.com/',
 			'https://rpc.ankr.com/polygon',
 			'https://polygon-bor-rpc.publicnode.com'
+		];
+
+		$erc20Abi = '[{
+        "constant": true,
+        "inputs": [{"name":"_owner","type":"address"}],
+        "name": "balanceOf",
+        "outputs": [{"name":"balance","type":"uint256"}],
+        "type": "function"
+    	}]';
+
+		$resultData = [
+			'status' => 'error',
+			'wallet_address' => $wallet,
+			'token' => $token,
+			'balance' => '0'
+		];
+
+		$success = false;
+		$lastError = '';
+
+		foreach ($rpcUrls as $rpcUrl) {
+			try {
+				$provider = new \Web3\Providers\HttpProvider(
+					new \Web3\RequestManagers\HttpRequestManager($rpcUrl, 10)
+				);
+				$web3 = new \Web3\Web3($provider);
+				$contract = new \Web3\Contract($web3->provider, $erc20Abi);
+
+				$contract->at($tokenContracts[$token]['address'])->call('balanceOf', $wallet, function ($err, $balance) use (&$resultData, &$success, &$lastError, $tokenContracts, $token) {
+					if ($err !== null) {
+						$lastError = $err->getMessage();
+						return;
+					}
+
+					$raw = null;
+					if (is_array($balance)) {
+						if (isset($balance[0]) && method_exists($balance[0], 'toString')) {
+							$raw = $balance[0]->toString();
+						} elseif (isset($balance['balance']) && method_exists($balance['balance'], 'toString')) {
+							$raw = $balance['balance']->toString();
+						}
+					}
+					if ($raw === null) $raw = '0';
+
+					$decimals = $tokenContracts[$token]['decimals'];
+					$resultData['balance'] = bcdiv($raw, bcpow('10', $decimals), 6);
+					$resultData['status'] = 'success';
+					$success = true;
+				});
+
+				if ($success) break;
+			} catch (\Throwable $e) {
+				$lastError = $e->getMessage();
+				continue;
+			}
+		}
+
+		if (!$success) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => 'All RPC failed: ' . $lastError
+			]);
+		}
+
+		return $this->respond($resultData);
+	}
+
+	//check wallet balance USDC di Base
+	public function postCheck_wallet_base()
+	{
+		$json   = $this->request->getJSON(true);
+		$wallet = $json['wallet_address'] ?? null;
+		$token  = strtolower($json['token'] ?? '');
+
+		if (!$wallet) {
+			return $this->respond([
+				'status'  => 'error',
+				'message' => 'Wallet address is required'
+			]);
+		}
+
+		// Validasi format wallet Ethereum-style
+		if (substr($wallet, 0, 2) !== '0x' || strlen($wallet) !== 42 || !ctype_xdigit(substr($wallet, 2))) {
+			return $this->respond([
+				'status'  => 'error',
+				'message' => 'Invalid Base wallet address'
+			]);
+		}
+
+		// Hanya USDC yang didukung di Base
+		$tokenContracts = [
+			'usdc_base' => ['address' => '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', 'decimals' => 6],
+		];
+
+		if (!isset($tokenContracts[$token])) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => 'Token not supported on Base'
+			]);
+		}
+
+		$rpcUrls = [
+			'https://mainnet.base.org',
+			'https://developer-access-mainnet.base.org',
+			'https://base-rpc.publicnode.com'
 		];
 
 		$erc20Abi = '[{
