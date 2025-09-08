@@ -1080,4 +1080,137 @@ class Auth extends BaseController
 
 		return $this->respond($resultData);
 	}
+
+	public function postCheck_wallet_trc20()
+	{
+		$json   = $this->request->getJSON(true);
+		$wallet = $json['wallet_address'] ?? null;
+		$token  = strtolower($json['token'] ?? '');
+
+		if (!$wallet) {
+			return $this->respond([
+				'status'  => 'error',
+				'message' => 'Wallet address is required'
+			]);
+		}
+
+		// Validasi Tron wallet Base58 (T + 33 chars)
+		if (!preg_match('/^T[1-9A-HJ-NP-Za-km-z]{33}$/', $wallet)) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => 'Invalid Tron wallet address'
+			]);
+		}
+
+		// USDT TRC20
+		$tokenContracts = [
+			'usdt_trc20' => [
+				'contract' => 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
+				'decimals' => 6
+			]
+		];
+
+		if (!isset($tokenContracts[$token])) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => 'Token not supported on Tron'
+			]);
+		}
+
+		$resultData = [
+			'status' => 'success',
+			'wallet_address' => $wallet,
+			'token' => $token,
+			'balance' => '0'
+		];
+
+		try {
+			$apiUrl = "https://api.trongrid.io/wallet/triggersmartcontract";
+
+			// Convert wallet & contract to HEX
+			$hexWallet = $this->tronBase58ToHex($wallet);
+			$hexContract = $this->tronBase58ToHex($tokenContracts[$token]['contract']);
+
+			// Payload TRC20 balanceOf(address)
+			$payload = [
+				"contract_address" => $hexContract,
+				"function_selector" => "balanceOf(address)",
+				"parameter" => str_pad($hexWallet, 64, "0", STR_PAD_LEFT),
+				"owner_address" => $hexWallet
+			];
+
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $apiUrl);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+			curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+			$response = curl_exec($ch);
+
+			if (curl_errno($ch)) {
+				$error = curl_error($ch);
+				curl_close($ch);
+				return $this->respond([
+					'status' => 'error',
+					'message' => 'cURL error: ' . $error
+				]);
+			}
+			curl_close($ch);
+
+			if (!$response) {
+				return $this->respond([
+					'status' => 'error',
+					'message' => 'No response from TronGrid'
+				]);
+			}
+
+			$data = json_decode($response, true);
+
+			// Ambil balance
+			if (isset($data['constant_result'][0])) {
+				$raw = hexdec($data['constant_result'][0]);
+				$decimals = $tokenContracts[$token]['decimals'];
+				$humanBalance = bcdiv($raw, bcpow('10', $decimals), $decimals);
+				$resultData['balance'] = rtrim(rtrim($humanBalance, '0'), '.');
+			}
+		} catch (\Throwable $e) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => 'Exception: ' . $e->getMessage()
+			]);
+		}
+
+		return $this->respond($resultData);
+	}
+
+	/**
+	 * Convert Tron Base58 wallet ke HEX (prefix 41, abaikan checksum)
+	 */
+	private function tronBase58ToHex(string $address): string
+	{
+		$alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+		$base = strlen($alphabet);
+
+		$num = gmp_init(0, 10);
+
+		for ($i = 0; $i < strlen($address); $i++) {
+			$pos = strpos($alphabet, $address[$i]);
+			if ($pos === false) {
+				throw new \Exception("Invalid Base58 character: " . $address[$i]);
+			}
+			$num = gmp_add(gmp_mul($num, $base), $pos);
+		}
+
+		$hex = gmp_strval($num, 16);
+		if (strlen($hex) % 2 !== 0) $hex = "0" . $hex;
+
+		$bin = hex2bin($hex);
+		if (strlen($bin) < 21) throw new \Exception("Decoded address has invalid length");
+
+		// Ambil 21 bytes pertama (prefix + pubkey)
+		$addressBytes = substr($bin, 0, 21);
+
+		return strtoupper(bin2hex($addressBytes));
+	}
 }
