@@ -958,4 +958,126 @@ class Auth extends BaseController
 
 		return $this->respond($resultData);
 	}
+
+	//check wallet balance USDC di Solana
+	public function postCheck_wallet_solana()
+	{
+		$json   = $this->request->getJSON(true);
+		$wallet = $json['wallet_address'] ?? null;
+		$token  = strtolower($json['token'] ?? '');
+
+		if (!$wallet) {
+			return $this->respond([
+				'status'  => 'error',
+				'message' => 'Wallet address is required'
+			]);
+		}
+
+		// Validasi address Solana (Base58, 32–44 karakter)
+		if (!preg_match('/^[1-9A-HJ-NP-Za-km-z]{32,44}$/', $wallet)) {
+			return $this->respond([
+				'status'  => 'error',
+				'message' => 'Invalid Solana wallet address'
+			]);
+		}
+
+		// Mapping token SPL
+		$tokenMints = [
+			'usdc_solana' => [
+				'mint' => 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+				'decimals' => 6
+			],
+		];
+
+		if (!isset($tokenMints[$token])) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => 'Token not supported on Solana'
+			]);
+		}
+
+		// Daftar RPC Solana (fallback kalau satu gagal)
+		$rpcUrls = [
+			'https://api.mainnet-beta.solana.com',
+			'https://solana-api.projectserum.com'
+		];
+
+		$resultData = [
+			'status' => 'success',
+			'wallet_address' => $wallet,
+			'token' => $token,
+			'balance' => '0'
+		];
+
+		$success = false;
+		$lastError = '';
+
+		foreach ($rpcUrls as $rpcUrl) {
+			try {
+				$payload = [
+					"jsonrpc" => "2.0",
+					"id" => 1,
+					"method" => "getTokenAccountsByOwner",
+					"params" => [
+						$wallet,
+						["mint" => $tokenMints[$token]['mint']],
+						["encoding" => "jsonParsed"]
+					]
+				];
+
+				$ch = curl_init();
+				curl_setopt($ch, CURLOPT_URL, $rpcUrl);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+				curl_setopt($ch, CURLOPT_POST, true);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+				curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+				$response = curl_exec($ch);
+
+				if (curl_errno($ch)) {
+					$lastError = curl_error($ch);
+					curl_close($ch);
+					continue;
+				}
+				curl_close($ch);
+
+				if (!$response) {
+					$lastError = 'No response from Solana RPC';
+					continue;
+				}
+
+				$data = json_decode($response, true);
+
+				if (isset($data['result']['value']) && !empty($data['result']['value'])) {
+					$totalBalance = '0';
+					foreach ($data['result']['value'] as $acc) {
+						$tokenAccount = $acc['account']['data']['parsed']['info']['tokenAmount'] ?? null;
+						if ($tokenAccount) {
+							$raw = $tokenAccount['amount'] ?? '0';
+							$totalBalance = bcadd($totalBalance, $raw, 0);
+						}
+					}
+
+					$decimals = $tokenMints[$token]['decimals'];
+					$humanBalance = bcdiv($totalBalance, bcpow('10', $decimals), $decimals);
+					$resultData['balance'] = rtrim(rtrim($humanBalance, '0'), '.');
+				}
+
+				$success = true;
+				break; // stop kalau sudah sukses
+			} catch (\Throwable $e) {
+				$lastError = $e->getMessage();
+				continue;
+			}
+		}
+
+		if (!$success) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => 'All RPC failed: ' . $lastError
+			]);
+		}
+
+		return $this->respond($resultData);
+	}
 }
