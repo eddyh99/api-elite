@@ -641,5 +641,109 @@ class Auth extends BaseController
 		return $this->respond($resultData);
 	}
 
+	//check wallet balance ERC20 USDT di Ethereum
+	public function postCheck_wallet_erc20()
+	{
+		$json   = $this->request->getJSON(true);
+		$wallet = $json['wallet_address'] ?? null;
+		$token  = strtolower($json['token'] ?? '');
 
+		if (!$wallet) {
+			return $this->respond([
+				'status'  => 'error',
+				'message' => 'Wallet address is required'
+			]);
+		}
+
+		// Validasi format wallet (ETH sama dengan BSC)
+		if (substr($wallet, 0, 2) !== '0x' || strlen($wallet) !== 42 || !ctype_xdigit(substr($wallet, 2))) {
+			return $this->respond([
+				'status'  => 'error',
+				'message' => 'Invalid Ethereum wallet address'
+			]);
+		}
+
+		// Mapping token ERC20
+		$tokenContracts = [
+			'usdt_erc20' => ['address' => '0xdAC17F958D2ee523a2206206994597C13D831ec7', 'decimals' => 6],
+			'usdc_erc20' => ['address' => '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 'decimals' => 6],
+		];
+
+		if (!isset($tokenContracts[$token])) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => 'Token not supported on Ethereum'
+			]);
+		}
+
+		$rpcUrls = [
+			'https://eth-mainnet.public.blastapi.io',
+			'https://cloudflare-eth.com',
+			'https://rpc.ankr.com/eth'
+		];
+
+		$erc20Abi = '[{
+        "constant": true,
+        "inputs": [{"name":"_owner","type":"address"}],
+        "name": "balanceOf",
+        "outputs": [{"name":"balance","type":"uint256"}],
+        "type": "function"
+    	}]';
+
+		$resultData = [
+			'status' => 'error',
+			'wallet_address' => $wallet,
+			'token' => $token,
+			'balance' => '0'
+		];
+
+		$success = false;
+		$lastError = '';
+
+		foreach ($rpcUrls as $rpcUrl) {
+			try {
+				$provider = new \Web3\Providers\HttpProvider(
+					new \Web3\RequestManagers\HttpRequestManager($rpcUrl, 10)
+				);
+				$web3 = new \Web3\Web3($provider);
+				$contract = new \Web3\Contract($web3->provider, $erc20Abi);
+
+				$contract->at($tokenContracts[$token]['address'])->call('balanceOf', $wallet, function ($err, $balance) use (&$resultData, &$success, &$lastError, $tokenContracts, $token) {
+					if ($err !== null) {
+						$lastError = $err->getMessage();
+						return;
+					}
+
+					$raw = null;
+					if (is_array($balance)) {
+						if (isset($balance[0]) && method_exists($balance[0], 'toString')) {
+							$raw = $balance[0]->toString();
+						} elseif (isset($balance['balance']) && method_exists($balance['balance'], 'toString')) {
+							$raw = $balance['balance']->toString();
+						}
+					}
+					if ($raw === null) $raw = '0';
+
+					$decimals = $tokenContracts[$token]['decimals'];
+					$resultData['balance'] = bcdiv($raw, bcpow('10', $decimals), 6);
+					$resultData['status'] = 'success';
+					$success = true;
+				});
+
+				if ($success) break;
+			} catch (\Throwable $e) {
+				$lastError = $e->getMessage();
+				continue;
+			}
+		}
+
+		if (!$success) {
+			return $this->respond([
+				'status' => 'error',
+				'message' => 'All RPC failed: ' . $lastError
+			]);
+		}
+
+		return $this->respond($resultData);
+	}
 }
