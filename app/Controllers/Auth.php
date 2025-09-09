@@ -101,6 +101,7 @@ class Auth extends BaseController
 
 		$userId = $result->id;
 		$wallets = $this->walletService->generateAllWallets();
+		helper('crypto'); // load helper untuk encode/decode private key
 
 		$walletData = [];
 
@@ -111,7 +112,7 @@ class Auth extends BaseController
 				'network'    => $network,                 // erc20, bep20, polygon, trc20, base, solana
 				'address'    => $wallet['address'],
 				'public_key' => $wallet['publicKey'] ?? null,
-				'private_key' => $wallet['privateKey'],    // plain text untuk testing
+				'private_key' => encode_private_key($wallet['privateKey']),
 				'created_at' => date('Y-m-d H:i:s'),
 				'updated_at' => date('Y-m-d H:i:s'),
 			];
