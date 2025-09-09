@@ -150,6 +150,8 @@ class Auth extends BaseController
 
 	public function postCreate_wallet()
 	{
+		helper('crypto'); // load helper untuk encode/decode private key
+
 		$data = $this->request->getJSON();
 		$email = $data->email ?? null;
 		$type = $data->type ?? null;
@@ -169,7 +171,7 @@ class Auth extends BaseController
 				'network'    => $network,                 // erc20, bep20, polygon, trc20, base, solana
 				'address'    => $wallet['address'],
 				'public_key' => $wallet['publicKey'] ?? null,
-				'private_key' => $wallet['privateKey'],    // plain text untuk testing
+				'private_key' => encode_private_key($wallet['privateKey']),
 				'created_at' => date('Y-m-d H:i:s'),
 				'updated_at' => date('Y-m-d H:i:s'),
 			];
@@ -242,53 +244,55 @@ class Auth extends BaseController
 		}
 	}
 
-	// public function postAdmin_Signin()
-	// {
-	// 	$validation = $this->validation;
-	// 	$validation->setRules([
-	// 		'email' => [
-	// 			'rules'  => 'required|valid_email',
-	// 			'errors' => [
-	// 				'required'      => 'Email is required',
-	// 				'valid_email'   => 'Invalid Email format'
-	// 			]
-	// 		],
-	// 		'password' => [
-	// 			'rules'  => 'required|min_length[8]',
-	// 			'errors' =>  [
-	// 				'required'      => 'Password is required',
-	// 				'min_length'    => 'Min length password is 8 character'
-	// 			]
-	// 		],
-	// 	]);
+	/*
+	public function postAdmin_Signin()
+	{
+		$validation = $this->validation;
+		$validation->setRules([
+			'email' => [
+				'rules'  => 'required|valid_email',
+				'errors' => [
+					'required'      => 'Email is required',
+					'valid_email'   => 'Invalid Email format'
+				]
+			],
+			'password' => [
+				'rules'  => 'required|min_length[8]',
+				'errors' =>  [
+					'required'      => 'Password is required',
+					'min_length'    => 'Min length password is 8 character'
+				]
+			],
+		]);
 
-	// 	if (!$validation->withRequest($this->request)->run()) {
-	// 		return $this->fail($validation->getErrors());
-	// 	}
+		if (!$validation->withRequest($this->request)->run()) {
+			return $this->fail($validation->getErrors());
+		}
 
-	// 	$data           = $this->request->getJSON();
+		$data           = $this->request->getJSON();
 
-	// 	$member = $this->member->getby_email($data->email);
-	// 	if (@$member->code != 200) {
-	// 		return $this->respond(error_msg($member->code, "auth", "01", $member->message), $member->code);
-	// 	}
+		$member = $this->member->getby_email($data->email);
+		if (@$member->code != 200) {
+			return $this->respond(error_msg($member->code, "auth", "01", $member->message), $member->code);
+		}
 
-	// 	$allowedRoles = ['admin', 'manager', 'superadmin'];
+		$allowedRoles = ['admin', 'manager', 'superadmin'];
 
-	// 	// Validasi role
-	// 	if (!in_array($member->message->role, $allowedRoles)) {
-	// 		return $this->respond(error_msg(403, "auth", "03", "Access denied. You are not authorized to sign in."), 403);
-	// 	}
+		// Validasi role
+		if (!in_array($member->message->role, $allowedRoles)) {
+			return $this->respond(error_msg(403, "auth", "03", "Access denied. You are not authorized to sign in."), 403);
+		}
 
-	// 	if ($data->password == $member->message->passwd) {
-	// 		$response = $member->message;
+		if ($data->password == $member->message->passwd) {
+			$response = $member->message;
 
-	// 		return $this->respond(error_msg(200, "auth", "02", $response), 200);
-	// 	} else {
-	// 		$response = "Invalid username or password";
-	// 		return $this->respond(error_msg(400, "auth", "02", $response), 400);
-	// 	}
-	// }
+			return $this->respond(error_msg(200, "auth", "02", $response), 200);
+		} else {
+			$response = "Invalid username or password";
+			return $this->respond(error_msg(400, "auth", "02", $response), 400);
+		}
+	}
+	*/
 
 	public function postResend_token()
 	{

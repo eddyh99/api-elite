@@ -530,6 +530,8 @@ class Member extends BaseController
 
     public function postMemberDepositWalletKey()
     {
+        helper('crypto'); // load helper untuk encode/decode private key
+
         $data = $this->request->getJSON(true);
 
         $rules = [
@@ -550,6 +552,8 @@ class Member extends BaseController
         if (! $wallet) {
             return $this->failNotFound('Wallet tidak ditemukan untuk member ini.');
         }
+
+        $wallet->private_key = decode_private_key($wallet->private_key); // decode private key sebelum ditampilkan
 
         return $this->respond([
             'status'  => 'success',
