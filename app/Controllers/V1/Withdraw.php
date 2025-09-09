@@ -228,9 +228,15 @@ class Withdraw extends BaseController
             // Convert to string to avoid float issues
             $userAmount = number_format((float)$data->amount, 8, '.', '');
             $balanceAmount = number_format((float)$balance, 8, '.', '');
+            
+            if ($data->id_member==1 && $data->destination=="fund"){
+                $response = $this->deposit->masterPosition();
+                $balanceAmount = $response->trade_balance;
+            }
+
 
             // Compare using bccomp with appropriate precision
-            if (bccomp($userAmount, $balance, 8) === 1) {
+            if (bccomp($userAmount, $balanceAmount, 8) === 1) {
                 // user amount > balance
                 return $this->respond(error_msg(400, "transfer", "01",'Insufficient Balance' ), 400);
             }

@@ -279,10 +279,15 @@ class Member extends BaseController
         }
 
         $balance_commission =  $commission->message->usdt;
-        if($balance_commission <= 0 || $balance_commission < $data->amount) {
-            return $this->respond(error_msg(400, "commission", "01", 'Insufficient balance'), 400);
+        $userAmount = number_format((float)$data->amount, 8, '.', '');
+        $balanceAmount = number_format((float)$balance_commission, 8, '.', '');
+
+        // Compare using bccomp with appropriate precision
+        if (bccomp($userAmount, $balanceAmount, 8) === 1) {
+            // user amount > balance
+            return $this->respond(error_msg(400, "transfer", "01",'Insufficient Balance' ), 400);
         }
-    
+
         // Lanjut transfer
         $mdata = [[
             'member_id' => $idMember,
@@ -504,7 +509,7 @@ class Member extends BaseController
         }
 
         $newReferralId = null;
-        if ($referral['refcode'] != 'm4573r') {
+        if (!($referral['email'] === 'a@a.a' || $referral['refcode'] === 'm4573r')) {
             $newReferralId = $referral['id'];
         }
 

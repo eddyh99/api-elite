@@ -304,11 +304,11 @@ class Mdl_deposit extends Model
                         (
                         /* 1) all master_wallet (global) */
                         COALESCE((SELECT SUM(master_wallet) FROM wallet), 0)
-                        + COALESCE((SELECT SUM(commission) FROM member_deposit WHERE upline_id IS NULL), 0)
+                        + COALESCE((SELECT SUM(commission) FROM member_deposit WHERE upline_id IS NULL AND status='complete'), 0)
                         /* 2) + this member’s client_wallet */
                         + COALESCE((SELECT SUM(client_wallet)
                                     FROM wallet
-                                    WHERE member_id = m.id), 0)
+                                    WHERE member_id = 1), 0)
                         /* 3) − unclosed Buys for this member */
                         - COALESCE(
                             (
@@ -337,7 +337,7 @@ class Mdl_deposit extends Model
                         + COALESCE(
                             (SELECT SUM(amount)
                             FROM withdraw
-                            WHERE member_id   = m.id
+                            WHERE member_id   = 1
                                 AND jenis       = 'trade'
                                 AND withdraw_type = 'usdt'),
                             0
@@ -346,7 +346,7 @@ class Mdl_deposit extends Model
                         - COALESCE(
                             (SELECT SUM(amount)
                             FROM withdraw
-                            WHERE member_id   = m.id
+                            WHERE member_id   = 1
                                 AND jenis       = 'balance'
                                 AND withdraw_type = 'usdt'),
                             0
@@ -789,36 +789,5 @@ class Mdl_deposit extends Model
                 'message' => 'An error occured'
             ];            
         }
-    }
-
-    public function update_crypto_deposit($mdata) {
-        try {
-            // Update status berdasarkan email member
-            $sql = "UPDATE member_deposit 
-                    SET status = ? 
-                    WHERE invoice = ?";
-    
-            $this->db->query($sql, [$mdata['status'], $mdata['invoice']]);
-            $affectedRows = $this->db->affectedRows();
-
-            // Jika update gagal
-            if (!$affectedRows) {
-                return (object) array(
-                    "code"    => 400,
-                    "message" => "Failed to update crypto deposit status"
-                );
-            }
-    
-        } catch (\Throwable $th) {
-            return (object) array(
-                "code"    => 500,
-                "message" => "An unexpected server error occurred"
-            );
-        }
-    
-        return (object) array(
-            "code"    => 201,
-            "message" => "Crypto Deposit has been updated successfully"
-        );
     }
 }

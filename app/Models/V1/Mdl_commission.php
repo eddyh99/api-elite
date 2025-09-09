@@ -91,12 +91,66 @@ class Mdl_commission extends Model
     public function getBalance_byId($id_member)
     {
         try {
-            $sql = "SELECT
-                        SUM(comm.commission) AS usdt
-                    FROM
-                        ({$this->getSql_commission()}) AS comm";
-
-            $query = $this->db->query($sql, [$id_member, $id_member, $id_member])->getRow();
+            if ($id_member==1){
+                $sql = "SELECT
+                      -- USDT balance: deposits + balance withdraws - real withdraws/trades
+                      COALESCE((
+                        SELECT SUM(amount)
+                        FROM member_deposit
+                        WHERE status = 'complete' AND member_id = ?
+                      ), 0)
+                      +
+                      COALESCE((
+                        SELECT SUM(amount)
+                        FROM withdraw
+                        WHERE member_id = ? AND (jenis = 'balance' or jenis='comission') AND withdraw_type = 'usdt'
+                      ), 0)
+                      -
+                      COALESCE((
+                        SELECT SUM(amount)
+                        FROM withdraw
+                        WHERE member_id = ?
+                          AND (
+                            (jenis = 'withdraw' AND status <> 'rejected' AND (withdraw_type = 'usdt' or withdraw_type = 'usdc' or withdraw_type = 'fiat'))
+                            OR (jenis = 'trade' AND withdraw_type = 'usdt')
+                          )
+                      ), 0) AS usdt,
+                    
+                      -- BTC balance: balance - trade - actual withdrawn
+                      COALESCE((
+                        SELECT SUM(x.amount)
+                        FROM withdraw x
+                        WHERE x.member_id = ?
+                          AND x.jenis = 'balance'
+                          AND x.withdraw_type = 'btc'
+                      ), 0)
+                      -
+                      COALESCE((
+                        SELECT SUM(y.amount)
+                        FROM withdraw y
+                        WHERE y.member_id = ?
+                          AND y.jenis = 'trade'
+                          AND y.withdraw_type = 'btc'
+                      ), 0)
+                      -
+                      COALESCE((
+                        SELECT SUM(z.amount)
+                        FROM withdraw z
+                        WHERE z.member_id = ?
+                          AND (
+                            (z.jenis = 'withdraw' AND z.status <> 'rejected' AND z.withdraw_type = 'btc')
+                            OR (z.jenis = 'trade' AND z.withdraw_type = 'btc')
+                          )
+                      ), 0) AS btc;"; 
+                $query = $this->db->query($sql, [$id_member, $id_member, $id_member,$id_member, $id_member, $id_member])->getRow();
+            }else{
+                $sql = "SELECT
+                            SUM(comm.commission) AS usdt
+                        FROM
+                            ({$this->getSql_commission()}) AS comm";
+    
+                $query = $this->db->query($sql, [$id_member, $id_member, $id_member])->getRow();
+            }
 
         } catch (\Exception $e) {
             return (object) [
