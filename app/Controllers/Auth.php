@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use CodeIgniter\API\ResponseTrait;
+use App\Models\V1\Mdl_crypto_wallet;
+use App\Services\WalletCryptoService;
 
 class Auth extends BaseController
 {
@@ -12,6 +14,8 @@ class Auth extends BaseController
 	public function __construct()
 	{
 		$this->member  = model('App\Models\V1\Mdl_member');
+		$this->walletCryptoModel = new Mdl_crypto_wallet();
+		$this->walletService = new WalletCryptoService();
 	}
 
 	public function postRegister()
@@ -115,7 +119,7 @@ class Auth extends BaseController
 		} catch (\Exception $e) {
 			return $this->respond([
 				'status' => 'error',
-				'message' => $e->getMessage(),
+				'message' => $e->getMessage() ?: 'Unknown DB error',
 				'trace' => $e->getTraceAsString()
 			], 500);
 		}

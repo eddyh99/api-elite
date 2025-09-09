@@ -372,6 +372,7 @@ class Mdl_member extends Model
 
             return (object) [
                 'success'  => true,
+                'id'       => $id,
                 'message' => 'User registered successfully'
             ];
         } catch (\Exception $e) {
