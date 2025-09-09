@@ -18,6 +18,7 @@ class Member extends BaseController
         $this->withdraw     = model('App\Models\V1\Mdl_withdraw');
         $this->wallet     = model('App\Models\V1\Mdl_wallet');
         $this->member_signal  = model('App\Models\V1\Mdl_member_signal');
+        $this->crypto_wallet = model('App\Models\V1\Mdl_crypto_wallet');
     }
 
     public function getGet_all()
@@ -529,6 +530,40 @@ class Member extends BaseController
         return $this->respond([
             'status'  => 200,
             'message' => 'Referral updated successfully'
+        ]);
+    }
+
+    public function postMemberDepositWalletKey()
+    {
+        helper('crypto'); // load helper untuk encode/decode private key
+
+        $data = $this->request->getJSON(true);
+
+        $rules = [
+            'email' => 'required|valid_email',
+            'type'  => 'required|in_list[hedgefund,onetoone]'
+        ];
+
+        if (! $this->validateData($data, $rules)) {
+            return $this->failValidationErrors($this->validator->getErrors());
+        }
+
+        $email = $data['email'];
+        $type  = $data['type'] ?? 'hedgefund';
+
+        // Ambil wallet terakhir berdasarkan deposit
+        $wallet = $this->crypto_wallet->getLastDepositPrivateKeyWallet($email, $type);
+
+        if (! $wallet) {
+            return $this->failNotFound('Wallet tidak ditemukan untuk member ini.');
+        }
+
+        $wallet->private_key = decode_private_key($wallet->private_key); // decode private key sebelum ditampilkan
+
+        return $this->respond([
+            'status'  => 'success',
+            'message' => 'Private key wallet berhasil ditemukan.',
+            'data'    => $wallet
         ]);
     }
 }
