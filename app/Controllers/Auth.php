@@ -30,6 +30,12 @@ class Auth extends BaseController
 					'valid_email'   => 'Invalid Email format'
 				]
 			],
+			'phone_number' => [
+				'rules'  => 'required|numeric',
+				'errors' => [
+					'numeric'      => 'Phone number must be numeric'
+				]
+			],
 			'password' => [
 				'rules'  => 'required|min_length[8]',
 				'errors' =>  [
@@ -73,7 +79,8 @@ class Auth extends BaseController
 			"status"	=> @$data->status ? @$data->status : ($data->role != 'member' ? 'active' : 'new'),
 			"timezone"  => $data->timezone,
 			"refcode"	=> $data->referral ?? null,
-			'ip_addr'	=> $data->ip_address
+			'ip_addr'	=> $data->ip_address,
+			'phone_number' => $data->phone_number
 		);
 
 		if (!empty($data->referral)) {
