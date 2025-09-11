@@ -1751,9 +1751,9 @@ class Mdl_member extends Model
             ];
         }
     }
-    
 
-/*    public function list_transactions(){
+
+    /*    public function list_transactions(){
         try {
 
             $sql = "WITH buy_signals AS ( 
@@ -1845,4 +1845,22 @@ class Mdl_member extends Model
             ];
         }
     }
-*/}
+*/
+    public function get_number_by_email($email)
+    {
+        try {
+            $sql =
+                "SELECT phone_number FROM member WHERE email=?";
+            $query = $this->db->query($sql, [$email])->getRow();
+            return (object) [
+                'code' => 200,
+                'message' => $query
+            ];
+        } catch (\Exception $e) {
+            return (object) [
+                'code' => 500,
+                'message' => 'An error occurred.' . $e
+            ];
+        }
+    }
+}
