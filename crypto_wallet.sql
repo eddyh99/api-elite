@@ -12,7 +12,9 @@ CREATE TABLE `crypto_wallet` (
   UNIQUE KEY `uniq_member_network_type` (`member_id`,`type`,`network`),
   CONSTRAINT `fk_crypto_wallet_member`
     FOREIGN KEY (`member_id`) REFERENCES `member` (`id`)
-)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
 
 ALTER TABLE `crypto_wallet`
 MODIFY COLUMN `network` ENUM('erc20','bep20','polygon','trc20','base','solana') NOT NULL;

@@ -21,7 +21,7 @@ class Mdl_member extends Model
     protected $table      = 'member';
     protected $primaryKey = 'id';
 
-    protected $allowedFields = ['email', 'passwd', 'id_referral', 'timezone', 'otp', 'role', 'status', 'ip_addr', 'is_delete'];
+    protected $allowedFields = ['email', 'passwd', 'id_referral', 'timezone', 'otp', 'role', 'status', 'ip_addr', 'is_delete', 'phone_number'];
 
     protected $returnType = 'array';
     protected $useTimestamps = true;
@@ -372,6 +372,7 @@ class Mdl_member extends Model
 
             return (object) [
                 'success'  => true,
+                'id'       => $id,
                 'message' => 'User registered successfully'
             ];
         } catch (\Exception $e) {
