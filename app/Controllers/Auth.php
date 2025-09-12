@@ -448,6 +448,20 @@ class Auth extends BaseController
 		return $this->respond(error_msg(200, "binance", null, $response), 200);
 	}
 
+	public function postGet_user_number()
+	{
+		$data = $this->request->getJSON();
+		$email = $data->email ?? null;
+
+		$result = $this->member->get_number_by_email($email);
+		if (@$result->code != 200) {
+			return $this->respond(error_msg($result->code, "auth", "01", $result->message), $result->code);
+		}
+
+		$response = $result->message->phone_number;
+		return $this->respond(error_msg(200, "auth", null, $response), 200);
+	}
+
 	/* Cek wallet balance BEP20 USDT di BSC */
 	/*
 	public function postCheck_balance()
