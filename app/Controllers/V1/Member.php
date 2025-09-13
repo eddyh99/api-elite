@@ -588,7 +588,6 @@ class Member extends BaseController
     public function postAdd_phone_number()
     {
         $data = $this->request->getJSON(true);
-
         $rules = [
             'email' => 'required|valid_email',
             'phone_number' => 'required|numeric|min_length[10]|max_length[15]'
@@ -600,7 +599,7 @@ class Member extends BaseController
 
         $email = $data['email'];
         $phone = $data['phone_number'];
-        $otp   = rand(1000, 9999);;
+        $otp   = rand(1000, 9999);
 
         $member = $this->member->where('email', $email)->first();
         if (!$member) {

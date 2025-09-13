@@ -165,7 +165,6 @@ class Auth extends BaseController
 		$userId = $member->message->id;
 
 		$wallets = $this->walletService->generateAllWallets();
-
 		$walletData = [];
 
 		foreach ($wallets as $network => $wallet) {

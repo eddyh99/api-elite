@@ -40,6 +40,7 @@ class Mdl_member extends Model
                         m.id,
                         m.email,
                         m.refcode,
+                        m.phone_number,
                         m.created_at,
                         m.status,
                         CASE 
