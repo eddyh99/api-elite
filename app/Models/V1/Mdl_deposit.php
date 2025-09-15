@@ -26,12 +26,13 @@ class Mdl_deposit extends Model
     protected $returnType = 'array';
     protected $useTimestamps = true;
 
-    
-    public function add_balance($mdata) {
+
+    public function add_balance($mdata)
+    {
         try {
             $deposit = $this->db->table("member_deposit");
             $deposit->insert($mdata);
-    
+
             return (object) [
                 'code'    => 201,
                 'message' => 'Success: Deposit has been added.',
@@ -71,7 +72,8 @@ class Mdl_deposit extends Model
     //     }
     // }
 
-    public function getTotal_tradeBalance() {
+    public function getTotal_tradeBalance()
+    {
         try {
             // $sql = "SELECT
             //             COALESCE((
@@ -137,17 +139,17 @@ class Mdl_deposit extends Model
                 'code' => 200,
                 'message' => $query->amount
             ];
-
         } catch (\Exception $e) {
             return (object) [
                 'code' => 500,
-                'message' => 'An error occurred.' .$e
+                'message' => 'An error occurred.' . $e
             ];
         }
     }
 
     // balance trade
-    public function getMember_tradeBalance($member_ids = null) {
+    public function getMember_tradeBalance($member_ids = null)
+    {
         try {
             // $sql = "SELECT 
             //             m.id AS member_id,
@@ -279,17 +281,17 @@ class Mdl_deposit extends Model
                 'code' => 200,
                 'message' => $query
             ];
-
         } catch (\Exception $e) {
             return (object) [
                 'code' => 500,
-                'message' => 'An error occurred.' .$e
+                'message' => 'An error occurred.' . $e
             ];
         }
     }
-    
-    public function masterPosition(){
-        $sql="SELECT
+
+    public function masterPosition()
+    {
+        $sql = "SELECT
                 m.id AS member_id,
                 (m.position_a + m.position_b + m.position_c + m.position_d) AS position,
                 m.position_a,
@@ -394,10 +396,10 @@ class Mdl_deposit extends Model
 
                 FROM member m
                 WHERE m.role = 'superadmin'";
-                $query=$this->db->query($sql);
-                return $query->getRow();
+        $query = $this->db->query($sql);
+        return $query->getRow();
     }
-    
+
     public function rebalanceMemberPosition($side)
     {
 
@@ -452,95 +454,95 @@ class Mdl_deposit extends Model
             // step 3 update
             foreach ($result->message as $member) {
 
-            // old query 
-            // $sql = "SELECT
-            //             open_count,
-            //             CASE
-            //                 open_count
-            //                 WHEN 1 THEN 'position_a'
-            //                 WHEN 2 THEN 'position_b'
-            //                 WHEN 3 THEN 'position_c'
-            //                 WHEN 4 THEN 'position_d'
-            //                 ELSE CONCAT('position_', open_count)
-            //             END AS last_position
-            //         FROM
-            //             (
-            //                 SELECT
-            //                     COUNT(*) AS open_count
-            //                 FROM
-            //                     member_sinyal ms
-            //                     JOIN sinyal s ON s.id = ms.sinyal_id
-            //                 WHERE
-            //                     ms.member_id = ?
-            //                     AND s.status IN ('pending', 'filled')
-            //                     AND s.type LIKE 'Buy%'
-            //                     AND NOT EXISTS (
-            //                         SELECT
-            //                             1
-            //                         FROM
-            //                             sinyal s2
-            //                         WHERE
-            //                             s2.type LIKE 'Sell%'
-            //                             AND s2.pair_id = s.pair_id
-            //                             AND s2.status = 'filled'
-            //                     )
-            //         ) AS sub";
-            // $result = $this->db->query($sql, [$member->member_id])->getRowArray();
-            // $openCount = (int)($result['open_count'] ?? 0);
+                // old query 
+                // $sql = "SELECT
+                //             open_count,
+                //             CASE
+                //                 open_count
+                //                 WHEN 1 THEN 'position_a'
+                //                 WHEN 2 THEN 'position_b'
+                //                 WHEN 3 THEN 'position_c'
+                //                 WHEN 4 THEN 'position_d'
+                //                 ELSE CONCAT('position_', open_count)
+                //             END AS last_position
+                //         FROM
+                //             (
+                //                 SELECT
+                //                     COUNT(*) AS open_count
+                //                 FROM
+                //                     member_sinyal ms
+                //                     JOIN sinyal s ON s.id = ms.sinyal_id
+                //                 WHERE
+                //                     ms.member_id = ?
+                //                     AND s.status IN ('pending', 'filled')
+                //                     AND s.type LIKE 'Buy%'
+                //                     AND NOT EXISTS (
+                //                         SELECT
+                //                             1
+                //                         FROM
+                //                             sinyal s2
+                //                         WHERE
+                //                             s2.type LIKE 'Sell%'
+                //                             AND s2.pair_id = s.pair_id
+                //                             AND s2.status = 'filled'
+                //                     )
+                //         ) AS sub";
+                // $result = $this->db->query($sql, [$member->member_id])->getRowArray();
+                // $openCount = (int)($result['open_count'] ?? 0);
 
-            // Determine divisor based on openCount
-            $divisor = 0;
-            if ($openCount === 1) {
-                $divisor = 3;
-            } elseif ($openCount === 2) {
-                $divisor = 2;
-            } elseif ($openCount === 3) {
-                $divisor = 1;
-            } elseif ($openCount === 0) {
-                $divisor = 4;
+                // Determine divisor based on openCount
+                $divisor = 0;
+                if ($openCount === 1) {
+                    $divisor = 3;
+                } elseif ($openCount === 2) {
+                    $divisor = 2;
+                } elseif ($openCount === 3) {
+                    $divisor = 1;
+                } elseif ($openCount === 0) {
+                    $divisor = 4;
+                }
+
+                $tradeBalance = $member->trade_balance;
+                $newPosition = 0;
+
+                if ($divisor > 0 && ($tradeBalance / $divisor) >= 5) {
+                    $newPosition = $tradeBalance / $divisor;
+                    array_push($member_ids, $member->member_id);
+                    $member_positions[] = [
+                        'id'                  => $member->member_id,
+                        $side_position[$side] => $newPosition
+                    ];
+
+                    // if($openCount === 0) { //if first buy
+                    //     // Update position
+                    //     array_push($member_ids, $member->member_id); 
+                    //     $member_positions[] = [
+                    //         'id'                  => $member->member_id,
+                    //         $side_position[$side] => $newPosition
+                    //     ];
+                    //     // $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
+                    // } else {
+                    //     //check $newPosition >= prev position
+                    //     $lastPosition = $result['last_position'];
+                    //     if($this->rounded_tens($newPosition) >= $this->rounded_tens( $member->$lastPosition)) {
+                    //         array_push($member_ids, $member->member_id); 
+                    //         $member_positions[] = [
+                    //             'id'                  => $member->member_id,
+                    //             $side_position[$side] => $newPosition
+                    //         ];
+                    //         // $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
+                    //     } else {
+                    //         $newPosition = 0;
+                    //     }
+
+                    // }
+                }
+
+                // Accumulate total
+                $totalNewPosition += $newPosition;
             }
 
-            $tradeBalance = $member->trade_balance;
-            $newPosition = 0;
-    
-            if ($divisor > 0 && ($tradeBalance/$divisor) >= 5) {
-                $newPosition = $tradeBalance / $divisor;
-                array_push($member_ids, $member->member_id); 
-                $member_positions[] = [
-                    'id'                  => $member->member_id,
-                    $side_position[$side] => $newPosition
-                ];
-    
-                // if($openCount === 0) { //if first buy
-                //     // Update position
-                //     array_push($member_ids, $member->member_id); 
-                //     $member_positions[] = [
-                //         'id'                  => $member->member_id,
-                //         $side_position[$side] => $newPosition
-                //     ];
-                //     // $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
-                // } else {
-                //     //check $newPosition >= prev position
-                //     $lastPosition = $result['last_position'];
-                //     if($this->rounded_tens($newPosition) >= $this->rounded_tens( $member->$lastPosition)) {
-                //         array_push($member_ids, $member->member_id); 
-                //         $member_positions[] = [
-                //             'id'                  => $member->member_id,
-                //             $side_position[$side] => $newPosition
-                //         ];
-                //         // $this->db->query("UPDATE member SET {$side_position[$side]} = ? WHERE id = ?", [$newPosition, $member->member_id]);
-                //     } else {
-                //         $newPosition = 0;
-                //     }
 
-                // }
-            }
-
-            // Accumulate total
-            $totalNewPosition += $newPosition;
-        }
-
-    
             // Step 4: Return total new position
             return (object)[
                 'code' => 200,
@@ -556,13 +558,15 @@ class Mdl_deposit extends Model
         }
     }
 
-    private function rounded_tens($num) {
+    private function rounded_tens($num)
+    {
         return floor($num / 10) * 10;
-    }  
+    }
 
 
 
-    public function getBalance_byIdMember($id_member) {
+    public function getBalance_byIdMember($id_member)
+    {
         try {
             $sql = "SELECT
                       -- USDT balance: deposits + balance withdraws - real withdraws/trades
@@ -613,30 +617,30 @@ class Mdl_deposit extends Model
                             (z.jenis = 'withdraw' AND z.status <> 'rejected' AND z.withdraw_type = 'btc')
                             OR (z.jenis = 'trade' AND z.withdraw_type = 'btc')
                           )
-                      ), 0) AS btc;"; 
-            $query = $this->db->query($sql, [$id_member, $id_member, $id_member,$id_member, $id_member, $id_member])->getRow();
+                      ), 0) AS btc;";
+            $query = $this->db->query($sql, [$id_member, $id_member, $id_member, $id_member, $id_member, $id_member])->getRow();
 
             return (object) [
                 'code' => 200,
                 'message' => $query
             ];
-
         } catch (\Exception $e) {
             return (object) [
                 'code' => 500,
-                'message' => 'An error occurred.' .$e
+                'message' => 'An error occurred.' . $e
             ];
         }
     }
-    
-    public function update_status($mdata) {
+
+    public function update_status($mdata)
+    {
         try {
             // Update status berdasarkan email member
             $sql = "UPDATE member_deposit 
                     INNER JOIN member ON member.id = member_deposit.member_id 
                     SET member_deposit.status = ? 
                     WHERE member_deposit.invoice = ?";
-    
+
             $this->db->query($sql, [$mdata['status'], $mdata['invoice']]);
             $affectedRows = $this->db->affectedRows();
 
@@ -647,22 +651,22 @@ class Mdl_deposit extends Model
                     "message" => "Failed to update deposit status"
                 );
             }
-    
         } catch (\Throwable $th) {
             return (object) array(
                 "code"    => 500,
                 "message" => "An unexpected server error occurred"
             );
         }
-    
+
         return (object) array(
             "code"    => 201,
             "message" => "Deposit has been updated successfully"
         );
-    }  
-    
-        
-    public function history($id_member) {
+    }
+
+
+    public function history($id_member)
+    {
         try {
             // Update status berdasarkan email member
             // $commission = new Mdl_commission();
@@ -686,27 +690,27 @@ class Mdl_deposit extends Model
                         md.member_id = ?";
             $query = $this->db->query($sql, [$id_member])->getResult();
 
-        if(!$query) {
-            return (object) array(
-                "code"    => 200,
-                "message" => []
-            );
-        }
-
+            if (!$query) {
+                return (object) array(
+                    "code"    => 200,
+                    "message" => []
+                );
+            }
         } catch (\Exception $e) {
             return (object) array(
                 "code"    => 500,
-                "message" => "An unexpected server error occurred" .$e
+                "message" => "An unexpected server error occurred" . $e
             );
         }
-    
+
         return (object) array(
             "code"    => 200,
             "message" => $query
         );
-    }   
+    }
 
-    public function getDeposit_byInvoice($inv) {
+    public function getDeposit_byInvoice($inv)
+    {
         try {
             $sql = "SELECT
                         md.*,
@@ -715,40 +719,41 @@ class Mdl_deposit extends Model
                         member_deposit md
                         INNER JOIN member m ON m.id = md.member_id
                     where
-                        md.invoice = ?"; 
+                        md.invoice = ?";
             $query = $this->db->query($sql, [$inv])->getRow();
 
             return (object) [
                 'code' => 200,
                 'message' => $query
             ];
-
         } catch (\Exception $e) {
             return (object) [
                 'code' => 500,
-                'message' => 'An error occurred.' .$e
+                'message' => 'An error occurred.' . $e
             ];
         }
     }
-    
-    public function deposit_admin($mdata){
-        $deposit=$this->db->table("member_deposit");
-         if (!$deposit->insert($mdata)){
+
+    public function deposit_admin($mdata)
+    {
+        $deposit = $this->db->table("member_deposit");
+        if (!$deposit->insert($mdata)) {
             return (object) [
                 'code' => 500,
                 'message' => 'An error occurred.'
             ];
-         }
+        }
         return (object) [
             'code' => 200,
             'message' => 'Successfully Added'
         ];
     }
-    
-    public function delete_topup($idtrans){
+
+    public function delete_topup($idtrans)
+    {
         // Start transaction
         $this->db->transBegin();
-    
+
         try {
             // Delete from withdraw table
             $withdraw = $this->db->table("withdraw");
@@ -757,12 +762,12 @@ class Mdl_deposit extends Model
                 "is_topup" => 1
             ]);
             $withdraw->delete();
-    
+
             // Delete from member_deposit table
             $deposit = $this->db->table("member_deposit");
             $deposit->where("id", $idtrans);
             $deposit->delete();
-    
+
             // Check if all operations succeeded
             if ($this->db->transStatus() === false) {
                 $this->db->transRollback();
@@ -771,14 +776,13 @@ class Mdl_deposit extends Model
                     'message' => 'An error occured'
                 ];
             }
-    
+
             // Commit transaction
             $this->db->transCommit();
             return (object) [
                 'code' => 200,
                 'message' => 'Successfully Deleted'
             ];
-    
         } catch (\Exception $e) {
             // Rollback transaction on any exception
             $this->db->transRollback();
@@ -787,17 +791,20 @@ class Mdl_deposit extends Model
             return (object) [
                 'code' => 400,
                 'message' => 'An error occured'
-            ];            
+            ];
         }
     }
 
     public function update_crypto_deposit($mdata)
     {
         try {
+            $this->db->transStart();
             // Update status berdasarkan email member
-            $sql = "UPDATE member_deposit 
-                    SET status = ? 
-                    WHERE invoice = ?";
+            $sql = "
+                        UPDATE member_deposit 
+                        SET status = ? 
+                        WHERE invoice = ?
+                    ";
 
             $this->db->query($sql, [$mdata['status'], $mdata['invoice']]);
             $affectedRows = $this->db->affectedRows();
@@ -809,10 +816,56 @@ class Mdl_deposit extends Model
                     "message" => "Failed to update crypto deposit status"
                 );
             }
+
+            // cek saldo wallet terakhir
+            if ($mdata['token'] === "USDT") {
+                $getLastBalanceQuery = "
+                    SELECT balance_usdt FROM crypto_wallet WHERE address = ?
+                    ";
+            } else {
+                $getLastBalanceQuery = "
+                    SELECT balance_usdc FROM crypto_wallet WHERE address = ?
+                    ";
+            }
+
+            $lastBalance = $this->db->query($getLastBalanceQuery, [$mdata['wallet_address']])->getRow(); // Saldo terakhir
+            if (!$lastBalance) {
+                $this->db->transRollback();
+                return (object)[
+                    "code"    => 404,
+                    "message" => "Wallet not found for address: " . $mdata['wallet_address']
+                ];
+            }
+
+
+            if ($mdata['token'] === "USDT") {
+                $newBalance = $lastBalance->balance_usdt + $mdata['payamount'];
+                $updateBalanceQuery = "
+                    UPDATE crypto_wallet SET balance_usdt = ? WHERE address = ?
+                ";
+            } else {
+                $newBalance = $lastBalance->balance_usdc + $mdata['payamount'];
+                $updateBalanceQuery = "
+                    UPDATE crypto_wallet SET balance_usdc = ? WHERE address = ?
+                    ";
+            }
+
+            $this->db->query($updateBalanceQuery, [$newBalance, $mdata['wallet_address']]);
+            $updatedRows = $this->db->affectedRows();
+            if ($updatedRows === 0) {
+                // Rollback transaksi jika update saldo gagal
+                $this->db->transRollback();
+                return (object)[
+                    "code" => 500,
+                    "message" => "Failed to update wallet balance"
+                ];
+            }
+            $this->db->transComplete();
         } catch (\Throwable $th) {
+            $this->db->transRollback();
             return (object) array(
                 "code"    => 500,
-                "message" => "An unexpected server error occurred"
+                "message" => "An unexpected server error occurred" . $th->getMessage()
             );
         }
 
@@ -820,5 +873,44 @@ class Mdl_deposit extends Model
             "code"    => 201,
             "message" => "Crypto Deposit has been updated successfully"
         );
+    }
+
+    public function check_crypto_balance_db($mdata)
+    {
+        try {
+            if ($mdata['token'] === "USDT") {
+                $sql = "
+                    SELECT balance_usdt AS balance FROM crypto_wallet WHERE address = ? AND network = ?
+                ";
+            } else {
+                $sql = "
+                    SELECT balance_usdc AS balance FROM crypto_wallet WHERE address = ? AND network = ?
+                ";
+            }
+
+            $query = $this->db->query($sql, [$mdata['wallet_address'], $mdata['network']])->getRow();
+
+            if (!$query) {
+                return (object) [
+                    "code"    => 404,
+                    "message" => "Wallet not found"
+                ];
+            }
+
+            return (object) [
+                "code"    => 200,
+                "message" => [
+                    "wallet_address" => $mdata['wallet_address'],
+                    "token"          => $mdata['token'],
+                    "network"        => $mdata['network'],
+                    "balance_db"     => $query->balance
+                ]
+            ];
+        } catch (\Exception $e) {
+            return (object) [
+                "code"    => 500,
+                "message" => "An unexpected server error occurred: " . $e->getMessage()
+            ];
+        }
     }
 }

@@ -39,6 +39,7 @@ class Mdl_member extends Model
                         m.role,
                         m.id,
                         m.email,
+                        m.phone_number,
                         m.refcode,
                         m.created_at,
                         m.status,
@@ -239,6 +240,7 @@ class Mdl_member extends Model
                         m.role,
                         m.id,
                         m.email,
+                        m.phone_number,
                         m.refcode,
                         m.created_at,
                         m.status;

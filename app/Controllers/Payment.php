@@ -60,6 +60,10 @@ class Payment extends BaseController
         $data           = $this->request->getJSON();
         $mdata = [
             'invoice'   => trim($data->invoice),
+            'payamount'    => trim($data->payamount),
+            'network'    => trim($data->network),
+            'token'      => trim($data->token),
+            'wallet_address' => trim($data->wallet_address),
             'status'    => 'complete'
         ];
 
@@ -70,6 +74,30 @@ class Payment extends BaseController
 
         return $this->respond(error_msg(201, "member_deposit", null, $mdata["invoice"]), 201);
     }
+
+    public function postCrypto_balance_db_check()
+    {
+        $data = $this->request->getJSON();
+        $mdata = [
+            'wallet_address' => trim($data->wallet_address),
+            'token'          => trim($data->token),
+            'network'        => trim($data->network)
+        ];
+
+        $result = $this->deposit->check_crypto_balance_db($mdata);
+
+        if ($result->code !== 200) {
+            return $this->respond(error_msg($result->code, "member_deposit", "01", $result->message), $result->code);
+        }
+
+        return $this->respond([
+            "code"    => 200,
+            "service" => "member_deposit",
+            "error"   => null,
+            "message" => $result->message
+        ], 200);
+    }
+
 
     public function postUpdate_status()
     {

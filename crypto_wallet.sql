@@ -34,3 +34,5 @@ ADD COLUMN `payment_type` ENUM(
     'usdc_base',
     'usdc_solana'
 ) NULL AFTER `invoice`;
+
+ALTER TABLE crypto_wallet ADD COLUMN balance_usdc DECIMAL(30, 6) DEFAULT 0, ADD COLUMN balance_usdt DECIMAL(30, 6) DEFAULT 0;

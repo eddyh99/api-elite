@@ -15,6 +15,7 @@ $routes->group('non', static function ($routes) {
     $routes->post('notify_payment', 'Payment::postUpdate_status');
     $routes->post('deposit', 'Payment::postDeposit');
     $routes->post('crypto-deposit-update', 'Payment::postCrypto_deposit_update');
+    $routes->post('crypto-balance-db-check', 'Payment::postCrypto_balance_db_check');
 
     $routes->post('us-bank', 'V1\Bank::createUsBank');
     $routes->post('us-bank-update', 'V1\Bank::postUpdateUsBankAccount');
