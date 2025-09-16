@@ -72,3 +72,20 @@ VALUES
 ('XCV@gmail.com','40bd001563085fc35165329ea1ff5c5ecbdbbeef','2025-02-25 13:23:00','2025-03-06 12:38:50',NULL,NULL,'active','Asia/Jakarta',NULL,'admin','127.0.0.1',0,'7VmlkBY8gtWIXl421uEXp65wXtIi7gaKsHwI2d00mRFleRdOA3dzIjjXxOrwRox8','IneWnn5Szy8mIxFuXoNLxWSRJGzKufHE3Cp07wOAvYozjBk2eTpSQsE0tbVfDuIk'),
 ('andi@gmail.com','40bd001563085fc35165329ea1ff5c5ecbdbbeef','2025-02-27 17:51:35','2025-09-02 10:36:44',NULL,NULL,'active','Asia/Jakarta',NULL,'member','127.0.0.1',0,'7VmlkBY8gtWIXl421uEXp65wXtIi7gaKsHwI2d00mRFleRdOA3dzIjjXxOrwRox8','IneWnn5Szy8mIxFuXoNLxWSRJGzKufHE3Cp07wOAvYozjBk2eTpSQsE0tbVfDuIk');
 
+
+CREATE TABLE `withdraw_o2o` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `member_o2o_id` int NOT NULL,
+  `withdraw_type` enum('fiat','usdt') NOT NULL DEFAULT 'fiat',
+  `amount` decimal(18,2) NOT NULL,
+  `payment_details` text,
+  `wallet_address` varchar(255) DEFAULT NULL,
+  `status` enum('pending','rejected','completed') NOT NULL DEFAULT 'pending',
+  `requested_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `processed_at` datetime DEFAULT NULL,
+  `admin_notes` text,
+  PRIMARY KEY (`id`),
+  KEY `member_o2o_id` (`member_o2o_id`),
+  CONSTRAINT `withdraw_o2o_ibfk_1` FOREIGN KEY (`member_o2o_id`) REFERENCES `member_o2o` (`id`)
+) ENGINE=InnoDB;
+
