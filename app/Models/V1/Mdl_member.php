@@ -21,7 +21,7 @@ class Mdl_member extends Model
     protected $table      = 'member';
     protected $primaryKey = 'id';
 
-    protected $allowedFields = ['email', 'passwd', 'id_referral', 'timezone', 'otp', 'role', 'status', 'ip_addr', 'is_delete', 'phone_number'];
+    protected $allowedFields = ['email', 'passwd', 'id_referral', 'timezone', 'otp', 'role', 'status', 'ip_addr', 'is_delete'];
 
     protected $returnType = 'array';
     protected $useTimestamps = true;
@@ -40,7 +40,6 @@ class Mdl_member extends Model
                         m.id,
                         m.email,
                         m.refcode,
-                        m.phone_number,
                         m.created_at,
                         m.status,
                         CASE 
@@ -373,7 +372,6 @@ class Mdl_member extends Model
 
             return (object) [
                 'success'  => true,
-                'id'       => $id,
                 'message' => 'User registered successfully'
             ];
         } catch (\Exception $e) {
@@ -1752,9 +1750,9 @@ class Mdl_member extends Model
             ];
         }
     }
+    
 
-
-    /*    public function list_transactions(){
+/*    public function list_transactions(){
         try {
 
             $sql = "WITH buy_signals AS ( 
@@ -1846,22 +1844,4 @@ class Mdl_member extends Model
             ];
         }
     }
-*/
-    public function get_number_by_email($email)
-    {
-        try {
-            $sql =
-                "SELECT phone_number FROM member WHERE email=?";
-            $query = $this->db->query($sql, [$email])->getRow();
-            return (object) [
-                'code' => 200,
-                'message' => $query
-            ];
-        } catch (\Exception $e) {
-            return (object) [
-                'code' => 500,
-                'message' => 'An error occurred.' . $e
-            ];
-        }
-    }
-}
+*/}

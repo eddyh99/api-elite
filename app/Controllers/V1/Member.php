@@ -18,7 +18,6 @@ class Member extends BaseController
         $this->withdraw     = model('App\Models\V1\Mdl_withdraw');
         $this->wallet     = model('App\Models\V1\Mdl_wallet');
         $this->member_signal  = model('App\Models\V1\Mdl_member_signal');
-        $this->crypto_wallet = model('App\Models\V1\Mdl_crypto_wallet');
     }
 
     public function getGet_all()
@@ -83,8 +82,7 @@ class Member extends BaseController
     }
 
 
-    public function getHistory_deposit() 
-    {
+    public function getHistory_deposit() {
         $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
         $result = $this->deposit->history($member_id);
 
@@ -95,8 +93,7 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "member", null, $result->message), 200);
     }
 
-    public function getHistory_trade() 
-    {
+    public function getHistory_trade() {
         $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
         if($member_id) {
             $result = $this->member->history_trade($member_id);
@@ -114,8 +111,7 @@ class Member extends BaseController
 
     // +++++++++++++++++
 
-    public function getHistory_payment() 
-    {
+    public function getHistory_payment() {
         $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
         $result = $this->withdraw->history_payment($member_id);
 
@@ -174,8 +170,7 @@ class Member extends BaseController
         return $this->respond(error_msg(201, "member", null, $result->message), 201);
     }
 
-    public function getGet_statistics() 
-    {
+    public function getGet_statistics() {
         $result = $this->member->getStatistics();
         if (@$result->code != 200) {
 			return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
@@ -184,8 +179,7 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "member", null, $result->data), 200);
     }
 
-    public function postSet_status() 
-    {
+    public function postSet_status() {
         $data = $this->request->getJSON();
         $mdata = [
             "email" => $data->email,
@@ -212,8 +206,7 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "member", null, $result->data), 200);
     }
 
-    public function getList_downline() 
-    {
+    public function getList_downline() {
         $id_member = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
         $result = $this->member->get_downline_byId($id_member);
 
@@ -224,8 +217,7 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "member", null, $result->data), 200);
     }
 
-    public function getList_masterdownline() 
-    {
+    public function getList_masterdownline() {
         $result = $this->member->get_downline_byId();
 
         if (@$result->code != 200) {
@@ -235,8 +227,7 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "member", null, $result->data), 200);
     }
 
-    public function getReferralmember() 
-    {
+    public function getReferralmember() {
         $result = $this->member->get_referral_member();
 
         if (@$result->code != 200) {
@@ -246,8 +237,7 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "member", null, $result->data), 200);
     }
 
-    public function getList_commission() 
-    {
+    public function getList_commission() {
         $id_member = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
         $result = $this->commission->get_commission_byId($id_member);
 
@@ -323,14 +313,12 @@ class Member extends BaseController
         return $this->respond(error_msg(201, "member", null, $result->message), 201);
     }
     
-    public function getList_activemember()
-    {
+    public function getList_activemember(){
         $result = $this->member->get_activemember();
         return $this->respond(error_msg($result->code, "member", null, $result->message), $result->code);
     }
     
-    public function getList_transaction() 
-    {
+    public function getList_transaction() {
         $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
 //        if(!empty($member_id)) {
             $result = $this->member->list_transaction($member_id);
@@ -345,22 +333,19 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "member", null, $result->message), 200);
     }
     
-    public function getList_comission()
-    {
+    public function getList_comission(){
         $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
         $result = $this->commission->list_commission($member_id);
         return $this->respond(error_msg(200, "member", null, $result), 200);
     }
 
-    public function getList_comission2()
-    {
+    public function getList_comission2(){
         $member_id = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
         $result = $this->commission->get_commission_byId($member_id);
         return $this->respond(error_msg(200, "member", null, $result), 200);
     }
     
-    public function postAdmin_deposit()
-    {
+    public function postAdmin_deposit(){
         $amount = filter_var($this->request->getVar('amount'), FILTER_SANITIZE_NUMBER_INT);
         $mdata=array(
                 "invoice"   => "INV".time(),
@@ -379,8 +364,7 @@ class Member extends BaseController
         return $this->respond(error_msg($result->code, "member", "01", $result->message), $result->code);
     }
 
-    public function getList_mastercomission()
-    {
+    public function getList_mastercomission(){
         $result = $this->commission->get_commission_byId();
         return $this->respond(error_msg(200, "member", null, $result), 200);
     }
@@ -408,8 +392,7 @@ class Member extends BaseController
         return $this->respond(error_msg($result->code, "member", "01", "uccessfully Updated"), $result->code);
     }
     
-    public function postManualtopup()
-    {
+    public function postManualtopup(){
         $data           = $this->request->getJSON();
         $referral       = $this->setting->get("referral_fee")->message;
         $mdata = array(
@@ -476,8 +459,7 @@ class Member extends BaseController
         return $this->respond(error_msg(200, "success topup", "01", $result->message), 201);		
     }
     
-    public function postDelete_topup()
-    {
+    public function postDelete_topup(){
         $data       = $this->request->getJSON();
         $idtrans    = $data->id;
         
@@ -489,8 +471,7 @@ class Member extends BaseController
 		return $this->respond(error_msg(200, "deposit", "01", "Successfully Deleted"), 201);	
     }
     
-    public function getList_downlinedepo()
-    {
+    public function getList_downlinedepo(){
         $id_member = filter_var($this->request->getVar('id_member'), FILTER_SANITIZE_NUMBER_INT);
         $result = $this->member->get_downlinedepo($id_member);
 
@@ -549,84 +530,5 @@ class Member extends BaseController
             'status'  => 200,
             'message' => 'Referral updated successfully'
         ]);
-    }
-
-    public function postMemberDepositWalletKey()
-    {
-        helper('crypto'); // load helper untuk encode/decode private key
-
-        $data = $this->request->getJSON(true);
-
-        $rules = [
-            'email' => 'required|valid_email',
-            'type'  => 'required|in_list[hedgefund,onetoone]'
-        ];
-
-        if (! $this->validateData($data, $rules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
-        }
-
-        $email = $data['email'];
-        $type  = $data['type'] ?? 'hedgefund';
-
-        // Ambil wallet terakhir berdasarkan deposit
-        $wallet = $this->crypto_wallet->getLastDepositPrivateKeyWallet($email, $type);
-
-        if (! $wallet) {
-            return $this->failNotFound('Wallet tidak ditemukan untuk member ini.');
-        }
-
-        $wallet->private_key = decode_private_key($wallet->private_key); // decode private key sebelum ditampilkan
-
-        return $this->respond([
-            'status'  => 'success',
-            'message' => 'Private key wallet berhasil ditemukan.',
-            'data'    => $wallet
-        ]);
-    }
-
-    public function postAdd_phone_number()
-    {
-        $data = $this->request->getJSON(true);
-        $rules = [
-            'email' => 'required|valid_email',
-            'phone_number' => 'required|numeric|min_length[10]|max_length[15]'
-        ];
-
-        if (! $this->validateData($data, $rules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
-        }
-
-        $email = $data['email'];
-        $phone = $data['phone_number'];
-        $otp   = rand(1000, 9999);
-
-        $member = $this->member->where('email', $email)->first();
-        if (!$member) {
-            return $this->failNotFound('Member not found');
-        }
-
-        if ($member['phone_number'] === $phone) {
-            return $this->respond([
-                'status'  => 200,
-                'message' => 'No changes made'
-            ]);
-        }
-
-        $add_phone = $this->member->update($member['id'], [
-            'phone_number' => $phone,
-            'otp'   => $otp
-        ]);
-
-        if (!$add_phone) {
-            return $this->failServerError('Failed to add member phone number');
-        }
-
-        return $this->respond([
-            'status'  => 201,
-            'message' => 'Phone number added successfully',
-            'otp'     => $otp
-        ]);
-        
     }
 }

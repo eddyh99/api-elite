@@ -41,7 +41,6 @@ class Payment extends BaseController
         $mdata = array(
             "invoice"   => 'INV-' . strtoupper(bin2hex(random_bytes(4))),
             "upline_id" => $uplineId,
-            'payment_type' => trim($data->payment_type),
 			"member_id" => trim($member->id),
 			"amount"    => trim($data->amount),
 			"commission"=> trim($data->amount) * $referral
@@ -55,21 +54,6 @@ class Payment extends BaseController
         return $this->respond(error_msg(201, "member", null, $mdata["invoice"]), 201);
     }
 
-    public function postCrypto_deposit_update()
-    {
-        $data           = $this->request->getJSON();
-        $mdata = [
-            'invoice'   => trim($data->invoice),
-            'status'    => 'complete'
-        ];
-
-        $result = $this->deposit->update_crypto_deposit($mdata);
-        if ($result->code !== 201) {
-            return $this->respond(error_msg($result->code, "member_deposit", "01", $result->message), $result->code);
-        }
-
-        return $this->respond(error_msg(201, "member_deposit", null, $mdata["invoice"]), 201);
-    }
 
     public function postUpdate_status()
     {
